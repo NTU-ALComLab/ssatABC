@@ -1,0 +1,84 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.d
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+*.mk
+
+# Executables
+*.exe
+*.out
+*.app
+bin/*
+lib/*
+abc
+arch_flags
+arch_flags.c
+core/minisat
+
+# vim temp files
+*.swp
+
+# log files
+*.dsw
+*.txt
+*readme*
+*.log
+*.out
+*.result
+*.trace
+*.cnf
+*.wcnf
+*.tcl
+*.sh
+*.list
+*.dsp
+expProb/*
+ceco_exp/*
+eco_testcases/*
+example1_eco/*
+log/*
+genlib/*
+script/*
+b01/*
+testbench/*
+
+# matlab files
+*.m
+*.matlab*
+
+# circuit files
+*.blif
+*.aig
+*.paig
+*.pcnf
+*.sdimacs
+*.qdimacs
+*.bench
+*.ps
+*.dot
+*.genlib
+*.tcl
+*.case
+*.sh
+*.tgz
+.__afs*
