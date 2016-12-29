@@ -34,6 +34,7 @@ namespace Minisat {
 //==================================================================================================
 // Top-level option parse/help functions:
 
+
 extern void parseOptions     (int& argc, char** argv, bool strict = false);
 extern void printUsageAndExit(int  argc, char** argv, bool verbose = false);
 extern void setUsageHelp     (const char* str);
@@ -59,7 +60,7 @@ class Option
     struct OptionLt {
         bool operator()(const Option* x, const Option* y) {
             int test1 = strcmp(x->category, y->category);
-            return test1 < 0 || (test1 == 0 && strcmp(x->type_name, y->type_name) < 0);
+            return test1 < 0 || test1 == 0 && strcmp(x->type_name, y->type_name) < 0;
         }
     };
 
