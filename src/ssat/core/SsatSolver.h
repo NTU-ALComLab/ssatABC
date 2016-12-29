@@ -39,9 +39,12 @@
 #define EXIST  -1.0
 #define FORALL -2.0
 
-// declarations for friend functions
+// declarations of friend functions
 namespace Minisat { class SsatSolver; }
-extern void Ssat_CubeToNtk( Minisat::SsatSolver& );
+extern void Ssat_CubeToNtk             ( Minisat::SsatSolver& );
+extern void Ssat_CubeToNtkCreatePi     ( Abc_Ntk_t* , Vec_Ptr_t* , Minisat::SsatSolver& );
+extern void Ssat_CubeToNtkCreateNode   ( Abc_Ntk_t* , Vec_Ptr_t* , Minisat::SsatSolver& );
+extern void Ssat_CubeToNtkWriteWcnf    ( Abc_Ntk_t* , Minisat::SsatSolver& );
 
 namespace Minisat {
 
@@ -49,20 +52,19 @@ namespace Minisat {
 // SsatSolver -- the main class:
 
 class SsatSolver {
-   // Non-member friend functions   
    // Construct circuits from collected cubes
-   friend void ::Ssat_CubeToNtk( SsatSolver& );
+   friend void ::Ssat_CubeToNtk             ( SsatSolver& );
+   friend void ::Ssat_CubeToNtkCreatePi     ( Abc_Ntk_t* , Vec_Ptr_t* , SsatSolver& );
+   friend void ::Ssat_CubeToNtkCreateNode   ( Abc_Ntk_t* , Vec_Ptr_t* , SsatSolver& );
+   friend void ::Ssat_CubeToNtkWriteWcnf    ( Abc_Ntk_t* , SsatSolver& );
 public:
    // Constructor/Destructor:
    SsatSolver() : _s1(NULL) , _s2(NULL) {}
    ~SsatSolver();
-
    // Problem specification:
    void      readSSAT( gzFile& );
-   
    // Ssat Solving:
    double    ssolve();
-
    // Testing interface:
    void      test() const;
 private:
@@ -80,7 +82,7 @@ private:
    double   countModels        ( const vec<Lit>& );
    // write file for Model Counting
    void     toDimacsWeighted   ( FILE* , const vec<Lit>& );
-   void     toDimacsWeighted   ( const char * , const vec<Lit>& );
+   void     toDimacsWeighted   ( const char* , const vec<Lit>& );
    void     toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void     toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // inline methods

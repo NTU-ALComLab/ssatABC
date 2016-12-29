@@ -143,4 +143,6 @@ alias fix_blif    "undc; strash; zero"
 # lazy man's synthesis
 alias recadd3     "st; rec_add3; b; rec_add3; dc2; rec_add3; if -K 8; bidec; st; rec_add3; dc2; rec_add3; if -g -K 6; st; rec_add3"
 
-
+# ssat alias
+alias ss "ssat"
+alias qq "ss sdimacs/example.sdimacs"

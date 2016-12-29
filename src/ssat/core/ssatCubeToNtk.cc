@@ -26,8 +26,13 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-// main function, global namespace
-void Ssat_CubeToNtk( SsatSolver& );
+// main function
+void Ssat_CubeToNtk              ( SsatSolver & );
+
+// helper functions
+void Ssat_CubeToNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * , SsatSolver & );
+void Ssat_CubeToNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , SsatSolver & );
+void Ssat_CubeToNtkWriteWcnf     ( Abc_Ntk_t * , SsatSolver & );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -46,15 +51,43 @@ void Ssat_CubeToNtk( SsatSolver& );
 ***********************************************************************/
 
 void 
-Ssat_CubeToNtk( SsatSolver & ssat )
+Ssat_CubeToNtk( SsatSolver & S )
 {
-   printf( "  > In Ssat_CubeToNtk():\n" );
+   char name[32];
+   Abc_Ntk_t * pNtkCube;
+   Vec_Ptr_t * vMapVars; // mapping var to obj
    
-   for ( int  i = 0 ; i < (ssat._rootVars).size() ; ++i ) {
-      for ( int j = 0 ; j < (ssat._rootVars[i]).size() ; ++j ) {
-         printf( "  > %d lv %d-th var = %d\n" , i , j , (ssat._rootVars[i])[j]+1 );
-      }
+   pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
+   sprintf( name , "cubes_network" );
+   pNtkCube->pName = Extra_UtilStrsav( name );
+   vMapVars = Vec_PtrStart( (S._s2)->nVars() );
+
+   Ssat_CubeToNtkCreatePi    ( pNtkCube , vMapVars , S );
+   Ssat_CubeToNtkCreateNode  ( pNtkCube , vMapVars , S );
+   Ssat_CubeToNtkWriteWcnf   ( pNtkCube , S );
+   
+   Abc_NtkDelete ( pNtkCube );
+   Vec_PtrFree   ( vMapVars );
+}
+
+void 
+Ssat_CubeToNtkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , SsatSolver & S )
+{
+   for ( int i = 0 ; i < S._rootVars[0].size() ; ++i ) {
+      printf( "  > Create Pi for variable %d\n" , S._rootVars[0][i]+1 );
+      Vec_PtrWriteEntry( vMapVars , S._rootVars[0][i] , Abc_NtkCreatePi( pNtkCube ) );
+      printf( "  > Var %d map to Obj %p\n" , S._rootVars[0][i]+1 , Vec_PtrEntry( vMapVars , S._rootVars[0][i] ) );
    }
+}
+
+void 
+Ssat_CubeToNtkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , SsatSolver & S )
+{
+}
+
+void 
+Ssat_CubeToNtkWriteWcnf( Abc_Ntk_t * pNtkCube , SsatSolver & S )
+{
 }
 
 ////////////////////////////////////////////////////////////////////////

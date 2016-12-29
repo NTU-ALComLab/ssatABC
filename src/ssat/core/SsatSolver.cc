@@ -550,9 +550,6 @@ SsatSolver::dumpCla( const vec<Lit> & c ) const
 void
 SsatSolver::test() const
 {
-   printf( "  > test using c++ in ABC\n" );
-   printf( "  > Try to compile minisat in ABC\n" );
-#if 0
    printf( "\nPrefix structure , numLv = %d\n\n" , _numLv );
    for ( int i = 0 ; i < _rootVars.size() ; ++i ) {
       printf( "Lv%d vars:\n" , i );
@@ -578,7 +575,6 @@ SsatSolver::test() const
       printf( "  > _s2 clauses:\n\n" );
       dumpCla( *_s2 );
    }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////

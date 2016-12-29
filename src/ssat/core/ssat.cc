@@ -28,8 +28,8 @@ using namespace Minisat;
 extern "C" void Ssat_Init ( Abc_Frame_t * );
 extern "C" void Ssat_End  ( Abc_Frame_t * );
 
-extern void Ssat_CubeToNtk( SsatSolver& );
-static int SsatCommandHello        ( Abc_Frame_t * pAbc, int argc, char **argv );
+// commands
+static int SsatCommandSSAT   ( Abc_Frame_t * pAbc , int argc , char ** argv );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -50,7 +50,7 @@ static int SsatCommandHello        ( Abc_Frame_t * pAbc, int argc, char **argv )
 void 
 Ssat_Init( Abc_Frame_t * pAbc )
 {
-   Cmd_CommandAdd( pAbc , "z SSAT" , "hello" , SsatCommandHello , 0 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat" , SsatCommandSSAT , 0 );
 }
 
 void 
@@ -71,10 +71,11 @@ Ssat_End( Abc_Frame_t * pAbc )
 ***********************************************************************/
 
 int 
-SsatCommandHello( Abc_Frame_t * pAbc , int argc , char ** argv )
+SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
 {
-   SsatSolver * pSsat = new SsatSolver;
+   SsatSolver * pSsat;
    gzFile in;
+   abctime clk;
    int c;
 
    Extra_UtilGetoptReset();
@@ -88,17 +89,23 @@ SsatCommandHello( Abc_Frame_t * pAbc , int argc , char ** argv )
             goto usage;
       }
    }
-   in = gzopen( argv[1] , "rb" );
+   if ( argc != globalUtilOptind + 1 )
+       goto usage;
+   in = gzopen( argv[globalUtilOptind] , "rb" );
+   pSsat = new SsatSolver;
    pSsat->readSSAT(in);
    gzclose(in);
+   clk = Abc_Clock();
    printf( "  > Answer: %f\n" , pSsat->ssolve() );
+   Abc_PrintTime( 1 , "  > Time" , Abc_Clock() - clk );
    delete pSsat;
    return 0;
 
 usage:
-   fprintf( pAbc->Err, "usage: hello [-h]\n" );
-   fprintf( pAbc->Err, "\t         Let ABC say hello to everyone\n" );
-   fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
+   Abc_Print( -2 , "usage: ssat [-h] <file>\n" );
+   Abc_Print( -2 , "\t         Solve 2SSAT by Qesto and model counting\n" );
+   Abc_Print( -2 , "\t-h    : prints the command summary\n" );
+   Abc_Print( -2 , "\tfile  : the sdimacs file\n" );
    return 1;
 }
 
