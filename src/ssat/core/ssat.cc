@@ -89,8 +89,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
             goto usage;
       }
    }
-   if ( argc != globalUtilOptind + 1 )
-       goto usage;
+   if ( argc != globalUtilOptind + 1 ) goto usage;
    in = gzopen( argv[globalUtilOptind] , "rb" );
    pSsat = new SsatSolver;
    pSsat->readSSAT(in);
@@ -103,7 +102,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
 
 usage:
    Abc_Print( -2 , "usage: ssat [-h] <file>\n" );
-   Abc_Print( -2 , "\t         Solve 2SSAT by Qesto and model counting\n" );
+   Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting\n" );
    Abc_Print( -2 , "\t-h    : prints the command summary\n" );
    Abc_Print( -2 , "\tfile  : the sdimacs file\n" );
    return 1;
