@@ -83,6 +83,18 @@ Ssat_CubeToNtkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , SsatSolver
 void 
 Ssat_CubeToNtkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , SsatSolver & S )
 {
+   // Create nodes for selection vars
+   Solver * s1 = S._s1;
+   vec<Lit> uLits;
+   for ( int i = 0 ; i < s1->nClauses() ; ++i ) {
+      Clause & c  = s1->ca[s1->clauses[i]];
+      uLits.clear();
+      for ( int j = 0 ; j < c.size() ; ++j )
+         if ( S.isAVar(var(c[j])) || S.isRVar(var(c[j])) ) uLits.push(c[j]);
+      if ( uLits.size() > 1 ) { // allocate new selection var
+         printf( "  > Create selection var for clause %d\n" , i );
+      }
+   }
 }
 
 void 

@@ -27,6 +27,13 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "ssat/utils/Options.h"
 #include "ssat/core/SolverTypes.h"
 
+// ABC headers
+#include "base/abc/abc.h"
+#include "base/main/mainInt.h"
+
+namespace Minisat { class SsatSolver; }
+extern void Ssat_CubeToNtkCreateNode   ( Abc_Ntk_t* , Vec_Ptr_t* , Minisat::SsatSolver& );
+
 namespace Minisat {
 
 //=================================================================================================
@@ -34,7 +41,9 @@ namespace Minisat {
 
 class Solver {
    
+  class SsatSolver;
   friend class SsatSolver;
+  friend void ::Ssat_CubeToNtkCreateNode   ( Abc_Ntk_t* , Vec_Ptr_t* , SsatSolver & );
 public:
 
     // Constructor/Destructor:
