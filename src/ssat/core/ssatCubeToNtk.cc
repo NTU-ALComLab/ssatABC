@@ -46,10 +46,10 @@ SsatSolver::cubeToNetwork() const
 {
    char name[32];
    Abc_Ntk_t * pNtkCube;
-   Vec_Ptr_t * vMapVars; // mapping var to obj
+   Vec_Ptr_t * vMapVars; // mapping Var to Abc_Obj_t
    
    pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
-   sprintf( name , "cubes_network" );
+   sprintf( name , "qesto_cubes_network" );
    pNtkCube->pName = Extra_UtilStrsav( name );
    vMapVars = Vec_PtrStart( _s2->nVars() );
 
@@ -68,7 +68,7 @@ SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
    Abc_Obj_t * pPi;
    char name[1024];
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
-      printf( "  > Create Pi for variable %d\n" , _rootVars[0][i]+1 );
+      printf( "  > Create Pi for randome variable %d\n" , _rootVars[0][i]+1 );
       pPi = Abc_NtkCreatePi( pNtkCube );
       sprintf( name , "r%d" , _rootVars[0][i]+1 );
       Abc_ObjAssignName( pPi , name , "" );
@@ -90,8 +90,11 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
       uLits.clear();
       for ( int j = 0 ; j < c.size() ; ++j )
          if ( isAVar(var(c[j])) || isRVar(var(c[j])) ) uLits.push(c[j]);
-      if ( uLits.size() > 1 ) { // create gate
-         printf( "  > Create gate for selection var of clause %d\n" , i );
+      if ( uLits.size() > _rootVars[0].size() ) {
+         Abc_Print( -1 , "Clause %d has %d rand lits, more than total(%d)\n" , i , uLits.size() , _rootVars[0].size() );
+         exit(1);
+      }
+      if ( uLits.size() > 1 ) { // create gate for selection var
          pObj = Abc_NtkCreateNode( pNtkCube );
          sprintf( name , "s%d" , i );
          Abc_ObjAssignName( pObj , name , "" );
@@ -99,7 +102,11 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
             Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(uLits[j]) ) );
             pfCompl[j] = sign(uLits[j]) ? 0 : 1;
          }
-         Abc_ObjSetData( pObj, Abc_SopCreateAnd( (Mem_Flex_t *)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
+         Abc_ObjSetData( pObj , Abc_SopCreateAnd( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
+         if ( Vec_PtrEntry( vMapVars , var(_claLits[i]) ) ) {
+           Abc_Print( -1 , "Selection var for clause %d is redefined\n" , i );
+           exit(1); 
+         }
          Vec_PtrWriteEntry( vMapVars , var(_claLits[i]) , pObj );
       }
    }

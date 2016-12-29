@@ -71,8 +71,6 @@ testbench/*
 *.aig
 *.paig
 *.pcnf
-*.sdimacs
-*.qdimacs
 *.bench
 *.ps
 *.dot

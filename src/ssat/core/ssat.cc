@@ -19,8 +19,6 @@
 #include "ssat/core/SsatSolver.h"
 using namespace Minisat;
 
-//ABC_NAMESPACE_IMPL_START
-
 ////////////////////////////////////////////////////////////////////////
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
@@ -28,7 +26,6 @@ using namespace Minisat;
 extern "C" void Ssat_Init ( Abc_Frame_t * );
 extern "C" void Ssat_End  ( Abc_Frame_t * );
 
-// commands
 static int SsatCommandSSAT   ( Abc_Frame_t * pAbc , int argc , char ** argv );
 
 ////////////////////////////////////////////////////////////////////////
@@ -112,5 +109,3 @@ usage:
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
 
-
-//ABC_NAMESPACE_IMPL_END
