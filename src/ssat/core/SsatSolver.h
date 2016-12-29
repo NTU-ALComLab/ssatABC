@@ -39,24 +39,13 @@
 #define EXIST  -1.0
 #define FORALL -2.0
 
-// declarations of friend functions
-namespace Minisat { class SsatSolver; }
-extern void Ssat_CubeToNtk             ( Minisat::SsatSolver& );
-extern void Ssat_CubeToNtkCreatePi     ( Abc_Ntk_t* , Vec_Ptr_t* , Minisat::SsatSolver& );
-extern void Ssat_CubeToNtkCreateNode   ( Abc_Ntk_t* , Vec_Ptr_t* , Minisat::SsatSolver& );
-extern void Ssat_CubeToNtkWriteWcnf    ( Abc_Ntk_t* , Minisat::SsatSolver& );
-
 namespace Minisat {
 
 //=================================================================================================
 // SsatSolver -- the main class:
 
 class SsatSolver {
-   // Construct circuits from collected cubes
-   friend void ::Ssat_CubeToNtk             ( SsatSolver& );
-   friend void ::Ssat_CubeToNtkCreatePi     ( Abc_Ntk_t* , Vec_Ptr_t* , SsatSolver& );
-   friend void ::Ssat_CubeToNtkCreateNode   ( Abc_Ntk_t* , Vec_Ptr_t* , SsatSolver& );
-   friend void ::Ssat_CubeToNtkWriteWcnf    ( Abc_Ntk_t* , SsatSolver& );
+
 public:
    // Constructor/Destructor:
    SsatSolver() : _s1(NULL) , _s2(NULL) {}
@@ -85,6 +74,11 @@ private:
    void     toDimacsWeighted   ( const char* , const vec<Lit>& );
    void     toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void     toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
+   // construct circuits from cubes for Model Counting
+   void     cubeToNetwork      () const;
+   void     ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
+   void     ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
+   void     ntkWriteWcnf       () const;
    // inline methods
    bool     isProblemVar       ( const Var& ) const;
    bool     isRVar             ( const Var& ) const;
@@ -97,7 +91,7 @@ private:
    // dump methods
    void     dumpCla            ( Solver& ) const;
    void     dumpCla            ( const vec<Lit>& ) const;
-    // data members
+   // data members
    vec< vec<Var> > _rootVars;        // var used in root clauses, levelized
    vec<double>     _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall
    vec<int>        _level;           // var to level

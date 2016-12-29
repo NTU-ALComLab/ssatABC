@@ -6,7 +6,7 @@
 
   PackageName [2SSAT solving by Qesto and model counting.]
 
-  Synopsis    [Function to construct circuits from cubes in SsatSolver.]
+  Synopsis    [Member functions to construct circuits from cubes.]
 
   Author      [Nian-Ze Lee]
   
@@ -19,20 +19,9 @@
 #include "ssat/core/SsatSolver.h"
 using namespace Minisat;
 
-
-//ABC_NAMESPACE_IMPL_START
-
 ////////////////////////////////////////////////////////////////////////
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
-
-// main function
-void Ssat_CubeToNtk              ( SsatSolver & );
-
-// helper functions
-void Ssat_CubeToNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * , SsatSolver & );
-void Ssat_CubeToNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , SsatSolver & );
-void Ssat_CubeToNtkWriteWcnf     ( Abc_Ntk_t * , SsatSolver & );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -40,7 +29,7 @@ void Ssat_CubeToNtkWriteWcnf     ( Abc_Ntk_t * , SsatSolver & );
 
 /**Function*************************************************************
 
-  Synopsis    [Construct circuits from cubes in SsatSolver]
+  Synopsis    [Construct circuits from cubes.]
 
   Description []
                
@@ -50,8 +39,8 @@ void Ssat_CubeToNtkWriteWcnf     ( Abc_Ntk_t * , SsatSolver & );
 
 ***********************************************************************/
 
-void 
-Ssat_CubeToNtk( SsatSolver & S )
+void
+SsatSolver::cubeToNetwork() const
 {
    char name[32];
    Abc_Ntk_t * pNtkCube;
@@ -60,45 +49,43 @@ Ssat_CubeToNtk( SsatSolver & S )
    pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "cubes_network" );
    pNtkCube->pName = Extra_UtilStrsav( name );
-   vMapVars = Vec_PtrStart( (S._s2)->nVars() );
+   vMapVars = Vec_PtrStart( _s2->nVars() );
 
-   Ssat_CubeToNtkCreatePi    ( pNtkCube , vMapVars , S );
-   Ssat_CubeToNtkCreateNode  ( pNtkCube , vMapVars , S );
-   Ssat_CubeToNtkWriteWcnf   ( pNtkCube , S );
+   ntkCreatePi   ( pNtkCube , vMapVars );
+   ntkCreateNode ( pNtkCube , vMapVars );
+   ntkWriteWcnf  ();
    
    Abc_NtkDelete ( pNtkCube );
    Vec_PtrFree   ( vMapVars );
 }
 
-void 
-Ssat_CubeToNtkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , SsatSolver & S )
+void
+SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 {
-   for ( int i = 0 ; i < S._rootVars[0].size() ; ++i ) {
-      printf( "  > Create Pi for variable %d\n" , S._rootVars[0][i]+1 );
-      Vec_PtrWriteEntry( vMapVars , S._rootVars[0][i] , Abc_NtkCreatePi( pNtkCube ) );
-      printf( "  > Var %d map to Obj %p\n" , S._rootVars[0][i]+1 , Vec_PtrEntry( vMapVars , S._rootVars[0][i] ) );
+   for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
+      printf( "  > Create Pi for variable %d\n" , _rootVars[0][i]+1 );
+      Vec_PtrWriteEntry( vMapVars , _rootVars[0][i] , Abc_NtkCreatePi( pNtkCube ) );
+      printf( "  > Var %d map to Obj %p\n" , _rootVars[0][i]+1 , Vec_PtrEntry( vMapVars , _rootVars[0][i] ) );
    }
 }
 
-void 
-Ssat_CubeToNtkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , SsatSolver & S )
+void
+SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 {
-   // Create nodes for selection vars
-   Solver * s1 = S._s1;
    vec<Lit> uLits;
-   for ( int i = 0 ; i < s1->nClauses() ; ++i ) {
-      Clause & c  = s1->ca[s1->clauses[i]];
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      Clause & c  = _s1->ca[_s1->clauses[i]];
       uLits.clear();
       for ( int j = 0 ; j < c.size() ; ++j )
-         if ( S.isAVar(var(c[j])) || S.isRVar(var(c[j])) ) uLits.push(c[j]);
-      if ( uLits.size() > 1 ) { // allocate new selection var
-         printf( "  > Create selection var for clause %d\n" , i );
+         if ( isAVar(var(c[j])) || isRVar(var(c[j])) ) uLits.push(c[j]);
+      if ( uLits.size() > 1 ) { // create gate
+         printf( "  > Create gate for selection var of clause %d\n" , i );
       }
    }
 }
 
-void 
-Ssat_CubeToNtkWriteWcnf( Abc_Ntk_t * pNtkCube , SsatSolver & S )
+void
+SsatSolver::ntkWriteWcnf() const
 {
 }
 
@@ -106,5 +93,3 @@ Ssat_CubeToNtkWriteWcnf( Abc_Ntk_t * pNtkCube , SsatSolver & S )
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
 
-
-//ABC_NAMESPACE_IMPL_END

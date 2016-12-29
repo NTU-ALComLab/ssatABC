@@ -33,9 +33,6 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-// external functions
-extern void Ssat_CubeToNtk( SsatSolver& );
-
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -407,7 +404,7 @@ SsatSolver::ssolve2SSAT()
    _satProb = 0.0;
    for ( ;; ) {
       if ( !_s2->solve() ) {
-         Ssat_CubeToNtk( *this ); 
+         cubeToNetwork(); 
          return _satProb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
