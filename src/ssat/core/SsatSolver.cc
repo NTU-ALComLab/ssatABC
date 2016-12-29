@@ -33,6 +33,8 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+// external functions
+extern void Ssat_CubeToNtk( SsatSolver& );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -404,7 +406,10 @@ SsatSolver::ssolve2SSAT()
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    _satProb = 0.0;
    for ( ;; ) {
-      if ( !_s2->solve() ) return _satProb;
+      if ( !_s2->solve() ) {
+         Ssat_CubeToNtk( *this ); 
+         return _satProb;
+      }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) {

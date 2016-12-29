@@ -39,8 +39,9 @@
 #define EXIST  -1.0
 #define FORALL -2.0
 
+// declarations for friend functions
 namespace Minisat { class SsatSolver; }
-void Ssat_CubeToNtk( Minisat::SsatSolver& );
+extern void Ssat_CubeToNtk( Minisat::SsatSolver& );
 
 namespace Minisat {
 
@@ -48,66 +49,63 @@ namespace Minisat {
 // SsatSolver -- the main class:
 
 class SsatSolver {
+   // Non-member friend functions   
+   // Construct circuits from collected cubes
+   friend void ::Ssat_CubeToNtk( SsatSolver& );
 public:
-    // Constructor/Destructor:
-    SsatSolver() : _s1(NULL) , _s2(NULL) {}
-    ~SsatSolver();
+   // Constructor/Destructor:
+   SsatSolver() : _s1(NULL) , _s2(NULL) {}
+   ~SsatSolver();
 
-    // Problem specification:
-    void      readSSAT( gzFile& );
-    
-    // Ssat Solving:
-    double    ssolve();
+   // Problem specification:
+   void      readSSAT( gzFile& );
+   
+   // Ssat Solving:
+   double    ssolve();
 
-    // Testing interface:
-    void      test() const;
-    
-    // Construct circuits from collected cubes
-    friend void ::Ssat_CubeToNtk( SsatSolver& );
-
+   // Testing interface:
+   void      test() const;
 private:
-    // member functions
-    // read helpers
-    Solver * parse_SDIMACS      ( gzFile& );
-    void     readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
-    // solve helpers
-    Solver * buildSelectSolver();
-    void     addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
-    bool     ssolve2QBF         ();
-    double   ssolve2SSAT        ();
-    void     collectBkCla       ( vec<Lit>& );
-    double   baseProb           () const;
-    double   countModels        ( const vec<Lit>& );
-    // write file for Model Counting
-    void     toDimacsWeighted   ( FILE* , const vec<Lit>& );
-    void     toDimacsWeighted   ( const char * , const vec<Lit>& );
-    void     toDimacsWeighted   ( FILE* , vec<double>& , Var& );
-    void     toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
-    // inline methods
-    bool     isProblemVar       ( const Var& ) const;
-    bool     isRVar             ( const Var& ) const;
-    bool     isEVar             ( const Var& ) const;
-    bool     isAVar             ( const Var& ) const;
-    void     initSelLitMark     ();
-    void     unmarkSelLit       ();
-    bool     isSelLitMarked     ( const Lit& ) const;
-    void     markSelLit         ( const Lit& );
-    // dump methods
-    void     dumpCla            ( Solver& ) const;
-    void     dumpCla            ( const vec<Lit>& ) const;
-
+   // member functions
+   // read helpers
+   Solver * parse_SDIMACS      ( gzFile& );
+   void     readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
+   // solve helpers
+   Solver * buildSelectSolver();
+   void     addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
+   bool     ssolve2QBF         ();
+   double   ssolve2SSAT        ();
+   void     collectBkCla       ( vec<Lit>& );
+   double   baseProb           () const;
+   double   countModels        ( const vec<Lit>& );
+   // write file for Model Counting
+   void     toDimacsWeighted   ( FILE* , const vec<Lit>& );
+   void     toDimacsWeighted   ( const char * , const vec<Lit>& );
+   void     toDimacsWeighted   ( FILE* , vec<double>& , Var& );
+   void     toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
+   // inline methods
+   bool     isProblemVar       ( const Var& ) const;
+   bool     isRVar             ( const Var& ) const;
+   bool     isEVar             ( const Var& ) const;
+   bool     isAVar             ( const Var& ) const;
+   void     initSelLitMark     ();
+   void     unmarkSelLit       ();
+   bool     isSelLitMarked     ( const Lit& ) const;
+   void     markSelLit         ( const Lit& );
+   // dump methods
+   void     dumpCla            ( Solver& ) const;
+   void     dumpCla            ( const vec<Lit>& ) const;
     // data members
-    vec< vec<Var> > _rootVars;        // var used in root clauses, levelized
-    vec<double>     _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall
-    vec<int>        _level;           // var to level
-    vec<Lit>        _claLits;         // lit used to select clauses: cla->lit
-    int             _numLv;
-    Solver        * _s1;              // sat solver holding the original matrix
-    Solver        * _s2;              // sat solver holding the selection formula
-    double          _satProb;         // 2SSAT sat prob
-    int             _selLitGlobalId;  // global mark for selection lits
-    vec<int>        _markSelLit;      // mark selection lits to avoid repeat
-
+   vec< vec<Var> > _rootVars;        // var used in root clauses, levelized
+   vec<double>     _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall
+   vec<int>        _level;           // var to level
+   vec<Lit>        _claLits;         // lit used to select clauses: cla->lit
+   int             _numLv;
+   Solver        * _s1;              // sat solver holding the original matrix
+   Solver        * _s2;              // sat solver holding the selection formula
+   double          _satProb;         // 2SSAT sat prob
+   int             _selLitGlobalId;  // global mark for selection lits
+   vec<int>        _markSelLit;      // mark selection lits to avoid repeat
 };
 
 // Implementation of inline methods:

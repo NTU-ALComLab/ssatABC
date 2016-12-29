@@ -92,9 +92,6 @@ SsatCommandHello( Abc_Frame_t * pAbc , int argc , char ** argv )
    pSsat->readSSAT(in);
    gzclose(in);
    printf( "  > Answer: %f\n" , pSsat->ssolve() );
-
-  // extern void Ssat_CubeToNtk( SsatSolver& );
-   Ssat_CubeToNtk( *pSsat );
    delete pSsat;
    return 0;
 
