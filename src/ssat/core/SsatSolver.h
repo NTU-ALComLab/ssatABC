@@ -32,8 +32,10 @@
 #include "ssat/core/Solver.h"
 
 // ABC headers
-#include "base/abc/abc.h"
-#include "base/main/mainInt.h"
+extern "C" {
+   #include "base/abc/abc.h"
+   #include "base/main/mainInt.h"
+}
 
 // macros for quantifiers
 #define EXIST  -1.0
