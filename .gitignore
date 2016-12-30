@@ -30,7 +30,7 @@
 *.app
 bin/*
 lib/*
-abc
+./abc
 arch_flags
 arch_flags.c
 core/minisat
