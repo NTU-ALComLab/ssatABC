@@ -25,7 +25,9 @@ using namespace Minisat;
 
 // external functions from ABC
 extern "C" {
-   void Abc_NtkShow( Abc_Ntk_t * , int , int , int );
+   void        Abc_NtkShow     ( Abc_Ntk_t * , int , int , int );
+   Abc_Ntk_t * Abc_NtkDarToCnf ( Abc_Ntk_t * , char * , int , int , int );
+   int         Abc_NtkDSat     ( Abc_Ntk_t * , ABC_INT64_T , ABC_INT64_T , int , int , int , int , int , int , int );
 };
 
 // helper functions
@@ -55,7 +57,6 @@ SsatSolver::cubeToNetwork() const
    char name[32];
    Abc_Ntk_t * pNtkCube;
    Vec_Ptr_t * vMapVars; // mapping Var to Abc_Obj_t
-   Abc_Obj_t * pObjDef;  // definition of selection
    Abc_Obj_t * pObjCube; // gate of cubes
    
    pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
@@ -63,11 +64,11 @@ SsatSolver::cubeToNetwork() const
    pNtkCube->pName = Extra_UtilStrsav( name );
    vMapVars = Vec_PtrStart( _s2->nVars() );
 
-   ntkCreatePi     ( pNtkCube , vMapVars );
-   pObjDef  = ntkCreateSelDef ( pNtkCube , vMapVars );
+   ntkCreatePi                ( pNtkCube , vMapVars );
+   ntkCreateSelDef            ( pNtkCube , vMapVars );
    pObjCube = ntkCreateNode   ( pNtkCube , vMapVars );
-   ntkCreatePoCheck ( pNtkCube , pObjDef , pObjCube );
-   ntkWriteWcnf    ();
+   ntkCreatePoCheck           ( pNtkCube , pObjCube );
+   ntkWriteWcnf               ( pNtkCube );
    
    Abc_NtkDelete ( pNtkCube );
    Vec_PtrFree   ( vMapVars );
@@ -88,14 +89,13 @@ SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
    }
 }
 
-Abc_Obj_t*
+void
 SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 {
-   Abc_Obj_t * pObj , * pObjDef;
+   Abc_Obj_t * pObj;
    vec<Lit> uLits;
    char name[1024];
    int * pfCompl = new int[_rootVars[0].size()];
-   pObjDef = NULL;
 
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       Clause & c  = _s1->ca[_s1->clauses[i]];
@@ -120,11 +120,9 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
            exit(1); 
          }
          Vec_PtrWriteEntry( vMapVars , var(_claLits[i]) , pObj );
-         pObjDef = Ssat_SopAnd2Obj( pObjDef , pObj );
       }
    }
    delete[] pfCompl;
-   return pObjDef;
 }
 
 Abc_Obj_t*
@@ -159,23 +157,26 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 }
 
 void
-SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjDef , Abc_Obj_t * pObjCube ) const
+SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube ) const
 {
-   Abc_Obj_t * pPo;
-   Abc_ObjAddFanin( pPo = Abc_NtkCreatePo( pNtkCube ) , Ssat_SopAnd2Obj( pObjDef , pObjCube ) );
+   Abc_Obj_t * pPo = Abc_NtkCreatePo( pNtkCube );
    Abc_ObjAssignName( pPo , "cube_network_Po" , "" );
+   Abc_ObjAddFanin( pPo , pObjCube );
    if ( !Abc_NtkCheck( pNtkCube ) ) {
       Abc_Print( -1 , "Something wrong with cubes to network ...\n" );
       Abc_NtkDelete( pNtkCube );
       exit(1);
    }
    Ssat_DumpCubeNtk( pNtkCube );
-   //Abc_NtkShow( pNtkCube , 0 , 0 , 1 );
 }
 
 void
-SsatSolver::ntkWriteWcnf() const
+SsatSolver::ntkWriteWcnf( Abc_Ntk_t * pNtkCube ) const
 {
+   Abc_Ntk_t * pNtk = Abc_NtkStrash( pNtkCube , 0 , 1 , 0 );
+   Abc_NtkDarToCnf( pNtk , "cubeNtk.cnf" , 0 , 0 , 0 );
+   // TODO: append var weights to the end of cnf file
+   Abc_NtkDelete( pNtk );
 }
 
 /**Function*************************************************************

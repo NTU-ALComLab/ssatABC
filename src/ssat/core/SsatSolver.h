@@ -79,10 +79,10 @@ private:
    // construct circuits from cubes for Model Counting
    void        cubeToNetwork      () const;
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   Abc_Obj_t * ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
+   void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
    Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * , Abc_Obj_t * ) const;
-   void        ntkWriteWcnf       () const;
+   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * ) const;
+   void        ntkWriteWcnf       ( Abc_Ntk_t *  ) const;
    // inline methods
    bool     isProblemVar       ( const Var& ) const;
    bool     isRVar             ( const Var& ) const;
