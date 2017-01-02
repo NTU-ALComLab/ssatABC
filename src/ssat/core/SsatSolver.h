@@ -77,11 +77,11 @@ private:
    void     toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void     toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting
-   void     cubeToNetwork      () const;
-   void     ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   void     ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   void     ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   void     ntkWriteWcnf       () const;
+   void        cubeToNetwork      () const;
+   void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
+   Abc_Obj_t * ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
+   Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
+   void        ntkWriteWcnf       () const;
    // inline methods
    bool     isProblemVar       ( const Var& ) const;
    bool     isRVar             ( const Var& ) const;
