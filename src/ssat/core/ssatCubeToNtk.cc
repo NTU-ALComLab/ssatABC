@@ -23,8 +23,14 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+// external functions from ABC
+extern "C" {
+   void Abc_NtkShow( Abc_Ntk_t * , int , int , int );
+};
+
 // helper functions
 static Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
+static Abc_Obj_t * Ssat_SopOr2Obj    ( Abc_Obj_t * , Abc_Obj_t * );
 static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 
 ////////////////////////////////////////////////////////////////////////
@@ -60,6 +66,7 @@ SsatSolver::cubeToNetwork() const
    ntkCreatePi     ( pNtkCube , vMapVars );
    pObjDef  = ntkCreateSelDef ( pNtkCube , vMapVars );
    pObjCube = ntkCreateNode   ( pNtkCube , vMapVars );
+   ntkCreatePoCheck ( pNtkCube , pObjDef , pObjCube );
    ntkWriteWcnf    ();
    
    Abc_NtkDelete ( pNtkCube );
@@ -116,7 +123,6 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
          pObjDef = Ssat_SopAnd2Obj( pObjDef , pObj );
       }
    }
-   Ssat_DumpCubeNtk( pNtkCube );
    delete[] pfCompl;
    return pObjDef;
 }
@@ -124,7 +130,47 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 Abc_Obj_t*
 SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 {
-   return NULL;
+   Abc_Obj_t * pObj , * pObjCube;
+   char name[1024];
+   int * pfCompl = new int[Abc_NtkObjNumMax(pNtkCube)];
+
+   pObjCube = NULL;
+   for ( int i = _learntClause.size()-1 ; i > -1 ; --i ) {
+      printf( "  > %3d-th learnt clause , type = %s\n" , i , _learntType[i] ? "SAT" : "UNSAT" );
+      dumpCla( _learntClause[i] );
+      pObj = Abc_NtkCreateNode( pNtkCube );
+      sprintf( name , "c%d_%s" , i , _learntType[i] ? "SAT" : "UNSAT" );
+      Abc_ObjAssignName( pObj , name , "" );
+      for ( int j = 0 ; j < _learntClause[i].size() ; ++j ) {
+         Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(_learntClause[i][j]) ) );
+         pfCompl[j] = sign(_learntClause[i][j]) ^ _learntType[i] ? 1 : 0;
+      }
+      if ( _learntType[i] ) { // SAT blocking clause
+         Abc_ObjSetData( pObj , Abc_SopCreateAnd( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
+         pObjCube = Ssat_SopOr2Obj( pObjCube , pObj );
+      }
+      else { // UNSAT conflict clause
+         Abc_ObjSetData( pObj , Abc_SopCreateOr( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
+         pObjCube = Ssat_SopAnd2Obj( pObjCube , pObj );
+      }
+   }
+   delete[] pfCompl;
+   return pObjCube;
+}
+
+void
+SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjDef , Abc_Obj_t * pObjCube ) const
+{
+   Abc_Obj_t * pPo;
+   Abc_ObjAddFanin( pPo = Abc_NtkCreatePo( pNtkCube ) , Ssat_SopAnd2Obj( pObjDef , pObjCube ) );
+   Abc_ObjAssignName( pPo , "cube_network_Po" , "" );
+   if ( !Abc_NtkCheck( pNtkCube ) ) {
+      Abc_Print( -1 , "Something wrong with cubes to network ...\n" );
+      Abc_NtkDelete( pNtkCube );
+      exit(1);
+   }
+   Ssat_DumpCubeNtk( pNtkCube );
+   //Abc_NtkShow( pNtkCube , 0 , 0 , 1 );
 }
 
 void
@@ -160,6 +206,21 @@ Ssat_SopAnd2Obj( Abc_Obj_t * pObj1 , Abc_Obj_t * pObj2 )
    return pObjAnd;
 }
 
+Abc_Obj_t*
+Ssat_SopOr2Obj( Abc_Obj_t * pObj1 , Abc_Obj_t * pObj2 )
+{
+   assert( pObj2 );
+   if ( !pObj1 ) return pObj2;
+   assert( Abc_ObjNtk(pObj1) == Abc_ObjNtk(pObj2) );
+
+   Abc_Obj_t * pObjOr;
+   Vec_Ptr_t * vFanins = Vec_PtrStart( 2 );
+   Vec_PtrWriteEntry( vFanins , 0 , pObj1 );
+   Vec_PtrWriteEntry( vFanins , 1 , pObj2 );
+   pObjOr = Abc_NtkCreateNodeOr( Abc_ObjNtk(pObj1) , vFanins );
+   Vec_PtrFree( vFanins );
+   return pObjOr;
+}
 
 /**Function*************************************************************
 

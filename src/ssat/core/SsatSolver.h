@@ -81,6 +81,7 @@ private:
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
    Abc_Obj_t * ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
    Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
+   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * , Abc_Obj_t * ) const;
    void        ntkWriteWcnf       () const;
    // inline methods
    bool     isProblemVar       ( const Var& ) const;
@@ -95,16 +96,18 @@ private:
    void     dumpCla            ( Solver& ) const;
    void     dumpCla            ( const vec<Lit>& ) const;
    // data members
-   vec< vec<Var> > _rootVars;        // var used in root clauses, levelized
-   vec<double>     _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall
-   vec<int>        _level;           // var to level
-   vec<Lit>        _claLits;         // lit used to select clauses: cla->lit
-   int             _numLv;
-   Solver        * _s1;              // sat solver holding the original matrix
-   Solver        * _s2;              // sat solver holding the selection formula
-   double          _satProb;         // 2SSAT sat prob
-   int             _selLitGlobalId;  // global mark for selection lits
-   vec<int>        _markSelLit;      // mark selection lits to avoid repeat
+   vec< vec<Var> >   _rootVars;        // var used in root clauses, levelized
+   vec<double>       _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall
+   vec<int>          _level;           // var to level
+   vec<Lit>          _claLits;         // lit used to select clauses: cla->lit
+   int               _numLv;
+   Solver          * _s1;              // sat solver holding the original matrix
+   Solver          * _s2;              // sat solver holding the selection formula
+   double            _satProb;         // 2SSAT sat prob
+   int               _selLitGlobalId;  // global mark for selection lits
+   vec<int>          _markSelLit;      // mark selection lits to avoid repeat
+   vec< vec<Lit> >   _learntClause;    // added clauses during solving, used in model counting
+   vec<bool>         _learntType;      // true: sat blocking clause; false: unsat conflict clause
 };
 
 // Implementation of inline methods:

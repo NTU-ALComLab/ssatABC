@@ -402,6 +402,8 @@ SsatSolver::ssolve2SSAT()
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    _satProb = 0.0;
+   _learntClause.clear();
+   _learntType.clear();
    for ( ;; ) {
       if ( !_s2->solve() ) {
          cubeToNetwork(); 
@@ -410,11 +412,17 @@ SsatSolver::ssolve2SSAT()
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) {
+         _learntClause.push();
+         (_s1->conflict).copyTo( _learntClause.last() );
+         _learntType.push(false);
          _s2->addClause( _s1->conflict );
          continue;
       }
       sBkCla.clear();
       collectBkCla(sBkCla);
+      _learntClause.push();
+      sBkCla.copyTo( _learntClause.last() );
+      _learntType.push(true);
       _satProb += baseProb() * countModels(sBkCla);
       _s2->addClause(sBkCla);
    }
