@@ -35,6 +35,7 @@
 extern "C" {
    #include "base/abc/abc.h"
    #include "base/main/mainInt.h"
+   #include "proof/fraig/fraig.h"
 }
 
 // macros for quantifiers
@@ -53,29 +54,29 @@ public:
    SsatSolver() : _s1(NULL) , _s2(NULL) {}
    ~SsatSolver();
    // Problem specification:
-   void      readSSAT( gzFile& );
+   void        readSSAT( gzFile& );
    // Ssat Solving:
-   double    ssolve();
+   double      ssolve();
    // Testing interface:
-   void      test() const;
+   void        test() const;
 private:
    // member functions
    // read helpers
-   Solver * parse_SDIMACS      ( gzFile& );
-   void     readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
+   Solver *    parse_SDIMACS      ( gzFile& );
+   void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
    // solve helpers
-   Solver * buildSelectSolver();
-   void     addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
-   bool     ssolve2QBF         ();
-   double   ssolve2SSAT        ();
-   void     collectBkCla       ( vec<Lit>& );
-   double   baseProb           () const;
-   double   countModels        ( const vec<Lit>& );
+   Solver *    buildSelectSolver  ();
+   void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
+   bool        ssolve2QBF         ();
+   double      ssolve2SSAT        ();
+   void        collectBkCla       ( vec<Lit>& );
+   double      baseProb           () const;
+   double      countModels        ( const vec<Lit>& );
    // write file for Model Counting
-   void     toDimacsWeighted   ( FILE* , const vec<Lit>& );
-   void     toDimacsWeighted   ( const char* , const vec<Lit>& );
-   void     toDimacsWeighted   ( FILE* , vec<double>& , Var& );
-   void     toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
+   void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
+   void        toDimacsWeighted   ( const char* , const vec<Lit>& );
+   void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
+   void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting
    void        cubeToNetwork      () const;
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
@@ -84,17 +85,17 @@ private:
    void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * ) const;
    void        ntkWriteWcnf       ( Abc_Ntk_t *  ) const;
    // inline methods
-   bool     isProblemVar       ( const Var& ) const;
-   bool     isRVar             ( const Var& ) const;
-   bool     isEVar             ( const Var& ) const;
-   bool     isAVar             ( const Var& ) const;
-   void     initSelLitMark     ();
-   void     unmarkSelLit       ();
-   bool     isSelLitMarked     ( const Lit& ) const;
-   void     markSelLit         ( const Lit& );
+   bool        isProblemVar       ( const Var& ) const;
+   bool        isRVar             ( const Var& ) const;
+   bool        isEVar             ( const Var& ) const;
+   bool        isAVar             ( const Var& ) const;
+   void        initSelLitMark     ();
+   void        unmarkSelLit       ();
+   bool        isSelLitMarked     ( const Lit& ) const;
+   void        markSelLit         ( const Lit& );
    // dump methods
-   void     dumpCla            ( Solver& ) const;
-   void     dumpCla            ( const vec<Lit>& ) const;
+   void        dumpCla            ( Solver& ) const;
+   void        dumpCla            ( const vec<Lit>& ) const;
    // data members
    vec< vec<Var> >   _rootVars;        // var used in root clauses, levelized
    vec<double>       _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall

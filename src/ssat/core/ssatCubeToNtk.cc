@@ -33,6 +33,7 @@ extern "C" {
 // helper functions
 static Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
 static Abc_Obj_t * Ssat_SopOr2Obj    ( Abc_Obj_t * , Abc_Obj_t * );
+static void        Pb_WriteWMCCla    ( FILE * , Abc_Ntk_t * );
 static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 
 ////////////////////////////////////////////////////////////////////////
@@ -128,21 +129,25 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 Abc_Obj_t*
 SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 {
-   Abc_Obj_t * pObj , * pObjCube;
+   Abc_Obj_t * pObj , * pObjCube , * pConst0 , * pConst1;
    char name[1024];
    int * pfCompl = new int[Abc_NtkObjNumMax(pNtkCube)];
-
    pObjCube = NULL;
+   pConst0  = Abc_NtkCreateNodeConst0( pNtkCube );
+   pConst1  = Abc_NtkCreateNodeConst1( pNtkCube );
    for ( int i = _learntClause.size()-1 ; i > -1 ; --i ) {
       printf( "  > %3d-th learnt clause , type = %s\n" , i , _learntType[i] ? "SAT" : "UNSAT" );
       dumpCla( _learntClause[i] );
-      pObj = Abc_NtkCreateNode( pNtkCube );
-      sprintf( name , "c%d_%s" , i , _learntType[i] ? "SAT" : "UNSAT" );
-      Abc_ObjAssignName( pObj , name , "" );
-      for ( int j = 0 ; j < _learntClause[i].size() ; ++j ) {
-         Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(_learntClause[i][j]) ) );
-         pfCompl[j] = sign(_learntClause[i][j]) ^ _learntType[i] ? 1 : 0;
+      if ( _learntClause[i].size() ) {
+         pObj = Abc_NtkCreateNode( pNtkCube );
+         sprintf( name , "c%d_%s" , i , _learntType[i] ? "SAT" : "UNSAT" );
+         Abc_ObjAssignName( pObj , name , "" );
+         for ( int j = 0 ; j < _learntClause[i].size() ; ++j ) {
+            Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(_learntClause[i][j]) ) );
+            pfCompl[j] = sign(_learntClause[i][j]) ^ _learntType[i] ? 1 : 0;
+         }
       }
+      else pObj = _learntType[i] ? pConst1 : pConst0;
       if ( _learntType[i] ) { // SAT blocking clause
          Abc_ObjSetData( pObj , Abc_SopCreateAnd( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
          pObjCube = Ssat_SopOr2Obj( pObjCube , pObj );
@@ -168,15 +173,39 @@ SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube ) cons
       exit(1);
    }
    Ssat_DumpCubeNtk( pNtkCube );
+   //Abc_NtkShow( pNtkCube , 0 , 0 , 1 );
 }
 
 void
 SsatSolver::ntkWriteWcnf( Abc_Ntk_t * pNtkCube ) const
 {
-   Abc_Ntk_t * pNtk = Abc_NtkStrash( pNtkCube , 0 , 1 , 0 );
-   Abc_NtkDarToCnf( pNtk , "cubeNtk.cnf" , 0 , 0 , 0 );
-   // TODO: append var weights to the end of cnf file
+   // FIXME: Known bug with constant pNtkCube, Id+1??
+   FILE * out;
+   Abc_Ntk_t * pNtk;
+   Abc_Obj_t * pObj;
+   int nVars , nClas , i;
+   
+   Fraig_Params_t Params , * pParams = &Params;
+   Fraig_ParamsSetDefault( pParams );
+   pNtkCube = Abc_NtkStrash ( pNtkCube , 0 , 1 , 0 );
+   pNtk     = Abc_NtkFraig  ( pNtkCube , pParams , 0 , 0 );
+   //Abc_NtkDarToCnf( pNtk , "cubeNtk.cnf" , 0 , 0 , 0 );
+   
+   out      = fopen( "cubeNtk.wcnf" , "w" ); 
+	nVars    = Abc_NtkPiNum(pNtk) + Abc_NtkNodeNum(pNtk) + 1; // only 1 Po
+	nClas    = 3 * Abc_NtkNodeNum( pNtk ) + 2 + 1; // 2 for Po connection , 1 for Po assertion
+	fprintf( out , "p cnf %d %d\n" , nVars , nClas );
+   
+	Pb_WriteWMCCla( out , pNtk );
+	Abc_NtkForEachPi( pNtk , pObj , i )
+	   fprintf( out , "w %d %f\n" , Abc_ObjId(pObj) , _quan[_rootVars[0][i]] );
+	Abc_NtkForEachNode( pNtk , pObj , i )
+	   fprintf( out , "w %d %d\n" , Abc_ObjId(pObj) , -1 );
+	Abc_NtkForEachPo( pNtk , pObj , i )
+	   fprintf( out , "w %d %d\n" , Abc_ObjId(pObj) , -1 );
+   
    Abc_NtkDelete( pNtk );
+   fclose( out );
 }
 
 /**Function*************************************************************
@@ -221,6 +250,62 @@ Ssat_SopOr2Obj( Abc_Obj_t * pObj1 , Abc_Obj_t * pObj2 )
    pObjOr = Abc_NtkCreateNodeOr( Abc_ObjNtk(pObj1) , vFanins );
    Vec_PtrFree( vFanins );
    return pObjOr;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Helper functions to write wcnf file for cachet.]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+Pb_WriteWMCCla( FILE * out , Abc_Ntk_t * pNtk )
+{
+	Abc_Obj_t * pObj , * pFanin0 , * pFanin1;
+	int i;
+
+	Abc_NtkForEachNode( pNtk , pObj , i )
+	{
+		pFanin0 = Abc_ObjFanin0( pObj );
+		pFanin1 = Abc_ObjFanin1( pObj );
+		if ( !Abc_ObjFaninC0(pObj) && !Abc_ObjFaninC1(pObj) ) {
+			fprintf( out , "%d -%d -%d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) , Abc_ObjId(pFanin1) );
+			fprintf( out , "-%d %d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) );
+			fprintf( out , "-%d %d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin1) );
+		}
+		if ( Abc_ObjFaninC0(pObj) && !Abc_ObjFaninC1(pObj) ) {
+			fprintf( out , "%d %d -%d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) , Abc_ObjId(pFanin1) );
+			fprintf( out , "-%d -%d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) );
+			fprintf( out , "-%d %d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin1) );
+		}
+		if ( !Abc_ObjFaninC0(pObj) && Abc_ObjFaninC1(pObj) ) {
+			fprintf( out , "%d -%d %d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) , Abc_ObjId(pFanin1) );
+			fprintf( out , "-%d %d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) );
+			fprintf( out , "-%d -%d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin1) );
+		}
+		if ( Abc_ObjFaninC0(pObj) && Abc_ObjFaninC1(pObj) ) {
+			fprintf( out , "%d %d %d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) , Abc_ObjId(pFanin1) );
+			fprintf( out , "-%d -%d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin0) );
+			fprintf( out , "-%d -%d 0\n" , Abc_ObjId(pObj) , Abc_ObjId(pFanin1) );
+		}
+	}
+	pObj    = Abc_NtkPo( pNtk , 0 );
+	pFanin0 = Abc_ObjFanin0( pObj );
+	if ( !Abc_ObjFaninC0( pObj ) ) {
+	   fprintf( out , "%d -%d 0\n" , Abc_ObjId( pObj ) , Abc_ObjId( pFanin0 ) );
+	   fprintf( out , "-%d %d 0\n" , Abc_ObjId( pObj ) , Abc_ObjId( pFanin0 ) );
+	}
+	else {
+	   fprintf( out , "%d %d 0\n"   , Abc_ObjId( pObj ) , Abc_ObjId( pFanin0 ) );
+	   fprintf( out , "-%d -%d 0\n" , Abc_ObjId( pObj ) , Abc_ObjId( pFanin0 ) );
+	}
+	fprintf( out , "%d 0\n" , Abc_ObjId( pObj ) );
 }
 
 /**Function*************************************************************
