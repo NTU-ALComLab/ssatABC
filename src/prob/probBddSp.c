@@ -119,7 +119,7 @@ void
 Pb_BddResetProb( DdNode * bFunc )
 {
 	if ( !Cudd_IsConstant( bFunc ) ) {
-      if ( Cudd_Regular( bFunc )->pMax == -1.0 );  // bad practice: use uninitialized values
+      if ( Cudd_Regular( bFunc )->pMax == -1.0 );  // FIXME: bad practice! use uninitialized values
 		else {
          Cudd_Regular( bFunc )->pMax = Cudd_Regular( bFunc )->pMin = -1.0;
 		   Pb_BddResetProb( Cudd_T( bFunc ) );

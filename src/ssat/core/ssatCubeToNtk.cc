@@ -218,6 +218,7 @@ SsatSolver::ntkWriteWcnf( Abc_Ntk_t * pNtkCube ) const
 	Abc_NtkForEachPo( pNtk , pObj , i )
 	   fprintf( out , "w %d %d\n" , Abc_ObjId(pObj) , -1 );
    
+   Abc_NtkDelete( pNtkCube );
    Abc_NtkDelete( pNtk );
    fclose( out );
 }
@@ -293,6 +294,7 @@ SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube ) const
 	   pObj->dTemp = (float)_quan[_rootVars[0][i]];
 
    Pb_BddComputeSp( pNtk , 0 , 0 , 1 );
+   Abc_NtkDelete( pNtkCube );
    Abc_NtkDelete( pNtk );
 }
 
