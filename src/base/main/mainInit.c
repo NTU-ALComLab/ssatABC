@@ -63,6 +63,8 @@ extern void Abc85_Init( Abc_Frame_t * pAbc );
 extern void Abc85_End( Abc_Frame_t * pAbc );
 extern void Ssat_Init( Abc_Frame_t * pAbc );
 extern void Ssat_End( Abc_Frame_t * pAbc );
+extern void Pb_Init( Abc_Frame_t * pAbc );
+extern void Pb_End( Abc_Frame_t * pAbc );
 
 static Abc_FrameInitializer_t* s_InitializerStart = NULL;
 static Abc_FrameInitializer_t* s_InitializerEnd = NULL;
@@ -117,6 +119,7 @@ void Abc_FrameInit( Abc_Frame_t * pAbc )
     Pla_Init( pAbc );
     Test_Init( pAbc );
     Ssat_Init( pAbc );
+    Pb_Init( pAbc );
     for( p = s_InitializerStart ; p ; p = p->next )
     	if(p->init)
     		p->init(pAbc);
@@ -156,6 +159,7 @@ void Abc_FrameEnd( Abc_Frame_t * pAbc )
     Pla_End( pAbc );
     Test_End( pAbc );
     Ssat_End( pAbc );
+    Pb_End( pAbc );
 }
 
 
