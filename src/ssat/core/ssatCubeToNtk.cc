@@ -203,7 +203,7 @@ SsatSolver::ntkWriteWcnf( Abc_Ntk_t * pNtkCube ) const
    Fraig_ParamsSetDefault( pParams );
    pNtkCube = Abc_NtkStrash ( pNtkCube , 0 , 1 , 0 );
    pNtk     = Abc_NtkFraig  ( pNtkCube , pParams , 0 , 0 );
-   //Abc_NtkDarToCnf( pNtk , "cubeNtk.cnf" , 0 , 0 , 0 );
+   Abc_NtkDarToCnf( pNtk , "cubeNtk.cnf" , 0 , 0 , 0 );
    
    out      = fopen( "cubeNtk.wcnf" , "w" ); 
 	nVars    = Abc_NtkPiNum(pNtk) + Abc_NtkNodeNum(pNtk) + 1; // only 1 Po
