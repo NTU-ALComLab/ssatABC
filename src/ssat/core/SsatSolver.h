@@ -36,6 +36,7 @@ extern "C" {
    #include "base/abc/abc.h"
    #include "base/main/mainInt.h"
    #include "proof/fraig/fraig.h"
+   #include "prob/prob.h"
 }
 
 // macros for quantifiers
@@ -83,7 +84,8 @@ private:
    void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
    Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
    void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * ) const;
-   void        ntkWriteWcnf       ( Abc_Ntk_t *  ) const;
+   void        ntkWriteWcnf       ( Abc_Ntk_t * ) const;
+   void        ntkBddComputeSp    ( Abc_Ntk_t * ) const;
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;

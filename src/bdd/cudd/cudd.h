@@ -284,6 +284,16 @@ struct DdNode {
         DdChildren kids;        /* for internal nodes */
     } type;
     ABC_INT64_T Id;
+
+    // NZ : add members to record
+    // > max satisfying probability (pMax)
+    // > min satisfying probability (pMin)
+    // > max choice (cMax)
+    // > min choice (cMin)
+    float pMax;
+    float pMin;
+    int   cMax;
+    int   cMin;
 };
 
 #ifdef __osf__

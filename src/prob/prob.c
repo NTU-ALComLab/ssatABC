@@ -422,7 +422,7 @@ usage:
   SeeAlso     []
 
 ***********************************************************************/
-# if 0
+
 int
 Pb_CommandBddSp( Abc_Frame_t * pAbc , int argc , char ** argv )
 {
@@ -500,7 +500,7 @@ usage:
     Abc_Print( -2 , "\t-h     : print the command usage\n");
     return 1;
 }
-#endif
+
 /**Function*************************************************************
 
   Synopsis    [write out ssat file for ssat to calculate probability]
