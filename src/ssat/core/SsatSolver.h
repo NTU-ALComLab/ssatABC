@@ -110,7 +110,6 @@ private:
    int               _selLitGlobalId;  // global mark for selection lits
    vec<int>          _markSelLit;      // mark selection lits to avoid repeat
    vec< vec<Lit> >   _learntClause;    // added clauses during solving, used in model counting
-   vec<bool>         _learntType;      // true: sat blocking clause; false: unsat conflict clause
 };
 
 // Implementation of inline methods:

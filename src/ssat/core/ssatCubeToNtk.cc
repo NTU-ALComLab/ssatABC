@@ -131,33 +131,26 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 Abc_Obj_t*
 SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 {
-   Abc_Obj_t * pObj , * pObjCube , * pConst0 , * pConst1;
+   Abc_Obj_t * pObj , * pObjCube , * pConst1;
    char name[1024];
    int * pfCompl = new int[Abc_NtkObjNumMax(pNtkCube)];
    pObjCube = NULL;
-   pConst0  = Abc_NtkCreateNodeConst0( pNtkCube );
    pConst1  = Abc_NtkCreateNodeConst1( pNtkCube );
    for ( int i = _learntClause.size()-1 ; i > -1 ; --i ) {
-      printf( "  > %3d-th learnt clause , type = %s\n" , i , _learntType[i] ? "SAT" : "UNSAT" );
+      printf( "  > %3d-th learnt clause\n" , i );
       dumpCla( _learntClause[i] );
       if ( _learntClause[i].size() ) {
          pObj = Abc_NtkCreateNode( pNtkCube );
-         sprintf( name , "c%d_%s" , i , _learntType[i] ? "SAT" : "UNSAT" );
+         sprintf( name , "c%d" , i );
          Abc_ObjAssignName( pObj , name , "" );
          for ( int j = 0 ; j < _learntClause[i].size() ; ++j ) {
             Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(_learntClause[i][j]) ) );
-            pfCompl[j] = sign(_learntClause[i][j]) ^ _learntType[i] ? 1 : 0;
+            pfCompl[j] = sign(_learntClause[i][j]) ? 0 : 1;
          }
-      }
-      else pObj = _learntType[i] ? pConst1 : pConst0;
-      if ( _learntType[i] ) { // SAT blocking clause
          Abc_ObjSetData( pObj , Abc_SopCreateAnd( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
-         pObjCube = Ssat_SopOr2Obj( pObjCube , pObj );
       }
-      else { // UNSAT conflict clause
-         Abc_ObjSetData( pObj , Abc_SopCreateOr( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
-         pObjCube = Ssat_SopAnd2Obj( pObjCube , pObj );
-      }
+      else pObj = pConst1;
+      pObjCube = Ssat_SopOr2Obj( pObjCube , pObj );
    }
    delete[] pfCompl;
    return pObjCube;
