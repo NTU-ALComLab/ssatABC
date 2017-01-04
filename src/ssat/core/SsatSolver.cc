@@ -438,7 +438,8 @@ SsatSolver::collectBkCla( vec<Lit> & sBkCla )
             break;
          }
       }
-      if ( block && _s2->value(_claLits[i]) != l_False && !isSelLitMarked(_claLits[i]) ) {
+      //if ( block && _s2->value(_claLits[i]) != l_False && !isSelLitMarked(_claLits[i]) ) {
+      if ( block && !isSelLitMarked(_claLits[i]) ) {
          sBkCla.push (_claLits[i]);
          markSelLit  (_claLits[i]);
       }
