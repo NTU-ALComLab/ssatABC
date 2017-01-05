@@ -57,7 +57,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   double      ssolve();
+   double      ssolve( int );
    // Testing interface:
    void        test() const;
 private:
@@ -69,7 +69,7 @@ private:
    Solver *    buildSelectSolver  ();
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    bool        ssolve2QBF         ();
-   double      ssolve2SSAT        ();
+   double      ssolve2SSAT        ( int );
    void        collectBkCla       ( vec<Lit>& );
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& );
@@ -79,15 +79,15 @@ private:
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting
-   void        initCubeNetwork    ();
-   void        initCubeCollect    ();
+   void        initCubeNetwork    ( int );
+   bool        cubeListFull       () const;
    void        cubeToNetwork      ();
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * );
    Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * );
    void        ntkWriteWcnf       ( Abc_Ntk_t * );
-   void        ntkBddComputeSp    ( Abc_Ntk_t * );
+   double      ntkBddComputeSp    ( Abc_Ntk_t * );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;
@@ -115,6 +115,7 @@ private:
    Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
    Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
    int               _cubeLimit;       // number of cubes to invoke network construction
+   double            _unsatPb;         // current UNSAT prob
 };
 
 // Implementation of inline methods:

@@ -305,7 +305,7 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
 ***********************************************************************/
 
 double
-SsatSolver::ssolve()
+SsatSolver::ssolve( int cLimit )
 {
    if ( _numLv != 2 || !isEVar( _rootVars[1][0] ) ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
@@ -315,7 +315,7 @@ SsatSolver::ssolve()
    _s2 = buildSelectSolver();
    initSelLitMark(); // avoid repeat selection vars in blocking clause
    if ( isAVar( _rootVars[0][0] ) ) return ssolve2QBF();
-   else                             return ssolve2SSAT();
+   else                             return ssolve2SSAT( cLimit );
 }
 
 /**Function*************************************************************
@@ -406,23 +406,21 @@ SsatSolver::ssolve2QBF()
 ***********************************************************************/
 
 double
-SsatSolver::ssolve2SSAT()
+SsatSolver::ssolve2SSAT( int cLimit )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
-   initCubeNetwork();
-   initCubeCollect();
+   initCubeNetwork( cLimit );
    for ( ;; ) {
       if ( !_s2->solve() ) {
          cubeToNetwork(); 
-         return 0.0;
+         return _unsatPb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) {
          _learntClause.push();
          _s1->conflict.copyTo( _learntClause.last() );
-         if ( _learntClause.size() == _cubeLimit )
-            cubeToNetwork();
+         if ( cubeListFull() ) cubeToNetwork();
          _s2->addClause( _s1->conflict );
          continue;
       }

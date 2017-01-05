@@ -39,7 +39,7 @@ extern void*   Abc_NtkBuildGlobalBdds ( Abc_Ntk_t * , int , int , int , int );
 extern DdNode* Abc_NodeGlobalBdds_rec ( DdManager * , Abc_Obj_t * , int , int , ProgressBar * , int * , int );
 extern MtrNode* Cudd_MakeTreeNode     ( DdManager * , unsigned int , unsigned int , unsigned int );
 // main methods
-void  Pb_BddComputeSp           ( Abc_Ntk_t * , int , int , int );
+float Pb_BddComputeSp           ( Abc_Ntk_t * , int , int , int );
 void  Pb_BddComputeAllSp        ( Abc_Ntk_t * , int , int );
 // helpers
 DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
@@ -67,19 +67,20 @@ int        Pb_BddShuffleGroup        ( DdManager * , int , int );
 
 ***********************************************************************/
 
-void
+float
 Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
 {
    DdManager * dd;
 	DdNode * bFunc;
 	abctime clk;
+   float prob;
 
 	printf( "Pb_BddComputeSp() : build bdd for %d-th Po\n" , numPo );
 	clk = Abc_Clock();
    dd  = Abc_NtkPoBuildGlobalBdd( pNtk , numPo , numExist , fGrp );
 	if ( !dd ) {
 	   Abc_Print( -1 , "Bdd construction has failed.\n" );
-		return;
+		return -1;
 	}
 	Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
    
@@ -90,7 +91,7 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
          if ( Pb_BddShuffleGroup( dd , numExist , Abc_NtkPiNum(pNtk)-numExist ) == 0 ) {
             Abc_Print( -1 , "Bdd Shuffle has failed.\n" );
 	         Abc_NtkFreeGlobalBdds( pNtk , 1 );
-            return;
+            return -1;
          }
       }
    }
@@ -105,8 +106,10 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
 	Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
 	
 	printf( "Bddsp : numPo = %d " , numPo );
+   prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
    Pb_BddPrintProb( pNtk , bFunc , numExist );
 	Abc_NtkFreeGlobalBdds( pNtk , 1 );
+   return prob;
 }
 
 void
