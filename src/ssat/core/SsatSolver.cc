@@ -401,24 +401,22 @@ double
 SsatSolver::ssolve2SSAT()
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
-   _satProb = 0.0;
    _learntClause.clear();
    for ( ;; ) {
       if ( !_s2->solve() ) {
          cubeToNetwork(); 
-         return _satProb;
+         return 0.0;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) {
+         _learntClause.push();
+         _s1->conflict.copyTo( _learntClause.last() );
          _s2->addClause( _s1->conflict );
          continue;
       }
       sBkCla.clear();
       collectBkCla(sBkCla);
-      _learntClause.push();
-      sBkCla.copyTo( _learntClause.last() );
-      _satProb += baseProb() * countModels(sBkCla);
       _s2->addClause(sBkCla);
    }
 }
@@ -438,8 +436,7 @@ SsatSolver::collectBkCla( vec<Lit> & sBkCla )
             break;
          }
       }
-      //if ( block && _s2->value(_claLits[i]) != l_False && !isSelLitMarked(_claLits[i]) ) {
-      if ( block && !isSelLitMarked(_claLits[i]) ) {
+      if ( block && _s2->value(_claLits[i]) != l_False && !isSelLitMarked(_claLits[i]) ) {
          sBkCla.push (_claLits[i]);
          markSelLit  (_claLits[i]);
       }

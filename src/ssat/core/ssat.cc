@@ -92,7 +92,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    pSsat->readSSAT(in);
    gzclose(in);
    clk = Abc_Clock();
-   printf( "  > Answer: %f\n" , pSsat->ssolve() );
+   pSsat->ssolve();
    Abc_PrintTime( 1 , "  > Time" , Abc_Clock() - clk );
    delete pSsat;
    return 0;
