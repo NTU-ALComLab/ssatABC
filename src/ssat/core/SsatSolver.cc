@@ -59,6 +59,14 @@ SsatSolver::~SsatSolver()
       delete _s2;
       _s2 = NULL;
    }
+   if ( _pNtkCube ) {
+      Abc_NtkDelete( _pNtkCube );
+      _pNtkCube = NULL;
+   }
+   if ( _vMapVars ) {
+      Vec_PtrFree( _vMapVars );
+      _vMapVars = NULL;
+   }
 }
 
 /**Function*************************************************************
@@ -401,7 +409,8 @@ double
 SsatSolver::ssolve2SSAT()
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
-   _learntClause.clear();
+   initCubeNetwork();
+   initCubeCollect();
    for ( ;; ) {
       if ( !_s2->solve() ) {
          cubeToNetwork(); 
@@ -412,6 +421,8 @@ SsatSolver::ssolve2SSAT()
       if ( !_s1->solve(rLits) ) {
          _learntClause.push();
          _s1->conflict.copyTo( _learntClause.last() );
+         if ( _learntClause.size() == _cubeLimit )
+            cubeToNetwork();
          _s2->addClause( _s1->conflict );
          continue;
       }

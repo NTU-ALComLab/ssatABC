@@ -52,7 +52,7 @@ class SsatSolver {
 
 public:
    // Constructor/Destructor:
-   SsatSolver() : _s1(NULL) , _s2(NULL) {}
+   SsatSolver() : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) {}
    ~SsatSolver();
    // Problem specification:
    void        readSSAT( gzFile& );
@@ -79,13 +79,15 @@ private:
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting
-   void        cubeToNetwork      () const;
-   void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * ) const;
-   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * ) const;
-   void        ntkWriteWcnf       ( Abc_Ntk_t * ) const;
-   void        ntkBddComputeSp    ( Abc_Ntk_t * ) const;
+   void        initCubeNetwork    ();
+   void        initCubeCollect    ();
+   void        cubeToNetwork      ();
+   void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * );
+   void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * );
+   Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * );
+   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * );
+   void        ntkWriteWcnf       ( Abc_Ntk_t * );
+   void        ntkBddComputeSp    ( Abc_Ntk_t * );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;
@@ -110,6 +112,9 @@ private:
    int               _selLitGlobalId;  // global mark for selection lits
    vec<int>          _markSelLit;      // mark selection lits to avoid repeat
    vec< vec<Lit> >   _learntClause;    // added clauses during solving, used in model counting
+   Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
+   Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
+   int               _cubeLimit;       // number of cubes to invoke network construction
 };
 
 // Implementation of inline methods:

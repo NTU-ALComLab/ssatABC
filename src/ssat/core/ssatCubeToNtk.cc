@@ -53,31 +53,39 @@ static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 ***********************************************************************/
 
 void
-SsatSolver::cubeToNetwork() const
+SsatSolver::initCubeNetwork()
 {
    char name[32];
-   Abc_Ntk_t * pNtkCube;
-   Vec_Ptr_t * vMapVars; // mapping Var to Abc_Obj_t
-   Abc_Obj_t * pObjCube; // gate of cubes
-   
-   pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
+   _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "qesto_cubes_network" );
-   pNtkCube->pName = Extra_UtilStrsav( name );
-   vMapVars = Vec_PtrStart( _s2->nVars() );
-
-   ntkCreatePi                ( pNtkCube , vMapVars );
-   pObjCube = ntkCreateNode   ( pNtkCube , vMapVars );
-   ntkCreatePoCheck           ( pNtkCube , pObjCube );
-   
-   ntkBddComputeSp            ( pNtkCube );
-   //ntkWriteWcnf               ( pNtkCube );
-   
-   Abc_NtkDelete ( pNtkCube );
-   Vec_PtrFree   ( vMapVars );
+   _pNtkCube->pName = Extra_UtilStrsav( name );
+   _vMapVars = Vec_PtrStart( _s2->nVars() );
+   ntkCreatePi( _pNtkCube , _vMapVars );
 }
 
 void
-SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
+SsatSolver::initCubeCollect()
+{
+   _cubeLimit = 16;
+   _learntClause.capacity( _cubeLimit );
+   _learntClause.clear();
+}
+
+void
+SsatSolver::cubeToNetwork()
+{
+   Abc_Obj_t * pObjCube; // gate of cubes
+  
+   if ( !_learntClause.size() ) return;
+   pObjCube = ntkCreateNode   ( _pNtkCube , _vMapVars );
+   ntkCreatePoCheck           ( _pNtkCube , pObjCube );
+   ntkBddComputeSp            ( _pNtkCube );
+   //ntkWriteWcnf               ( _pNtkCube );
+   _learntClause.clear();
+}
+
+void
+SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
 {
    Abc_Obj_t * pPi;
    char name[1024];
@@ -92,7 +100,7 @@ SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 }
 
 void
-SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
+SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
 {
    Abc_Obj_t * pObj;
    vec<Lit> uLits;
@@ -128,16 +136,16 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 }
 
 Abc_Obj_t*
-SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
+SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
 {
    Abc_Obj_t * pObj , * pObjCube , * pConst0;
    char name[1024];
-   int * pfCompl = new int[Abc_NtkObjNumMax(pNtkCube)];
+   int * pfCompl = new int[_rootVars[0].size()];
    pObjCube = NULL;
    pConst0  = Abc_NtkCreateNodeConst0( pNtkCube );
-   for ( int i = _learntClause.size()-1 ; i > -1 ; --i ) {
-      printf( "  > %3d-th learnt clause\n" , i );
-      dumpCla( _learntClause[i] );
+   for ( int i = 0 ; i < _learntClause.size() ; ++i ) {
+      //printf( "  > %3d-th learnt clause\n" , i );
+      //dumpCla( _learntClause[i] );
       if ( _learntClause[i].size() ) {
          pObj = Abc_NtkCreateNode( pNtkCube );
          sprintf( name , "c%d" , i );
@@ -156,17 +164,24 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars ) const
 }
 
 void
-SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube ) const
+SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube )
 {
-   Abc_Obj_t * pPo = Abc_NtkCreatePo( pNtkCube );
-   Abc_ObjAssignName( pPo , "cube_network_Po" , "" );
-   Abc_ObjAddFanin( pPo , pObjCube );
+   Abc_Obj_t * pPo;
+   if ( !Abc_NtkPoNum( pNtkCube ) ) { // 1st time
+      pPo = Abc_NtkCreatePo( pNtkCube );
+      Abc_ObjAssignName( pPo , "cube_network_Po" , "" );
+      Abc_ObjAddFanin( pPo , pObjCube );
+   }
+   else { // OR previous output with pObjCube
+      pPo = Abc_NtkPo( pNtkCube , 0 );
+      Abc_ObjPatchFanin( pPo , Abc_ObjFanin0(pPo) , Ssat_SopOr2Obj( Abc_ObjFanin0(pPo) , pObjCube ) );
+   }
    if ( !Abc_NtkCheck( pNtkCube ) ) {
       Abc_Print( -1 , "Something wrong with cubes to network ...\n" );
       Abc_NtkDelete( pNtkCube );
       exit(1);
    }
-   Ssat_DumpCubeNtk( pNtkCube );
+   //Ssat_DumpCubeNtk( pNtkCube );
    //Abc_NtkShow( pNtkCube , 0 , 0 , 1 );
 }
 
@@ -183,7 +198,7 @@ SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube ) cons
 ***********************************************************************/
 
 void
-SsatSolver::ntkWriteWcnf( Abc_Ntk_t * pNtkCube ) const
+SsatSolver::ntkWriteWcnf( Abc_Ntk_t * pNtkCube )
 {
    // FIXME: Known bug with constant pNtkCube, Id+1??
    FILE * out;
@@ -272,21 +287,23 @@ Pb_WriteWMCCla( FILE * out , Abc_Ntk_t * pNtk )
 ***********************************************************************/
 
 void
-SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube ) const
+SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube )
 {
    Fraig_Params_t Params , * pParams = &Params;
-   Abc_Ntk_t * pNtk;
+   Abc_Ntk_t * pNtk , * pNtkCopy , * pNtkAig;
    Abc_Obj_t * pObj;
    int i;
    
+   pNtkCopy = Abc_NtkDup( pNtkCube );
    Fraig_ParamsSetDefault( pParams );
-   pNtkCube = Abc_NtkStrash ( pNtkCube , 0 , 1 , 0 );
-   pNtk     = Abc_NtkFraig  ( pNtkCube , pParams , 0 , 0 );
+   pNtkAig = Abc_NtkStrash ( pNtkCopy , 0 , 1 , 0 );
+   pNtk    = Abc_NtkFraig  ( pNtkAig , pParams , 0 , 0 );
 	Abc_NtkForEachPi( pNtk , pObj , i )
 	   pObj->dTemp = (float)_quan[_rootVars[0][i]];
 
    Pb_BddComputeSp( pNtk , 0 , 0 , 1 );
-   Abc_NtkDelete( pNtkCube );
+   Abc_NtkDelete( pNtkCopy );
+   Abc_NtkDelete( pNtkAig );
    Abc_NtkDelete( pNtk );
 }
 
