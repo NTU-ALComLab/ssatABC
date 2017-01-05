@@ -75,14 +75,14 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
 	abctime clk;
    float prob;
 
-	printf( "Pb_BddComputeSp() : build bdd for %d-th Po\n" , numPo );
+	//printf( "Pb_BddComputeSp() : build bdd for %d-th Po\n" , numPo );
 	clk = Abc_Clock();
    dd  = Abc_NtkPoBuildGlobalBdd( pNtk , numPo , numExist , fGrp );
 	if ( !dd ) {
 	   Abc_Print( -1 , "Bdd construction has failed.\n" );
 		return -1;
 	}
-	Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
+	//Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
    
    // NZ : check exist/random variables are correctly ordered
    if ( numExist > 0 ) {
@@ -96,18 +96,18 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
       }
    }
 
-	printf( "Pb_BddComputeSp() : compute prob for %d-th Po (%s) on its bdd\n" , numPo , Abc_ObjName(Abc_NtkPo(pNtk,numPo)));
+	//printf( "Pb_BddComputeSp() : compute prob for %d-th Po (%s) on its bdd\n" , numPo , Abc_ObjName(Abc_NtkPo(pNtk,numPo)));
 	bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , numPo ) );
 	//printf( "bFunc = %p\n" , bFunc );
 	//printf( "Pb_BddComputeSp() : compute prob for %d-th Po (%s) on its bdd\n" , numPo , Abc_ObjName(Abc_NtkPo(pNtk,numPo)));
 	clk = Abc_Clock();
 	Pb_BddResetProb( bFunc );
    Pb_BddComputeProb( pNtk , bFunc , numExist );
-	Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
+	//Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
 	
-	printf( "Bddsp : numPo = %d " , numPo );
+	//printf( "Bddsp : numPo = %d " , numPo );
    prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
-   Pb_BddPrintProb( pNtk , bFunc , numExist );
+   //Pb_BddPrintProb( pNtk , bFunc , numExist );
 	Abc_NtkFreeGlobalBdds( pNtk , 1 );
    return prob;
 }

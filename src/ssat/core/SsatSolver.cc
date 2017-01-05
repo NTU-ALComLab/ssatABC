@@ -411,16 +411,17 @@ SsatSolver::ssolve2SSAT( int cLimit )
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    initCubeNetwork( cLimit );
    for ( ;; ) {
-      if ( !_s2->solve() ) {
-         cubeToNetwork(); 
-         return _unsatPb;
-      }
+      if ( !_s2->solve() )
+         return (_unsatPb = cubeToNetwork());
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) {
          _learntClause.push();
          _s1->conflict.copyTo( _learntClause.last() );
-         if ( cubeListFull() ) cubeToNetwork();
+         if ( cubeListFull() ) {
+            _unsatPb = cubeToNetwork();
+            printf( "  > current unsat prob = %f\n" , _unsatPb );
+         }
          _s2->addClause( _s1->conflict );
          continue;
       }

@@ -36,7 +36,7 @@ static int Pb_CommandDistill      ( Abc_Frame_t * pAbc , int argc , char ** argv
 static int Pb_CommandWritePBN     ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int Pb_CommandWriteWMC     ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int Pb_CommandWriteSSAT    ( Abc_Frame_t * pAbc , int argc , char ** argv );
-//static int Pb_CommandBddSp        ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static int Pb_CommandBddSp        ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int Pb_CommandProbMiter    ( Abc_Frame_t * pAbc , int argc , char ** argv );
 
 ////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ Pb_Init( Abc_Frame_t * pAbc )
    Cmd_CommandAdd( pAbc , "z prob" , "write_pbn"    , Pb_CommandWritePBN     , 0 );
    Cmd_CommandAdd( pAbc , "z prob" , "write_wmc"    , Pb_CommandWriteWMC     , 0 );
    Cmd_CommandAdd( pAbc , "z prob" , "write_ssat"   , Pb_CommandWriteSSAT    , 0 );
-   //Cmd_CommandAdd( pAbc , "z prob" , "bddsp"        , Pb_CommandBddSp        , 1 );
+   Cmd_CommandAdd( pAbc , "z prob" , "bddsp"        , Pb_CommandBddSp        , 1 );
    Cmd_CommandAdd( pAbc , "z prob" , "probmiter"    , Pb_CommandProbMiter    , 1 );
 	// initialize random seed
 	srand( time(0) );

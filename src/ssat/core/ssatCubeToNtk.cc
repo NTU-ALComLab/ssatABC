@@ -73,16 +73,16 @@ SsatSolver::cubeListFull() const
    return (_learntClause.size() == _cubeLimit) ;
 }
 
-void
+double
 SsatSolver::cubeToNetwork()
 {
-   Abc_Obj_t * pObjCube; // gate of cubes
+   Abc_Obj_t * pObjCube; // gate of collected cubes
   
-   if ( !_learntClause.size() ) return;
+   if ( !_learntClause.size() ) return _unsatPb;
    pObjCube = ntkCreateNode   ( _pNtkCube , _vMapVars );
    ntkCreatePoCheck           ( _pNtkCube ,  pObjCube );
-   _unsatPb = ntkBddComputeSp ( _pNtkCube );
    _learntClause.clear();
+   return ntkBddComputeSp( _pNtkCube );
 }
 
 void
@@ -91,12 +91,12 @@ SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
    Abc_Obj_t * pPi;
    char name[1024];
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
-      printf( "  > Create Pi for randome variable %d\n" , _rootVars[0][i]+1 );
+      //printf( "  > Create Pi for randome variable %d\n" , _rootVars[0][i]+1 );
       pPi = Abc_NtkCreatePi( pNtkCube );
       sprintf( name , "r%d" , _rootVars[0][i]+1 );
       Abc_ObjAssignName( pPi , name , "" );
       Vec_PtrWriteEntry( vMapVars , _rootVars[0][i] , pPi );
-      printf( "  > Var %d map to Obj %s\n" , _rootVars[0][i]+1 , Abc_ObjName(pPi) );
+      //printf( "  > Var %d map to Obj %s\n" , _rootVars[0][i]+1 , Abc_ObjName(pPi) );
    }
 }
 
@@ -145,8 +145,8 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
    pObjCube = NULL;
    pConst0  = Abc_NtkCreateNodeConst0( pNtkCube );
    for ( int i = 0 ; i < _learntClause.size() ; ++i ) {
-      printf( "  > %3d-th learnt clause\n" , i );
-      dumpCla( _learntClause[i] );
+      //printf( "  > %3d-th learnt clause\n" , i );
+      //dumpCla( _learntClause[i] );
       if ( _learntClause[i].size() ) {
          pObj = Abc_NtkCreateNode( pNtkCube );
          sprintf( name , "c%d" , i );

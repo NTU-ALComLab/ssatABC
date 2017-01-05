@@ -81,7 +81,7 @@ private:
    // construct circuits from cubes for Model Counting
    void        initCubeNetwork    ( int );
    bool        cubeListFull       () const;
-   void        cubeToNetwork      ();
+   double      cubeToNetwork      ();
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * );
    Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * );

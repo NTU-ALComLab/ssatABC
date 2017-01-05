@@ -73,7 +73,6 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    SsatSolver * pSsat;
    gzFile in;
    abctime clk;
-   double prob;
    int cLimit , c;
 
    cLimit = 64;
@@ -97,16 +96,19 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
             goto usage;
       }
    }
-   if ( argc != globalUtilOptind + 1 ) goto usage;
+   if ( argc != globalUtilOptind + 1 ) {
+      Abc_Print( -1 , "No ssat file!\n" );
+      goto usage;
+   }
    in = gzopen( argv[globalUtilOptind] , "rb" );
    pSsat = new SsatSolver;
    pSsat->readSSAT(in);
    gzclose(in);
    clk  = Abc_Clock();
-   prob = pSsat->ssolve( cLimit );
-   Abc_Print( -2 , "\n==== SSAT solving results ====\n\n" );
-   Abc_Print( -2 , "  > Answer =     %f\n" , 1.0 - prob );
+   Abc_Print( -2 , "\n==== SSAT solving results ====\n" );
+   Abc_Print( -2 , "  > Answer =     %f\n" , 1.0 - pSsat->ssolve( cLimit ) );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
+   printf("\n");
    delete pSsat;
    return 0;
 
