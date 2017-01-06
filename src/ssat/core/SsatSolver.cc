@@ -305,7 +305,7 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
 ***********************************************************************/
 
 double
-SsatSolver::ssolve( int cLimit )
+SsatSolver::ssolve( int cLimit , bool fMini )
 {
    if ( _numLv != 2 || !isEVar( _rootVars[1][0] ) ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
@@ -315,7 +315,7 @@ SsatSolver::ssolve( int cLimit )
    _s2 = buildSelectSolver();
    initSelLitMark(); // avoid repeat selection vars in blocking clause
    if ( isAVar( _rootVars[0][0] ) ) return ssolve2QBF();
-   else                             return ssolve2SSAT( cLimit );
+   else                             return ssolve2SSAT( cLimit , fMini );
 }
 
 /**Function*************************************************************
@@ -406,7 +406,7 @@ SsatSolver::ssolve2QBF()
 ***********************************************************************/
 
 double
-SsatSolver::ssolve2SSAT( int cLimit )
+SsatSolver::ssolve2SSAT( int cLimit , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
@@ -416,22 +416,31 @@ SsatSolver::ssolve2SSAT( int cLimit )
          return (_unsatPb = cubeToNetwork());
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-      if ( !_s1->solve(rLits) ) {
-         sBkCla.clear();
-         miniUnsatCore( _s1->conflict , sBkCla );
-         _learntClause.push();
-         sBkCla.copyTo( _learntClause.last() );
+      if ( !_s1->solve(rLits) ) { // UNSAT case
+         if ( fMini ) {
+            sBkCla.clear();
+            miniUnsatCore( _s1->conflict , sBkCla );
+            _learntClause.push();
+            sBkCla.copyTo( _learntClause.last() );
+            _s2->addClause( sBkCla );
+         }
+         else {
+            _learntClause.push();
+            _s1->conflict.copyTo( _learntClause.last() );
+            _s2->addClause( _s1->conflict );
+         }
          if ( cubeListFull() ) {
             _unsatPb = cubeToNetwork();
             printf( "  > current unsat prob = %f\n" , _unsatPb );
             Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
+            fflush(stdout);
          }
-         _s2->addClause( sBkCla );
-         continue;
       }
-      sBkCla.clear();
-      collectBkCla(sBkCla);
-      _s2->addClause(sBkCla);
+      else { // SAT case
+         sBkCla.clear();
+         collectBkCla(sBkCla);
+         _s2->addClause(sBkCla);
+      }
    }
 }
 
@@ -448,7 +457,7 @@ SsatSolver::miniUnsatCore( const vec<Lit> & conflt , vec<Lit> & sBkCla )
       for ( int j = 0 ; j < drop.size() ; ++j )
          if ( j != i && !drop[j] ) assump.push( ~conflict[j] );
       if ( !_s1->solve(assump) ) {
-         printf( "  > %d-th lit can be dropped!\n" , i );
+         //printf( "  > %d-th lit can be dropped!\n" , i );
          drop[i] = true;
       }
       else sBkCla.push( conflict[i] );

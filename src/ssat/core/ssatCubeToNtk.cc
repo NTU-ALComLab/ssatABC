@@ -76,9 +76,9 @@ SsatSolver::cubeListFull() const
 double
 SsatSolver::cubeToNetwork()
 {
-   Abc_Obj_t * pObjCube; // gate of collected cubes
-  
    if ( !_learntClause.size() ) return _unsatPb;
+   
+   Abc_Obj_t * pObjCube; // gate of collected cubes
    pObjCube = ntkCreateNode   ( _pNtkCube , _vMapVars );
    ntkCreatePoCheck           ( _pNtkCube ,  pObjCube );
    _learntClause.clear();

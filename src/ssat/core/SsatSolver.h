@@ -57,7 +57,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   double      ssolve( int );
+   double      ssolve( int , bool );
    // Testing interface:
    void        test() const;
 private:
@@ -69,7 +69,7 @@ private:
    Solver *    buildSelectSolver  ();
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    bool        ssolve2QBF         ();
-   double      ssolve2SSAT        ( int );
+   double      ssolve2SSAT        ( int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    double      baseProb           () const;
