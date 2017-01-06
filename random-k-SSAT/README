@@ -1,0 +1,16 @@
+Using CNFgen from http://massimolauria.github.io/cnfgen/background.html
+need command "cnfgen" in shell to run gen-comp.sh
+
+Generate random CNF and compare OUR solver with DC SSAT solver
+./gen-comp.sh k n m l p
+
+Compare with existing files
+./comp.sh k n m
+
+k : lits per clause
+n : total # of vars
+m : total # of clauses
+l : # of random vars
+p : prob for every random vars
+
+'l < n' & '0 <= p <= 1' must be satisfied.
