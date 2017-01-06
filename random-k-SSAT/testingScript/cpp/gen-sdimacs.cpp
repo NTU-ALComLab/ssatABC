@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
       sprintf(fileName, "tmp-%d-%d-%d.dimacs", k, n, m);
       file_in.open(fileName, ios::in);
       // sprintf(fileName, "2ssat-rand-kcnf-%d-%d-%d-%d-%f.dimacs", k, n, m, l, p);
-      sprintf(fileName, "rand-%d-%d-%d.sdimacs", k, n, m);
+      sprintf(fileName, "rand-%d-%d-%d-%d.sdimacs", k, n, m, l);
       file_out.open(fileName, ios::out);
 
       while(getline(file_in, line)) {

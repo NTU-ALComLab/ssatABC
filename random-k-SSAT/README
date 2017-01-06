@@ -5,7 +5,7 @@ Generate random CNF and compare OUR solver with DC SSAT solver
 ./gen-comp.sh k n m l p
 
 Compare with existing files
-./comp.sh k n m
+./comp.sh k n m l
 
 k : lits per clause
 n : total # of vars
