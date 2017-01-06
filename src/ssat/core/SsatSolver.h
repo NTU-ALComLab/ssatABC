@@ -70,6 +70,7 @@ private:
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    bool        ssolve2QBF         ();
    double      ssolve2SSAT        ( int );
+   void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& );

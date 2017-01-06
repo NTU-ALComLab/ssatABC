@@ -409,6 +409,7 @@ double
 SsatSolver::ssolve2SSAT( int cLimit )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
+   abctime clk = Abc_Clock();
    initCubeNetwork( cLimit );
    for ( ;; ) {
       if ( !_s2->solve() )
@@ -416,13 +417,16 @@ SsatSolver::ssolve2SSAT( int cLimit )
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) {
+         sBkCla.clear();
+         miniUnsatCore( _s1->conflict , sBkCla );
          _learntClause.push();
-         _s1->conflict.copyTo( _learntClause.last() );
+         sBkCla.copyTo( _learntClause.last() );
          if ( cubeListFull() ) {
             _unsatPb = cubeToNetwork();
             printf( "  > current unsat prob = %f\n" , _unsatPb );
+            Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
          }
-         _s2->addClause( _s1->conflict );
+         _s2->addClause( sBkCla );
          continue;
       }
       sBkCla.clear();
@@ -431,6 +435,26 @@ SsatSolver::ssolve2SSAT( int cLimit )
    }
 }
 
+void
+SsatSolver::miniUnsatCore( const vec<Lit> & conflt , vec<Lit> & sBkCla )
+{
+   vec<Lit>  assump;
+   vec<Lit>  conflict;
+   vec<bool> drop( conflt.size() , false );
+   conflt.copyTo( conflict );
+   assump.capacity( conflict.size() );
+   for ( int i = 0 ; i < conflict.size() ; ++i ) {
+      assump.clear();
+      for ( int j = 0 ; j < drop.size() ; ++j )
+         if ( j != i && !drop[j] ) assump.push( ~conflict[j] );
+      if ( !_s1->solve(assump) ) {
+         printf( "  > %d-th lit can be dropped!\n" , i );
+         drop[i] = true;
+      }
+      else sBkCla.push( conflict[i] );
+   }
+}
+   
 void
 SsatSolver::collectBkCla( vec<Lit> & sBkCla )
 {
