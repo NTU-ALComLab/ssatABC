@@ -73,16 +73,27 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    SsatSolver * pSsat;
    gzFile in;
    abctime clk;
+   double range;
    int cLimit , c;
    bool fMini;
 
+   range  = 0.01;
    cLimit = 1;
    fMini  = true;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "Lmh" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RLmh" ) ) != EOF )
    {
       switch ( c )
       {
+         case 'R':
+            if ( globalUtilOptind >= argc ) {
+                Abc_Print( -1 , "Command line switch \"-R\" should be followed by a positive floating number.\n" );
+                goto usage;
+            }
+            range = atof( argv[globalUtilOptind] );
+            globalUtilOptind++;
+            if ( range < 0.0 || range > 1.0 ) goto usage;
+            break;
          case 'L':
             if ( globalUtilOptind >= argc ) {
                 Abc_Print( -1 , "Command line switch \"-L\" should be followed by a positive integer.\n" );
@@ -111,15 +122,18 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzclose(in);
    clk  = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
-   Abc_Print( -2 , "\n  > Answer =     %f\n" , 1.0 - pSsat->ssolve( cLimit , fMini ) );
+   pSsat->ssolve( range , cLimit , fMini );
+   Abc_Print( -2 , "\n  > Upper bound = %f\n" , pSsat->upperBound() );
+   Abc_Print( -2 , "  > Lower bound = %f\n" , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
    printf("\n");
    delete pSsat;
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: ssat [-L <num>] [-mh] <file>\n" );
+   Abc_Print( -2 , "usage: ssat [-R <num>] [-L <num>] [-mh] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
+   Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , 0.01 );
    Abc_Print( -2 , "\t-L <num>  : number of cubes to construct network, default=%d (-1: construct only once)\n" , 1 );
    Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=true\n" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );

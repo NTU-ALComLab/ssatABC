@@ -305,7 +305,7 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
 ***********************************************************************/
 
 double
-SsatSolver::ssolve( int cLimit , bool fMini )
+SsatSolver::ssolve( double range , int cLimit , bool fMini )
 {
    if ( _numLv != 2 || !isEVar( _rootVars[1][0] ) ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
@@ -315,7 +315,7 @@ SsatSolver::ssolve( int cLimit , bool fMini )
    _s2 = buildSelectSolver();
    initSelLitMark(); // avoid repeat selection vars in blocking clause
    if ( isAVar( _rootVars[0][0] ) ) return ssolve2QBF();
-   else                             return ssolve2SSAT( cLimit , fMini );
+   else                             return ssolve2SSAT( range , cLimit , fMini );
 }
 
 /**Function*************************************************************
@@ -406,12 +406,12 @@ SsatSolver::ssolve2QBF()
 ***********************************************************************/
 
 double
-SsatSolver::ssolve2SSAT( int cLimit , bool fMini )
+SsatSolver::ssolve2SSAT( double range , int cLimit , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
    initCubeNetwork( cLimit );
-   for ( ;; ) {
+   while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() )
          return (_unsatPb = cubeToNetwork());
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
@@ -442,6 +442,7 @@ SsatSolver::ssolve2SSAT( int cLimit , bool fMini )
          _s2->addClause(sBkCla);
       }
    }
+   return 0.0; // bounds have been stored
 }
 
 void
