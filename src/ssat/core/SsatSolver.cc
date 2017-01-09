@@ -413,24 +413,24 @@ SsatSolver::ssolve2SSAT( double range , int cLimit , bool fMini )
    initCubeNetwork( cLimit );
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() )
-         return (_unsatPb = cubeToNetwork());
+         return (_unsatPb = cubeToNetwork(false));
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) { // UNSAT case
          if ( fMini ) {
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
-            _learntClause.push();
-            sBkCla.copyTo( _learntClause.last() );
+            _unsatClause.push();
+            sBkCla.copyTo( _unsatClause.last() );
             _s2->addClause( sBkCla );
          }
          else {
-            _learntClause.push();
-            _s1->conflict.copyTo( _learntClause.last() );
+            _unsatClause.push();
+            _s1->conflict.copyTo( _unsatClause.last() );
             _s2->addClause( _s1->conflict );
          }
-         if ( cubeListFull() ) {
-            _unsatPb = cubeToNetwork();
+         if ( unsatCubeListFull() ) {
+            _unsatPb = cubeToNetwork(false);
             printf( "  > current unsat prob = %f\n" , _unsatPb );
             Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
             fflush(stdout);
