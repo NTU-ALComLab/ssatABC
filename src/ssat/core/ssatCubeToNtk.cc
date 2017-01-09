@@ -62,6 +62,7 @@ SsatSolver::initCubeNetwork( int limit )
    _pNtkCube->pName = Extra_UtilStrsav( name );
    _vMapVars = Vec_PtrStart( _s2->nVars() );
    ntkCreatePi     ( _pNtkCube , _vMapVars ); 
+   ntkCreatePo     ( _pNtkCube ); 
    ntkCreateSelDef ( _pNtkCube , _vMapVars );
    _cubeLimit = limit;
    if ( limit > 0 ) {
@@ -75,12 +76,12 @@ SsatSolver::initCubeNetwork( int limit )
 double
 SsatSolver::cubeToNetwork( bool sat )
 {
-   if ( !_unsatClause.size() ) return _unsatPb;
+   vec< vec<Lit> > & learntClause = (sat) ? _satClause : _unsatClause;
+   if ( !learntClause.size() ) return (sat ? _satPb : _unsatPb);
    
-   Abc_Obj_t * pObjCube; // gate of collected cubes
-   pObjCube = ntkCreateNode   ( _pNtkCube , _vMapVars , sat );
-   ntkCreatePoCheck           ( _pNtkCube ,  pObjCube , sat );
-   sat ? _satClause.clear() : _unsatClause.clear();
+   Abc_Obj_t * pObjCube = ntkCreateNode( _pNtkCube , _vMapVars , sat );
+   ntkPatchPoCheck( _pNtkCube ,  pObjCube , sat );
+   learntClause.clear();
    return ntkBddComputeSp( _pNtkCube , sat );
 }
 
@@ -100,22 +101,29 @@ SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
 }
 
 void
+SsatSolver::ntkCreatePo( Abc_Ntk_t * pNtkCube )
+{
+   Abc_Obj_t * pPo;
+   _pConst0  = Abc_NtkCreateNodeConst0( pNtkCube );
+   _pConst1  = Abc_NtkCreateNodeConst1( pNtkCube );
+   Abc_ObjAssignName( pPo = Abc_NtkCreatePo(pNtkCube) , "unsat_cubes" , "" );
+   Abc_ObjAddFanin( pPo , _pConst0 );
+   Abc_ObjAssignName( pPo = Abc_NtkCreatePo(pNtkCube) , "sat_cubes"   , "" );
+   Abc_ObjAddFanin( pPo , _pConst0 );
+}
+
+void
 SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
 {
    Abc_Obj_t * pObj;
    vec<Lit> uLits;
    char name[1024];
    int * pfCompl = new int[_rootVars[0].size()];
-
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       Clause & c  = _s1->ca[_s1->clauses[i]];
       uLits.clear();
       for ( int j = 0 ; j < c.size() ; ++j )
          if ( isAVar(var(c[j])) || isRVar(var(c[j])) ) uLits.push(c[j]);
-      if ( uLits.size() > _rootVars[0].size() ) {
-         Abc_Print( -1 , "Clause %d has %d rand lits, more than total(%d)\n" , i , uLits.size() , _rootVars[0].size() );
-         exit(1);
-      }
       if ( uLits.size() > 1 ) { // create gate for selection var
          pObj = Abc_NtkCreateNode( pNtkCube );
          sprintf( name , "s%d" , i );
@@ -125,10 +133,6 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
             pfCompl[j] = sign(uLits[j]) ? 0 : 1;
          }
          Abc_ObjSetData( pObj , Abc_SopCreateAnd( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
-         if ( Vec_PtrEntry( vMapVars , var(_claLits[i]) ) ) {
-           Abc_Print( -1 , "Selection var for clause %d is redefined\n" , i );
-           exit(1); 
-         }
          Vec_PtrWriteEntry( vMapVars , var(_claLits[i]) , pObj );
       }
    }
@@ -139,17 +143,16 @@ Abc_Obj_t*
 SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , bool sat )
 {
    vec< vec<Lit> > & learntClause = sat ? _satClause : _unsatClause;
-   Abc_Obj_t * pObj , * pObjCube , * pConst0;
+   Abc_Obj_t * pObj , * pObjCube;
    char name[1024];
    int * pfCompl = new int[_s2->nVars()];
    pObjCube = NULL;
-   pConst0  = Abc_NtkCreateNodeConst0( pNtkCube );
    for ( int i = 0 ; i < learntClause.size() ; ++i ) {
       //printf( "  > %3d-th learnt clause\n" , i );
       //dumpCla( learntClause[i] );
       if ( learntClause[i].size() ) {
          pObj = Abc_NtkCreateNode( pNtkCube );
-         sprintf( name , "c%d" , i );
+         sprintf( name , "c_%s_%d" , sat ? "SAT" : "UNSAT" , Abc_NtkObjNum(pNtkCube) );
          Abc_ObjAssignName( pObj , name , "" );
          for ( int j = 0 ; j < learntClause[i].size() ; ++j ) {
             Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(learntClause[i][j]) ) );
@@ -157,7 +160,7 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , bool sa
          }
          Abc_ObjSetData( pObj , Abc_SopCreateAnd( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
       }
-      else pObj = pConst0;
+      else pObj = sat ? _pConst1 : _pConst0;
       pObjCube = Ssat_SopOr2Obj( pObjCube , pObj );
    }
    delete[] pfCompl;
@@ -165,18 +168,13 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , bool sa
 }
 
 void
-SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube , bool sat )
+SsatSolver::ntkPatchPoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube , bool sat )
 {
-   Abc_Obj_t * pPo;
-   if ( !Abc_NtkPoNum( pNtkCube ) ) { // 1st time
-      pPo = Abc_NtkCreatePo( pNtkCube );
-      Abc_ObjAssignName( pPo , "cube_network_Po" , "" );
+   Abc_Obj_t * pPo = sat ? Abc_NtkPo( pNtkCube , 1 ) : Abc_NtkPo( pNtkCube , 0 );
+   if ( !Abc_ObjFaninNum( pPo ) ) // add fanin
       Abc_ObjAddFanin( pPo , pObjCube );
-   }
-   else { // OR previous output with pObjCube
-      pPo = Abc_NtkPo( pNtkCube , 0 );
+   else // OR previous output with pObjCube
       Abc_ObjPatchFanin( pPo , Abc_ObjFanin0(pPo) , Ssat_SopOr2Obj( Abc_ObjFanin0(pPo) , pObjCube ) );
-   }
    if ( !Abc_NtkCheck( pNtkCube ) ) {
       Abc_Print( -1 , "Something wrong with cubes to network ...\n" );
       Abc_NtkDelete( pNtkCube );
@@ -303,7 +301,7 @@ SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
 	Abc_NtkForEachPi( pNtk , pObj , i )
 	   pObj->dTemp = (float)_quan[_rootVars[0][i]];
 
-   prob = (double)Pb_BddComputeSp( pNtk , 0 , 0 , 1 );
+   prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 1 );
    Abc_NtkDelete( pNtkCopy );
    Abc_NtkDelete( pNtkAig );
    Abc_NtkDelete( pNtk );

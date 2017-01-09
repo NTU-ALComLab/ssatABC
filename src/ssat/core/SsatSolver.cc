@@ -412,8 +412,10 @@ SsatSolver::ssolve2SSAT( double range , int cLimit , bool fMini )
    abctime clk = Abc_Clock();
    initCubeNetwork( cLimit );
    while ( 1.0 - _unsatPb - _satPb > range ) {
-      if ( !_s2->solve() )
-         return (_unsatPb = cubeToNetwork(false));
+      if ( !_s2->solve() ) {
+         _unsatPb = cubeToNetwork(false);
+         return (_satPb = cubeToNetwork(true));
+      }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) { // UNSAT case
@@ -429,20 +431,28 @@ SsatSolver::ssolve2SSAT( double range , int cLimit , bool fMini )
             _s1->conflict.copyTo( _unsatClause.last() );
             _s2->addClause( _s1->conflict );
          }
-         if ( unsatCubeListFull() ) {
+         /*if ( unsatCubeListFull() ) {
             _unsatPb = cubeToNetwork(false);
             printf( "  > current unsat prob = %f\n" , _unsatPb );
             Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
             fflush(stdout);
-         }
+         }*/
       }
       else { // SAT case
          sBkCla.clear();
          collectBkCla(sBkCla);
-         _s2->addClause(sBkCla);
+         _satClause.push();
+         sBkCla.copyTo( _satClause.last() );
+         _s2->addClause( sBkCla );
+         if ( satCubeListFull() ) {
+            _satPb = cubeToNetwork(true);
+            printf( "  > current sat prob = %f\n" , _satPb );
+            Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
+            fflush(stdout);
+         }
       }
    }
-   return 0.0; // bounds have been stored
+   return _satPb; // lower bound
 }
 
 void
@@ -480,7 +490,8 @@ SsatSolver::collectBkCla( vec<Lit> & sBkCla )
             break;
          }
       }
-      if ( block && _s2->value(_claLits[i]) != l_False && !isSelLitMarked(_claLits[i]) ) {
+      //if ( block && _s2->value(_claLits[i]) != l_False && !isSelLitMarked(_claLits[i]) ) {
+      if ( block && !isSelLitMarked(_claLits[i]) ) {
          sBkCla.push (_claLits[i]);
          markSelLit  (_claLits[i]);
       }
