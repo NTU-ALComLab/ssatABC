@@ -61,29 +61,27 @@ SsatSolver::initCubeNetwork( int limit )
    sprintf( name , "qesto_cubes_network" );
    _pNtkCube->pName = Extra_UtilStrsav( name );
    _vMapVars = Vec_PtrStart( _s2->nVars() );
-   ntkCreatePi( _pNtkCube , _vMapVars ); 
+   ntkCreatePi     ( _pNtkCube , _vMapVars ); 
+   ntkCreateSelDef ( _pNtkCube , _vMapVars );
    _cubeLimit = limit;
-   if ( limit > 0 )
-      _learntClause.capacity( _cubeLimit );
-   _learntClause.clear();
-}
-
-bool
-SsatSolver::cubeListFull() const
-{
-   return (_learntClause.size() == _cubeLimit) ;
+   if ( limit > 0 ) {
+      _unsatClause.capacity( _cubeLimit );
+      _satClause.capacity( _cubeLimit );
+   }
+   _unsatClause.clear();
+   _satClause.clear();
 }
 
 double
-SsatSolver::cubeToNetwork()
+SsatSolver::cubeToNetwork( bool sat )
 {
-   if ( !_learntClause.size() ) return _unsatPb;
+   if ( !_unsatClause.size() ) return _unsatPb;
    
    Abc_Obj_t * pObjCube; // gate of collected cubes
-   pObjCube = ntkCreateNode   ( _pNtkCube , _vMapVars );
-   ntkCreatePoCheck           ( _pNtkCube ,  pObjCube );
-   _learntClause.clear();
-   return ntkBddComputeSp( _pNtkCube );
+   pObjCube = ntkCreateNode   ( _pNtkCube , _vMapVars , sat );
+   ntkCreatePoCheck           ( _pNtkCube ,  pObjCube , sat );
+   sat ? _satClause.clear() : _unsatClause.clear();
+   return ntkBddComputeSp( _pNtkCube , sat );
 }
 
 void
@@ -138,23 +136,24 @@ SsatSolver::ntkCreateSelDef( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
 }
 
 Abc_Obj_t*
-SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
+SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , bool sat )
 {
+   vec< vec<Lit> > & learntClause = sat ? _satClause : _unsatClause;
    Abc_Obj_t * pObj , * pObjCube , * pConst0;
    char name[1024];
-   int * pfCompl = new int[_rootVars[0].size()];
+   int * pfCompl = new int[_s2->nVars()];
    pObjCube = NULL;
    pConst0  = Abc_NtkCreateNodeConst0( pNtkCube );
-   for ( int i = 0 ; i < _learntClause.size() ; ++i ) {
+   for ( int i = 0 ; i < learntClause.size() ; ++i ) {
       //printf( "  > %3d-th learnt clause\n" , i );
-      //dumpCla( _learntClause[i] );
-      if ( _learntClause[i].size() ) {
+      //dumpCla( learntClause[i] );
+      if ( learntClause[i].size() ) {
          pObj = Abc_NtkCreateNode( pNtkCube );
          sprintf( name , "c%d" , i );
          Abc_ObjAssignName( pObj , name , "" );
-         for ( int j = 0 ; j < _learntClause[i].size() ; ++j ) {
-            Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(_learntClause[i][j]) ) );
-            pfCompl[j] = sign(_learntClause[i][j]) ? 0 : 1;
+         for ( int j = 0 ; j < learntClause[i].size() ; ++j ) {
+            Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(learntClause[i][j]) ) );
+            pfCompl[j] = sign(learntClause[i][j]) ? 0 : 1;
          }
          Abc_ObjSetData( pObj , Abc_SopCreateAnd( (Mem_Flex_t*)pNtkCube->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
       }
@@ -166,7 +165,7 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
 }
 
 void
-SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube )
+SsatSolver::ntkCreatePoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube , bool sat )
 {
    Abc_Obj_t * pPo;
    if ( !Abc_NtkPoNum( pNtkCube ) ) { // 1st time
@@ -289,7 +288,7 @@ Pb_WriteWMCCla( FILE * out , Abc_Ntk_t * pNtk )
 ***********************************************************************/
 
 double
-SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube )
+SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
 {
    Fraig_Params_t Params , * pParams = &Params;
    Abc_Ntk_t * pNtk , * pNtkCopy , * pNtkAig;

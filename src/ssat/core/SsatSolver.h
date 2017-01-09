@@ -83,14 +83,15 @@ private:
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting
    void        initCubeNetwork    ( int );
-   bool        cubeListFull       () const;
-   double      cubeToNetwork      ();
+   bool        unsatCubeListFull  () const { return (_unsatClause.size() == _cubeLimit); };
+   bool        satCubeListFull    () const { return (_satClause.size() == _cubeLimit); };
+   double      cubeToNetwork      ( bool );
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * );
-   Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * );
-   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * );
+   Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * , bool );
+   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * , bool );
    void        ntkWriteWcnf       ( Abc_Ntk_t * );
-   double      ntkBddComputeSp    ( Abc_Ntk_t * );
+   double      ntkBddComputeSp    ( Abc_Ntk_t * , bool );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;
@@ -114,7 +115,8 @@ private:
    double            _satProb;         // 2SSAT sat prob
    int               _selLitGlobalId;  // global mark for selection lits
    vec<int>          _markSelLit;      // mark selection lits to avoid repeat
-   vec< vec<Lit> >   _learntClause;    // added clauses during solving, used in model counting
+   vec< vec<Lit> >   _unsatClause;     // added clauses during solving, used in model counting
+   vec< vec<Lit> >   _satClause;       // added clauses during solving, used in model counting
    Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
    Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
    int               _cubeLimit;       // number of cubes to invoke network construction
