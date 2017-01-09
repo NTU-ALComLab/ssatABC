@@ -87,9 +87,10 @@ private:
    bool        satCubeListFull    () const { return (_satClause.size() == _cubeLimit); };
    double      cubeToNetwork      ( bool );
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * );
+   void        ntkCreatePo        ( Abc_Ntk_t * );
    void        ntkCreateSelDef    ( Abc_Ntk_t * , Vec_Ptr_t * );
    Abc_Obj_t * ntkCreateNode      ( Abc_Ntk_t * , Vec_Ptr_t * , bool );
-   void        ntkCreatePoCheck   ( Abc_Ntk_t * , Abc_Obj_t * , bool );
+   void        ntkPatchPoCheck    ( Abc_Ntk_t * , Abc_Obj_t * , bool );
    void        ntkWriteWcnf       ( Abc_Ntk_t * );
    double      ntkBddComputeSp    ( Abc_Ntk_t * , bool );
    // inline methods
@@ -119,9 +120,11 @@ private:
    vec< vec<Lit> >   _satClause;       // added clauses during solving, used in model counting
    Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
    Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
-   int               _cubeLimit;       // number of cubes to invoke network construction
-   double            _satPb;           // current SAT pb, lower bound
+   Abc_Obj_t       * _pConst0;         // network Const0 node
+   Abc_Obj_t       * _pConst1;         // network Const1 node
    double            _unsatPb;         // current UNSAT pb, uppper bound
+   double            _satPb;           // current SAT pb, lower bound
+   int               _cubeLimit;       // number of cubes to invoke network construction
 };
 
 // Implementation of inline methods:
