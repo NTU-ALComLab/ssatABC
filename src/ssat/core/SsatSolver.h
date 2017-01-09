@@ -57,7 +57,9 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   double      ssolve( int , bool );
+   double      ssolve( double , int , bool );
+   double      upperBound() const { return 1.0 - _unsatPb; }
+   double      lowerBound() const { return _satPb; }
    // Testing interface:
    void        test() const;
 private:
@@ -69,7 +71,7 @@ private:
    Solver *    buildSelectSolver  ();
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    bool        ssolve2QBF         ();
-   double      ssolve2SSAT        ( int , bool );
+   double      ssolve2SSAT        ( double , int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    double      baseProb           () const;
@@ -116,7 +118,8 @@ private:
    Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
    Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
    int               _cubeLimit;       // number of cubes to invoke network construction
-   double            _unsatPb;         // current UNSAT prob
+   double            _satPb;           // current SAT pb, lower bound
+   double            _unsatPb;         // current UNSAT pb, uppper bound
 };
 
 // Implementation of inline methods:

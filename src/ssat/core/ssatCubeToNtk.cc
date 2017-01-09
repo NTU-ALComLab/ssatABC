@@ -55,6 +55,7 @@ static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 void
 SsatSolver::initCubeNetwork( int limit )
 {
+   _satPb = _unsatPb = 0.0;
    char name[32];
    _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "qesto_cubes_network" );
