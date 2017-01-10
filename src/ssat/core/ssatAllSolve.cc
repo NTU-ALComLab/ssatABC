@@ -127,6 +127,7 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
       }
       else { // SAT case
          sBkCla.clear();
+         //for ( int i = 0 ; i < rLits.size() ; ++i ) sBkCla.push( ~rLits[i] );
          miniHitSet( rLits , sBkCla );
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
@@ -145,27 +146,31 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
 void
 SsatSolver::miniHitSet( const vec<Lit> & minterm , vec<Lit> & sBkCla )
 {
-   for ( int i = 0 ; i < minterm.size() ; ++i )
-      sBkCla.push( ~minterm[i] );
-#if 0
-   printf( "  > minterm:\n" );
-   dumpCla( minterm );
-   vec<Lit>  assump;
-   vec<bool> drop( minterm.size() , false );
-   assump.capacity( minterm.size() );
+#if 1
+   //printf( "  > minterm:\n" );
+   //dumpCla( minterm );
+   vec<bool> drop( _s1->nVars() , false );
    for ( int i = 0 ; i < minterm.size() ; ++i ) {
-      assump.clear();
-      for ( int j = 0 ; j < drop.size() ; ++j ) {
-         if ( j == i ) assump.push( ~minterm[j] ); // flip
-         else if ( !drop[j] ) assump.push( minterm[j] );
+      drop[var(minterm[i])] = true;
+      bool cnfSat = true;
+      for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
+         Clause & c = _s1->ca[_s1->clauses[j]];
+         bool claSat = false;
+         for ( int k = 0 ; k < c.size() ; ++k ) {
+            if ( !drop[var(c[k])] && _s1->modelValue(c[k]) == l_True ) {
+               claSat = true;
+               break;
+            }
+         }
+         if ( !claSat ) {
+            cnfSat = false;
+            break;
+         }
       }
-      printf( "  > assump:\n" );
-      dumpCla( assump );
-      if ( _s1->solve(assump) ) {
-         printf( "  > %d-th lit can be dropped!\n" , i );
-         drop[i] = true;
+      if ( !cnfSat ) {
+         drop[var(minterm[i])] = false;
+         sBkCla.push( ~minterm[i] );
       }
-      else sBkCla.push( ~minterm[i] );
    }
 #endif
 }
