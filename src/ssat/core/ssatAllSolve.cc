@@ -145,10 +145,25 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
 void
 SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
 {
-#if 1
    vec<Lit> rLits , eLits;
-   vec<bool> pick( _s1->nVars() , false );
-   //vec<Lit> minterm;
+   vec<Lit> minterm;
+   vec<short> pick( _s1->nVars() , 0 ); // 1:picked ; 0:undecided ; -1:dropped
+   Lit lit;
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      short find = 0;
+      Clause & c = _s1->ca[_s1->clauses[i]];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( _s1->modelValue(c[j]) == l_True ) {
+            ++find;
+            if ( find == 1 ) lit  = c[j];
+            else break;
+         }
+      }
+      if ( find == 1 ) {
+         pick[var(lit)] = 1;
+         if ( isRVar(var(lit)) ) sBkCla.push( ~lit );
+      }
+   }
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       bool picked = false;
       rLits.clear();
@@ -166,32 +181,26 @@ SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
       }
       if ( !picked ) {
          if ( eLits.size() ) {
-            pick[var(eLits[0])] = true;
+            pick[var(eLits[0])] = 1;
             continue;
          }
-         //if ( rLits.size() == 1 ) {
-         pick[var(rLits[0])] = true;
-         sBkCla.push( ~rLits[0] );
-         //}
-         //else minterm.push( rLits[0] );
-
+         assert( rLits.size() > 1 );
+         for ( int j = 0 ; j < rLits.size() ; ++j ) {
+            if ( pick[var(rLits[j])] != 1 ) {
+               pick[var(rLits[j])] = 1;
+               minterm.push( rLits[j] );
+            }
+         }
       }
    }
-#endif
-#if 0
-   printf( "  > minterm:\n" );
-   dumpCla( minterm );
-   printf( "  > sBkCla:\n" );
-   dumpCla( sBkCla );
-   vec<bool> drop( _s1->nVars() , false );
    for ( int i = 0 ; i < minterm.size() ; ++i ) {
-      drop[var(minterm[i])] = true;
+      pick[var(minterm[i])] = -1;
       bool cnfSat = true;
       for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
          Clause & c = _s1->ca[_s1->clauses[j]];
          bool claSat = false;
          for ( int k = 0 ; k < c.size() ; ++k ) {
-            if ( !drop[var(c[k])] && _s1->modelValue(c[k]) == l_True ) {
+            if ( pick[var(c[k])]==1 && _s1->modelValue(c[k]) == l_True ) {
                claSat = true;
                break;
             }
@@ -202,24 +211,10 @@ SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
          }
       }
       if ( !cnfSat ) {
-         drop[var(minterm[i])] = false;
+         pick[var(minterm[i])] = 1;
          sBkCla.push( ~minterm[i] );
       }
    }
-#endif
-#if 0
-   for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
-      Clause & c = _s1->ca[_s1->clauses[j]];
-      bool claSat = false;
-      for ( int k = 0 ; k < c.size() ; ++k ) {
-         if ( !drop[var(c[k])] && _s1->modelValue(c[k]) == l_True ) {
-            claSat = true;
-            break;
-         }
-      }
-      assert( claSat );
-   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////
