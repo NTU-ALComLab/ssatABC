@@ -81,6 +81,7 @@ SsatSolver::cubeToNetwork( bool sat )
    
    Abc_Obj_t * pObjCube = ntkCreateNode( _pNtkCube , _vMapVars , sat );
    ntkPatchPoCheck( _pNtkCube ,  pObjCube , sat );
+   //Io_Write( _pNtkCube , "sat_cube.blif" , IO_FILE_BLIF );
    learntClause.clear();
    return ntkBddComputeSp( _pNtkCube , sat );
 }
