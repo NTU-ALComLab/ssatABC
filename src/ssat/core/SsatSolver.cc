@@ -305,22 +305,29 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
 ***********************************************************************/
 
 double
-SsatSolver::ssolve( double range , int cLimit , bool fMini )
+SsatSolver::solveSsat( double range , int cLimit , bool fAll , bool fMini )
 {
    if ( _numLv != 2 || !isEVar( _rootVars[1][0] ) ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
       return false;
    }
+   return ( fAll ? aSolve( range , cLimit , fMini ) : 
+                   qSolve( range , cLimit , fMini ) );
+}
+   
+double
+SsatSolver::qSolve( double range , int cLimit , bool fMini )
+{
    _s1->simplify(); // avoid clause deletion after solving
-   _s2 = buildSelectSolver();
+   _s2 = buildQestoSelector();
    initSelLitMark(); // avoid repeat selection vars in blocking clause
-   if ( isAVar( _rootVars[0][0] ) ) return ssolve2QBF();
-   else                             return ssolve2SSAT( range , cLimit , fMini );
+   if ( isAVar( _rootVars[0][0] ) ) return qSolve2QBF();
+   else                             return qSolve2SSAT( range , cLimit , fMini );
 }
 
 /**Function*************************************************************
 
-  Synopsis    [Build _s2 (clause selection solver)]
+  Synopsis    [Build _s2 (Qesto clause selector)]
 
   Description [Initialize forall vars and build selection clauses]
                
@@ -331,7 +338,7 @@ SsatSolver::ssolve( double range , int cLimit , bool fMini )
 ***********************************************************************/
 
 Solver*
-SsatSolver::buildSelectSolver()
+SsatSolver::buildQestoSelector()
 {
    Solver * S = new Solver;
    vec<Lit> uLits;
@@ -379,7 +386,7 @@ SsatSolver::addSelectCla( Solver & S , const Lit & x , const vec<Lit> & uLits )
 ***********************************************************************/
 
 bool
-SsatSolver::ssolve2QBF()
+SsatSolver::qSolve2QBF()
 {
    vec<Lit> uLits( _rootVars[0].size() ) , sBkCla;
    for (;;) {
@@ -406,7 +413,7 @@ SsatSolver::ssolve2QBF()
 ***********************************************************************/
 
 double
-SsatSolver::ssolve2SSAT( double range , int cLimit , bool fMini )
+SsatSolver::qSolve2SSAT( double range , int cLimit , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
