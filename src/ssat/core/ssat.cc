@@ -75,13 +75,14 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    abctime clk;
    double range;
    int cLimit , c;
-   bool fMini;
+   bool fAll , fMini;
 
    range  = 0.01;
    cLimit = 1;
+   fAll   = false;
    fMini  = true;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "RLmh" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RLamh" ) ) != EOF )
    {
       switch ( c )
       {
@@ -103,6 +104,9 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
             globalUtilOptind++;
             if ( cLimit != -1 && !(cLimit > 0) ) goto usage;
             break;
+         case 'a':
+            fAll ^= 1;
+            break;
          case 'm':
             fMini ^= 1;
             break;
@@ -122,7 +126,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzclose(in);
    clk  = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
-   pSsat->ssolve( range , cLimit , fMini );
+   pSsat->solveSsat( range , cLimit , fAll , fMini );
    Abc_Print( -2 , "\n  > Upper bound = %f\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %f\n" , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
@@ -131,10 +135,11 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: ssat [-R <num>] [-L <num>] [-mh] <file>\n" );
+   Abc_Print( -2 , "usage: ssat [-R <num>] [-L <num>] [-amh] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
    Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , 0.01 );
    Abc_Print( -2 , "\t-L <num>  : number of cubes to construct network, default=%d (-1: construct only once)\n" , 1 );
+   Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=false\n" );
    Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=true\n" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );
    Abc_Print( -2 , "\tfile      : the sdimacs file\n" );
