@@ -185,34 +185,8 @@ SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
             continue;
          }
          assert( rLits.size() > 1 );
-         for ( int j = 0 ; j < rLits.size() ; ++j ) {
-            if ( pick[var(rLits[j])] != 1 ) {
-               pick[var(rLits[j])] = 1;
-               minterm.push( rLits[j] );
-            }
-         }
-      }
-   }
-   for ( int i = 0 ; i < minterm.size() ; ++i ) {
-      pick[var(minterm[i])] = -1;
-      bool cnfSat = true;
-      for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
-         Clause & c = _s1->ca[_s1->clauses[j]];
-         bool claSat = false;
-         for ( int k = 0 ; k < c.size() ; ++k ) {
-            if ( pick[var(c[k])]==1 && _s1->modelValue(c[k]) == l_True ) {
-               claSat = true;
-               break;
-            }
-         }
-         if ( !claSat ) {
-            cnfSat = false;
-            break;
-         }
-      }
-      if ( !cnfSat ) {
-         pick[var(minterm[i])] = 1;
-         sBkCla.push( ~minterm[i] );
+         pick[var(rLits[0])] = 1;
+         sBkCla.push( ~rLits[0] );
       }
    }
 }
