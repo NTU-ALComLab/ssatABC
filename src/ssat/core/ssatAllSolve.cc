@@ -63,7 +63,7 @@ SsatSolver::aSolve( double range , int cLimit , bool fMini )
 
   Description [forall vars have exactly the same IDs as _s1]
                
-  SideEffects []
+  SideEffects [Initialize as tautology (no clause)]
 
   SeeAlso     []
 
@@ -77,19 +77,6 @@ SsatSolver::buildAllSelector()
    
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
       while ( _rootVars[0][i] >= S->nVars() ) S->newVar();
-   _claLits.growTo( _s1->nClauses() , lit_Undef );
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      Clause & c  = _s1->ca[_s1->clauses[i]];
-      uLits.clear();
-      for ( int j = 0 ; j < c.size() ; ++j )
-         if ( isAVar(var(c[j])) || isRVar(var(c[j])) ) uLits.push(c[j]);
-      if ( uLits.size() > 1 ) { // allocate new selection var
-         _claLits[i] = mkLit( S->newVar() );
-         addSelectCla( *S , _claLits[i] , uLits );
-      }
-      else if ( uLits.size() == 1 ) // reuse the forall var as selection var
-         _claLits[i] = ~uLits[0];
-   }
    return S;
 }
 
@@ -110,7 +97,7 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
-   initCubeNetwork( cLimit );
+   initCubeNetwork( cLimit , true );
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
@@ -140,7 +127,7 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
       }
       else { // SAT case
          sBkCla.clear();
-         collectBkCla(sBkCla);
+         miniHitSet( rLits , sBkCla );
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
@@ -153,6 +140,34 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
       }
    }
    return _satPb; // lower bound
+}
+
+void
+SsatSolver::miniHitSet( const vec<Lit> & minterm , vec<Lit> & sBkCla )
+{
+   for ( int i = 0 ; i < minterm.size() ; ++i )
+      sBkCla.push( ~minterm[i] );
+#if 0
+   printf( "  > minterm:\n" );
+   dumpCla( minterm );
+   vec<Lit>  assump;
+   vec<bool> drop( minterm.size() , false );
+   assump.capacity( minterm.size() );
+   for ( int i = 0 ; i < minterm.size() ; ++i ) {
+      assump.clear();
+      for ( int j = 0 ; j < drop.size() ; ++j ) {
+         if ( j == i ) assump.push( ~minterm[j] ); // flip
+         else if ( !drop[j] ) assump.push( minterm[j] );
+      }
+      printf( "  > assump:\n" );
+      dumpCla( assump );
+      if ( _s1->solve(assump) ) {
+         printf( "  > %d-th lit can be dropped!\n" , i );
+         drop[i] = true;
+      }
+      else sBkCla.push( ~minterm[i] );
+   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////

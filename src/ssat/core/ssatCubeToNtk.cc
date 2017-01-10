@@ -53,7 +53,7 @@ static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 ***********************************************************************/
 
 void
-SsatSolver::initCubeNetwork( int limit )
+SsatSolver::initCubeNetwork( int limit , bool fAll )
 {
    _satPb = _unsatPb = 0.0;
    char name[32];
@@ -63,7 +63,7 @@ SsatSolver::initCubeNetwork( int limit )
    _vMapVars = Vec_PtrStart( _s2->nVars() );
    ntkCreatePi     ( _pNtkCube , _vMapVars ); 
    ntkCreatePo     ( _pNtkCube ); 
-   ntkCreateSelDef ( _pNtkCube , _vMapVars );
+   if ( !fAll ) ntkCreateSelDef ( _pNtkCube , _vMapVars );
    _cubeLimit = limit;
    if ( limit > 0 ) {
       _unsatClause.capacity( _cubeLimit );
