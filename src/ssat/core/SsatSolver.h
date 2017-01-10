@@ -78,6 +78,7 @@ private:
    double      qSolve2SSAT        ( double , int , bool );
    double      aSolve2SSAT        ( double , int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
+   void        miniHitSet         ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& );
@@ -87,7 +88,7 @@ private:
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting
-   void        initCubeNetwork    ( int );
+   void        initCubeNetwork    ( int , bool );
    bool        unsatCubeListFull  () const { return (_unsatClause.size() == _cubeLimit); };
    bool        satCubeListFull    () const { return (_satClause.size() == _cubeLimit); };
    double      cubeToNetwork      ( bool );

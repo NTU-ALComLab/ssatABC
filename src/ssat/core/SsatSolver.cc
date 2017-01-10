@@ -417,7 +417,7 @@ SsatSolver::qSolve2SSAT( double range , int cLimit , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
-   initCubeNetwork( cLimit );
+   initCubeNetwork( cLimit , false );
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
