@@ -127,7 +127,6 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
       }
       else { // SAT case
          sBkCla.clear();
-         //for ( int i = 0 ; i < rLits.size() ; ++i ) sBkCla.push( ~rLits[i] );
          miniHitSet( rLits , sBkCla );
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
@@ -147,24 +146,43 @@ void
 SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
 {
 #if 1
-   vec<Lit> rLits , eLits , minterm;
+   vec<Lit> rLits , eLits;
+   vec<bool> pick( _s1->nVars() , false );
+   //vec<Lit> minterm;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      bool picked = false;
       rLits.clear();
       eLits.clear();
       Clause & c = _s1->ca[_s1->clauses[i]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
          if ( _s1->modelValue(c[j]) == l_True ) {
-            if ( isRVar( var(c[j]) ) ) rLits.push(c[j]);
-            else                       eLits.push(c[j]);
+            if ( pick[var(c[j])] ) {
+               picked = true;
+               break;
+            }
+            if ( isRVar(var(c[j])) ) rLits.push(c[j]);
+            else                     eLits.push(c[j]);
          }
       }
-      if ( eLits.size() ) continue;
-      if ( rLits.size() == 1 ) sBkCla.push ( ~rLits[0] );
-      else                     minterm.push( rLits[0] );
+      if ( !picked ) {
+         if ( eLits.size() ) {
+            pick[var(eLits[0])] = true;
+            continue;
+         }
+         //if ( rLits.size() == 1 ) {
+         pick[var(rLits[0])] = true;
+         sBkCla.push( ~rLits[0] );
+         //}
+         //else minterm.push( rLits[0] );
+
+      }
    }
 #endif
-   //printf( "  > minterm:\n" );
-   //dumpCla( minterm );
+#if 0
+   printf( "  > minterm:\n" );
+   dumpCla( minterm );
+   printf( "  > sBkCla:\n" );
+   dumpCla( sBkCla );
    vec<bool> drop( _s1->nVars() , false );
    for ( int i = 0 ; i < minterm.size() ; ++i ) {
       drop[var(minterm[i])] = true;
@@ -188,6 +206,8 @@ SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
          sBkCla.push( ~minterm[i] );
       }
    }
+#endif
+#if 0
    for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
       Clause & c = _s1->ca[_s1->clauses[j]];
       bool claSat = false;
@@ -199,6 +219,7 @@ SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
       }
       assert( claSat );
    }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////
