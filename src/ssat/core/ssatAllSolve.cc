@@ -157,20 +157,31 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
 ***********************************************************************/
 
 void
-SsatSolver::miniHitSet( vec<Lit> & sBkCla )
+SsatSolver::miniHitSet( vec<Lit> & sBkCla ) const
 {
-   vec<Lit> rLits , eLits , minterm;
-   rLits.capacity(8);
-   eLits.capacity(8);
+   vec<Lit> minterm;
    minterm.capacity(_rootVars[0].size());
    vec<bool> pick( _s1->nVars() , false );
-   bool claSat , cnfSat;
+   miniHitOneHotLit  ( sBkCla , pick );
+   miniHitCollectLit ( sBkCla , minterm , pick );
+   if ( minterm.size() )
+      miniHitDropLit ( sBkCla , minterm , pick );
+   // sanity check: avoid duplicated lits --> invalid write!
+   if ( sBkCla.size() > _rootVars[0].size() ) {
+      Abc_Print( -1 , "Wrong hitting set!!!\n" );
+      dumpCla(sBkCla);
+      exit(1);
+   }
+}
+
+void
+SsatSolver::miniHitOneHotLit( vec<Lit> & sBkCla , vec<bool> & pick ) const
+{
    Lit lit;
-   // step1: pick all one-hot true lits 
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      Clause & c = _s1->ca[_s1->clauses[i]];
-      short find = 0;
-      claSat = false;
+      Clause & c  = _s1->ca[_s1->clauses[i]];
+      short find  = 0;
+      bool claSat = false;
       for ( int j = 0 ; j < c.size() ; ++j ) {
          if ( _s1->modelValue(c[j]) == l_True ) {
             if ( pick[var(c[j])] ) {
@@ -178,7 +189,7 @@ SsatSolver::miniHitSet( vec<Lit> & sBkCla )
                break;
             }
             ++find;
-            if ( find == 1 ) lit  = c[j];
+            if ( find == 1 ) lit = c[j];
             else break;
          }
       }
@@ -188,12 +199,17 @@ SsatSolver::miniHitSet( vec<Lit> & sBkCla )
          if ( isRVar(var(lit)) ) sBkCla.push( ~lit );
       }
    }
-   // step2: collect minterm from clauses with more than 1 true lit
+}
+
+void
+SsatSolver::miniHitCollectLit( vec<Lit> & sBkCla , vec<Lit> & minterm , vec<bool> & pick ) const
+{
+   vec<Lit> rLits , eLits;
+   rLits.capacity(8) , eLits.capacity(8);
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      Clause & c = _s1->ca[_s1->clauses[i]];
-      claSat = false;
-      rLits.clear();
-      eLits.clear();
+      Clause & c  = _s1->ca[_s1->clauses[i]];
+      bool claSat = false;
+      rLits.clear() , eLits.clear();
       for ( int j = 0 ; j < c.size() ; ++j ) {
          if ( _s1->modelValue(c[j]) == l_True ) {
             if ( pick[var(c[j])] ) {
@@ -210,41 +226,38 @@ SsatSolver::miniHitSet( vec<Lit> & sBkCla )
          }
          assert( rLits.size() > 1 );
          for ( int j = 0 ; j < rLits.size() ; ++j ) {
+            assert( !pick[var(rLits[j])] );
             pick[var(rLits[j])] = true;
             minterm.push(rLits[j]);
          }
       }
    }
-   // step3: try to drop lits in minterm
-   if ( minterm.size() ) {
-      for ( int i = 0 ; i < minterm.size() ; ++i ) {
-         pick[var(minterm[i])] = false;
-         cnfSat = true;
-         for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
-            Clause & c = _s1->ca[_s1->clauses[j]];
-            claSat = false;
-            for ( int k = 0 ; k < c.size() ; ++k ) {
-               if ( pick[var(c[k])] && _s1->modelValue(c[k]) == l_True ) {
-                  claSat = true;
-                  break;
-               }
-            }
-            if ( !claSat ) {
-               cnfSat = false;
+}
+
+void
+SsatSolver::miniHitDropLit( vec<Lit> & sBkCla , vec<Lit> & minterm , vec<bool> & pick ) const
+{
+   for ( int i = 0 ; i < minterm.size() ; ++i ) {
+      pick[var(minterm[i])] = false;
+      bool cnfSat = true;
+      for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
+         Clause & c  = _s1->ca[_s1->clauses[j]];
+         bool claSat = false;
+         for ( int k = 0 ; k < c.size() ; ++k ) {
+            if ( pick[var(c[k])] && _s1->modelValue(c[k]) == l_True ) {
+               claSat = true;
                break;
             }
          }
-         if ( !cnfSat ) {
-            pick[var(minterm[i])] = true;
-            sBkCla.push( ~minterm[i] );
+         if ( !claSat ) {
+            cnfSat = false;
+            break;
          }
       }
-   }
-   // sanity check: avoid duplicated lits --> invalid write!
-   if ( sBkCla.size() > _rootVars[0].size() ) {
-      Abc_Print( -1 , "Wrong hitting set!!!\n" );
-      dumpCla(sBkCla);
-      exit(1);
+      if ( !cnfSat ) {
+         pick[var(minterm[i])] = true;
+         sBkCla.push( ~minterm[i] );
+      }
    }
 }
 
