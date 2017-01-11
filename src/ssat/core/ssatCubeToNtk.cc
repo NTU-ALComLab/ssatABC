@@ -53,7 +53,7 @@ static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 ***********************************************************************/
 
 void
-SsatSolver::initCubeNetwork( int limit , bool fAll )
+SsatSolver::initCubeNetwork( int upper , int lower , bool fAll )
 {
    _satPb = _unsatPb = 0.0;
    char name[32];
@@ -61,14 +61,11 @@ SsatSolver::initCubeNetwork( int limit , bool fAll )
    sprintf( name , "qesto_cubes_network" );
    _pNtkCube->pName = Extra_UtilStrsav( name );
    _vMapVars = Vec_PtrStart( _s2->nVars() );
-   ntkCreatePi     ( _pNtkCube , _vMapVars ); 
-   ntkCreatePo     ( _pNtkCube ); 
+   ntkCreatePi( _pNtkCube , _vMapVars ); 
+   ntkCreatePo( _pNtkCube ); 
    if ( !fAll ) ntkCreateSelDef ( _pNtkCube , _vMapVars );
-   _cubeLimit = limit;
-   if ( limit > 0 ) {
-      _unsatClause.capacity( _cubeLimit );
-      _satClause.capacity( _cubeLimit );
-   }
+   if ( upper > 0 ) _unsatClause.capacity( _upperLimit=upper );
+   if ( lower > 0 ) _satClause.capacity( _lowerLimit=lower );
    _unsatClause.clear();
    _satClause.clear();
 }
