@@ -78,8 +78,8 @@ private:
    double      qSolve2SSAT        ( double , int , bool );
    double      aSolve2SSAT        ( double , int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
-   void        miniHitSet         ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
+   void        miniHitSet         ( vec<Lit>& );
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& );
    // write file for Model Counting
