@@ -305,24 +305,24 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
 ***********************************************************************/
 
 double
-SsatSolver::solveSsat( double range , int cLimit , bool fAll , bool fMini )
+SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini )
 {
    if ( _numLv != 2 || !isEVar( _rootVars[1][0] ) ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
       return false;
    }
-   return ( fAll ? aSolve( range , cLimit , fMini ) : 
-                   qSolve( range , cLimit , fMini ) );
+   return ( fAll ? aSolve( range , upper , lower , fMini ) : 
+                   qSolve( range , upper , lower , fMini ) );
 }
    
 double
-SsatSolver::qSolve( double range , int cLimit , bool fMini )
+SsatSolver::qSolve( double range , int upper , int lower , bool fMini )
 {
    _s1->simplify(); // avoid clause deletion after solving
    _s2 = buildQestoSelector();
    initSelLitMark(); // avoid repeat selection vars in blocking clause
    if ( isAVar( _rootVars[0][0] ) ) return qSolve2QBF();
-   else                             return qSolve2SSAT( range , cLimit , fMini );
+   else                             return qSolve2SSAT( range , upper , lower , fMini );
 }
 
 /**Function*************************************************************
@@ -413,11 +413,11 @@ SsatSolver::qSolve2QBF()
 ***********************************************************************/
 
 double
-SsatSolver::qSolve2SSAT( double range , int cLimit , bool fMini )
+SsatSolver::qSolve2SSAT( double range , int upper , int lower , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
-   initCubeNetwork( cLimit , false );
+   initCubeNetwork( upper , lower , false );
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
@@ -439,9 +439,10 @@ SsatSolver::qSolve2SSAT( double range , int cLimit , bool fMini )
             _s2->addClause( _s1->conflict );
          }
          if ( unsatCubeListFull() ) {
+            printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
             _unsatPb = cubeToNetwork(false);
             printf( "  > current unsat prob = %f\n" , _unsatPb );
-            Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
+            Abc_PrintTime( 1 , "  > current unsat time" , Abc_Clock() - clk );
             fflush(stdout);
          }
       }
@@ -452,9 +453,10 @@ SsatSolver::qSolve2SSAT( double range , int cLimit , bool fMini )
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
          if ( satCubeListFull() ) {
+            printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
             _satPb = cubeToNetwork(true);
             printf( "  > current sat prob = %f\n" , _satPb );
-            Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
+            Abc_PrintTime( 1 , "  > current sat time" , Abc_Clock() - clk );
             fflush(stdout);
          }
       }

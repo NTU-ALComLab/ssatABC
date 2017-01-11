@@ -57,7 +57,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   double      solveSsat( double , int , bool , bool ); // Solve 2SSAT/2QBF
+   double      solveSsat( double , int , int , bool , bool ); // Solve 2SSAT/2QBF
    double      upperBound() const { return 1.0 - _unsatPb; }
    double      lowerBound() const { return _satPb; }
    // Testing interface:
@@ -65,8 +65,8 @@ public:
 private:
    // member functions
    // solve interface
-   double      qSolve( double , int , bool ); // Qesto-like solve
-   double      aSolve( double , int , bool ); // All-SAT enumeration solve
+   double      qSolve( double , int , int , bool ); // Qesto-like solve
+   double      aSolve( double , int , int , bool ); // All-SAT enumeration solve
    // read helpers
    Solver *    parse_SDIMACS      ( gzFile& );
    void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
@@ -75,8 +75,8 @@ private:
    Solver *    buildAllSelector   ();
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    bool        qSolve2QBF         ();
-   double      qSolve2SSAT        ( double , int , bool );
-   double      aSolve2SSAT        ( double , int , bool );
+   double      qSolve2SSAT        ( double , int , int , bool );
+   double      aSolve2SSAT        ( double , int , int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& ) const;
@@ -91,9 +91,9 @@ private:
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting
-   void        initCubeNetwork    ( int , bool );
-   bool        unsatCubeListFull  () const { return (_unsatClause.size() == _cubeLimit); };
-   bool        satCubeListFull    () const { return (_satClause.size() == _cubeLimit); };
+   void        initCubeNetwork    ( int , int , bool );
+   bool        unsatCubeListFull  () const { return (_unsatClause.size() == _upperLimit); };
+   bool        satCubeListFull    () const { return (_satClause.size() == _lowerLimit); };
    double      cubeToNetwork      ( bool );
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        ntkCreatePo        ( Abc_Ntk_t * );
@@ -133,7 +133,8 @@ private:
    Abc_Obj_t       * _pConst1;         // network Const1 node
    double            _unsatPb;         // current UNSAT pb, uppper bound
    double            _satPb;           // current SAT pb, lower bound
-   int               _cubeLimit;       // number of cubes to invoke network construction
+   int               _upperLimit;      // number of UNSAT cubes to invoke network construction
+   int               _lowerLimit;      // number of SAT cubes to invoke network construction
 };
 
 // Implementation of inline methods:

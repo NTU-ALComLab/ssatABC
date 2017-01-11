@@ -50,11 +50,11 @@ using namespace std;
 ***********************************************************************/
 
 double
-SsatSolver::aSolve( double range , int cLimit , bool fMini )
+SsatSolver::aSolve( double range , int upper , int lower , bool fMini )
 {
    _s2 = buildAllSelector();
    assert( isRVar( _rootVars[0][0] ) ); // only support 2SSAT
-   return aSolve2SSAT( range , cLimit , fMini );
+   return aSolve2SSAT( range , upper , lower , fMini );
 }
 
 /**Function*************************************************************
@@ -93,11 +93,11 @@ SsatSolver::buildAllSelector()
 ***********************************************************************/
 
 double
-SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
+SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
-   initCubeNetwork( cLimit , true );
+   initCubeNetwork( upper , lower , true );
    sBkCla.capacity(_rootVars[0].size());
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
@@ -119,10 +119,10 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
             _s2->addClause( _s1->conflict );
          }
          if ( unsatCubeListFull() ) {
-            printf( "  > Collect %d UNSAT cubes, convert to network\n" , _cubeLimit );
+            printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
             _unsatPb = cubeToNetwork(false);
             printf( "  > current unsat prob = %f\n" , _unsatPb );
-            Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
+            Abc_PrintTime( 1 , "  > current unsat time" , Abc_Clock() - clk );
             fflush(stdout);
          }
       }
@@ -133,10 +133,10 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
          if ( satCubeListFull() ) {
-            printf( "  > Collect %d SAT cubes, convert to network\n" , _cubeLimit );
+            printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
             _satPb = cubeToNetwork(true);
             printf( "  > current sat prob = %f\n" , _satPb );
-            Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
+            Abc_PrintTime( 1 , "  > current sat time" , Abc_Clock() - clk );
             fflush(stdout);
          }
       }
