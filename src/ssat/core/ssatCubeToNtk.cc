@@ -152,6 +152,7 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , bool sa
       //printf( "  > %3d-th learnt clause\n" , i );
       //dumpCla( learntClause[i] );
       if ( learntClause[i].size() ) {
+         assert( learntClause[i].size() <= _s2->nVars() );
          pObj = Abc_NtkCreateNode( pNtkCube );
          sprintf( name , "c_%s_%d" , sat ? "SAT" : "UNSAT" , Abc_NtkObjNum(pNtkCube) );
          Abc_ObjAssignName( pObj , name , "" );
@@ -298,13 +299,14 @@ SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
    pNtkCopy = Abc_NtkDup( pNtkCube );
    Fraig_ParamsSetDefault( pParams );
    pNtkAig = Abc_NtkStrash ( pNtkCopy , 0 , 1 , 0 );
-   pNtk    = Abc_NtkFraig  ( pNtkAig , pParams , 0 , 0 );
-	Abc_NtkForEachPi( pNtk , pObj , i )
+   //pNtk    = Abc_NtkFraig  ( pNtkAig , pParams , 0 , 0 );
+	pNtk = pNtkAig;
+   Abc_NtkForEachPi( pNtk , pObj , i )
 	   pObj->dTemp = (float)_quan[_rootVars[0][i]];
 
    prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 1 );
    Abc_NtkDelete( pNtkCopy );
-   Abc_NtkDelete( pNtkAig );
+   //Abc_NtkDelete( pNtkAig );
    Abc_NtkDelete( pNtk );
    return prob;
 }

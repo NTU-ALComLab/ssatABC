@@ -119,6 +119,7 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
             _s2->addClause( _s1->conflict );
          }
          if ( unsatCubeListFull() ) {
+            printf( "  > Collect %d UNSAT cubes, convert to network\n" , _cubeLimit );
             _unsatPb = cubeToNetwork(false);
             printf( "  > current unsat prob = %f\n" , _unsatPb );
             Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
@@ -132,6 +133,7 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
          if ( satCubeListFull() ) {
+            printf( "  > Collect %d SAT cubes, convert to network\n" , _cubeLimit );
             _satPb = cubeToNetwork(true);
             printf( "  > current sat prob = %f\n" , _satPb );
             Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
@@ -143,10 +145,13 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
 }
 
 void
-SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
+SsatSolver::miniHitSet( const vec<Lit> & model , vec<Lit> & sBkCla )
 {
+   //printf( "  > original model:\n" );
+   //dumpCla( model );
    vec<Lit> rLits , eLits;
-   vec<Lit> minterm;
+   rLits.capacity(32);
+   eLits.capacity(32);
    vec<short> pick( _s1->nVars() , 0 ); // 1:picked ; 0:undecided ; -1:dropped
    Lit lit;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
@@ -159,11 +164,13 @@ SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
             else break;
          }
       }
-      if ( find == 1 ) {
+      if ( find == 1 && pick[var(lit)] != 1 ) {
          pick[var(lit)] = 1;
          if ( isRVar(var(lit)) ) sBkCla.push( ~lit );
       }
    }
+   //printf( "  > must pick:\n" );
+   //dumpCla( sBkCla );
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       bool picked = false;
       rLits.clear();
@@ -189,6 +196,14 @@ SsatSolver::miniHitSet( const vec<Lit> & sol , vec<Lit> & sBkCla )
          sBkCla.push( ~rLits[0] );
       }
    }
+   if ( sBkCla.size() > _rootVars[0].size() ) {
+      Abc_Print( -1 , "Wrong hitting set!!!\n" );
+      dumpCla(model);
+      dumpCla(sBkCla);
+      exit(1);
+   }
+   //printf( "  > minimal set:\n" );
+   //dumpCla( sBkCla );
 }
 
 ////////////////////////////////////////////////////////////////////////
