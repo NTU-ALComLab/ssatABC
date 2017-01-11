@@ -98,6 +98,7 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
    initCubeNetwork( cLimit , true );
+   sBkCla.capacity(_rootVars[0].size());
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
@@ -106,20 +107,19 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) { // UNSAT case
+         _unsatClause.push();
          if ( fMini ) {
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
-            _unsatClause.push();
             sBkCla.copyTo( _unsatClause.last() );
             _s2->addClause( sBkCla );
          }
          else {
-            _unsatClause.push();
             _s1->conflict.copyTo( _unsatClause.last() );
             _s2->addClause( _s1->conflict );
          }
-         if ( unsatCubeListFull() || _unsatClause.size() == 8 ) {
-            //printf( "  > Collect %d UNSAT cubes, convert to network\n" , _cubeLimit );
+         if ( unsatCubeListFull() ) {
+            printf( "  > Collect %d UNSAT cubes, convert to network\n" , _cubeLimit );
             _unsatPb = cubeToNetwork(false);
             printf( "  > current unsat prob = %f\n" , _unsatPb );
             Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
@@ -128,7 +128,7 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
       }
       else { // SAT case
          sBkCla.clear();
-         miniHitSet( rLits , sBkCla );
+         miniHitSet( sBkCla );
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
@@ -144,66 +144,108 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
    return _satPb; // lower bound
 }
 
+/**Function*************************************************************
+
+  Synopsis    [Minimum hitting set to generalize SAT solutions.]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
 void
-SsatSolver::miniHitSet( const vec<Lit> & model , vec<Lit> & sBkCla )
+SsatSolver::miniHitSet( vec<Lit> & sBkCla )
 {
-   //printf( "  > original model:\n" );
-   //dumpCla( model );
-   vec<Lit> rLits , eLits;
-   rLits.capacity(32);
-   eLits.capacity(32);
-   vec<short> pick( _s1->nVars() , 0 ); // 1:picked ; 0:undecided ; -1:dropped
+   vec<Lit> rLits , eLits , minterm;
+   rLits.capacity(8);
+   eLits.capacity(8);
+   minterm.capacity(_rootVars[0].size());
+   vec<bool> pick( _s1->nVars() , false );
+   bool claSat , cnfSat;
    Lit lit;
+   // step1: pick all one-hot true lits 
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      short find = 0;
       Clause & c = _s1->ca[_s1->clauses[i]];
+      short find = 0;
+      claSat = false;
       for ( int j = 0 ; j < c.size() ; ++j ) {
          if ( _s1->modelValue(c[j]) == l_True ) {
+            if ( pick[var(c[j])] ) {
+               claSat = true;
+               break;
+            }
             ++find;
             if ( find == 1 ) lit  = c[j];
             else break;
          }
       }
-      if ( find == 1 && pick[var(lit)] != 1 ) {
-         pick[var(lit)] = 1;
+      if ( claSat ) continue;
+      if ( find == 1 ) {
+         pick[var(lit)] = true;
          if ( isRVar(var(lit)) ) sBkCla.push( ~lit );
       }
    }
-   //printf( "  > must pick:\n" );
-   //dumpCla( sBkCla );
+   // step2: collect minterm from clauses with more than 1 true lit
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      bool picked = false;
+      Clause & c = _s1->ca[_s1->clauses[i]];
+      claSat = false;
       rLits.clear();
       eLits.clear();
-      Clause & c = _s1->ca[_s1->clauses[i]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
          if ( _s1->modelValue(c[j]) == l_True ) {
             if ( pick[var(c[j])] ) {
-               picked = true;
+               claSat = true;
                break;
             }
-            if ( isRVar(var(c[j])) ) rLits.push(c[j]);
-            else                     eLits.push(c[j]);
+            isRVar(var(c[j])) ? rLits.push(c[j]) : eLits.push(c[j]);
          }
       }
-      if ( !picked ) {
+      if ( !claSat ) {
          if ( eLits.size() ) {
-            pick[var(eLits[0])] = 1;
+            pick[var(eLits[0])] = true;
             continue;
          }
          assert( rLits.size() > 1 );
-         pick[var(rLits[0])] = 1;
-         sBkCla.push( ~rLits[0] );
+         for ( int j = 0 ; j < rLits.size() ; ++j ) {
+            pick[var(rLits[j])] = true;
+            minterm.push(rLits[j]);
+         }
       }
    }
+   // step3: try to drop lits in minterm
+   if ( minterm.size() ) {
+      for ( int i = 0 ; i < minterm.size() ; ++i ) {
+         pick[var(minterm[i])] = false;
+         cnfSat = true;
+         for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
+            Clause & c = _s1->ca[_s1->clauses[j]];
+            claSat = false;
+            for ( int k = 0 ; k < c.size() ; ++k ) {
+               if ( pick[var(c[k])] && _s1->modelValue(c[k]) == l_True ) {
+                  claSat = true;
+                  break;
+               }
+            }
+            if ( !claSat ) {
+               cnfSat = false;
+               break;
+            }
+         }
+         if ( !cnfSat ) {
+            pick[var(minterm[i])] = true;
+            sBkCla.push( ~minterm[i] );
+         }
+      }
+   }
+   // sanity check: avoid duplicated lits --> invalid write!
    if ( sBkCla.size() > _rootVars[0].size() ) {
       Abc_Print( -1 , "Wrong hitting set!!!\n" );
-      dumpCla(model);
       dumpCla(sBkCla);
       exit(1);
    }
-   //printf( "  > minimal set:\n" );
-   //dumpCla( sBkCla );
 }
 
 ////////////////////////////////////////////////////////////////////////
