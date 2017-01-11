@@ -118,8 +118,8 @@ SsatSolver::aSolve2SSAT( double range , int cLimit , bool fMini )
             _s1->conflict.copyTo( _unsatClause.last() );
             _s2->addClause( _s1->conflict );
          }
-         if ( unsatCubeListFull() ) {
-            printf( "  > Collect %d UNSAT cubes, convert to network\n" , _cubeLimit );
+         if ( unsatCubeListFull() || _unsatClause.size() == 8 ) {
+            //printf( "  > Collect %d UNSAT cubes, convert to network\n" , _cubeLimit );
             _unsatPb = cubeToNetwork(false);
             printf( "  > current unsat prob = %f\n" , _unsatPb );
             Abc_PrintTime( 1 , "  > current time" , Abc_Clock() - clk );
