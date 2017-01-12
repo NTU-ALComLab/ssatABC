@@ -490,7 +490,7 @@ Pb_CommandBddSp( Abc_Frame_t * pAbc , int argc , char ** argv )
 		Abc_Print( -1 , "Only support strashed networks for now.\n" );
 		return 1;
 	}
-   if ( fAll ) Pb_BddComputeAllSp( pNtk , numExist , fGrp );
+   if ( fAll ) Pb_BddComputeAllSp( pNtk , numExist , fGrp , fVerbose );
 	else        Pb_BddComputeSp( pNtk , numPo , numExist , fGrp , fVerbose );
 
    return 0;
