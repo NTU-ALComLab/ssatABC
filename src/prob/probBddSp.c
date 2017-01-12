@@ -40,7 +40,7 @@ extern DdNode* Abc_NodeGlobalBdds_rec       ( DdManager * , Abc_Obj_t * , int , 
 extern MtrNode* Cudd_MakeTreeNode           ( DdManager * , unsigned int , unsigned int , unsigned int );
 // main methods
 float Pb_BddComputeSp                       ( Abc_Ntk_t * , int , int , int , int );
-void  Pb_BddComputeAllSp                    ( Abc_Ntk_t * , int , int );
+void  Pb_BddComputeAllSp                    ( Abc_Ntk_t * , int , int , int );
 // helpers
 static DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
 static DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
@@ -282,12 +282,10 @@ Abc_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp 
 	 {
        if ( Abc_ObjFanoutNum(pObj) > 0 ) {
           bFunc = dd->vars[i];
-			 //Cudd_Regular( bFunc )->trueP = pObj->dTemp;
           Abc_ObjSetGlobalBdd( pObj , bFunc );  
 			 Cudd_Ref( bFunc );
        }
 	 }
-
     // construct the BDD for numPo
     Counter   = 0;
     pProgress = Extra_ProgressBarStart( stdout , Abc_NtkNodeNum( pNtk ) );
@@ -313,7 +311,6 @@ Abc_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp 
 	 Cudd_Ref( bFunc ); 
     Abc_ObjSetGlobalBdd( pObj , bFunc );
     Extra_ProgressBarStop( pProgress );
-
     // reset references
     Abc_NtkForEachObj( pNtk, pObj, i )
         if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBi(pObj) )
@@ -322,7 +319,6 @@ Abc_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp 
         if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBo(pObj) )
             Abc_ObjForEachFanin( pObj, pFanin, k )
                 pFanin->vFanouts.nSize++;
-
     // reorder one more time
     if ( fReorder ) {
         Cudd_ReduceHeap( dd, CUDD_REORDER_SYMM_SIFT, 1 );
@@ -344,7 +340,7 @@ Abc_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp 
 ***********************************************************************/
 
 void
-Pb_BddComputeAllSp( Abc_Ntk_t * pNtk , int numExist , int fGrp )
+Pb_BddComputeAllSp( Abc_Ntk_t * pNtk , int numExist , int fGrp , int fVerbose )
 {
    DdManager * dd;
 	DdNode * bFunc;
@@ -357,16 +353,14 @@ Pb_BddComputeAllSp( Abc_Ntk_t * pNtk , int numExist , int fGrp )
 	maxId    = -1;
 	maxProb  = 0.0;
 
-	printf( "Pb_BddComputeAllSp() : build bdds for every Po\n" );
+	if ( fVerbose ) printf( "  > Pb_BddComputeAllSp() : build bdds for every Po\n" );
 	clk = Abc_Clock();
    dd  = Pb_NtkBuildGlobalBdds( pNtk , numExist , fGrp );
    if ( !dd ) {
 	   Abc_Print( -1 , "Bdd construction has failed.\n" );
 		return;
 	}
-#if 0
-	Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
-   
+	if ( fVerbose ) Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
    // NZ : check exist/random variables are correctly ordered
    if ( numExist > 0 ) {
       if ( Cudd_ReadInvPerm( dd , 0 ) > numExist-1 ) {
@@ -378,32 +372,27 @@ Pb_BddComputeAllSp( Abc_Ntk_t * pNtk , int numExist , int fGrp )
          }
       }
    }
-   
-	Abc_NtkForEachPo( pNtk , pObj , i )
-	{
-		bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , i ) );
-      Pb_BddResetProb( bFunc );	   
-	}
-
 	clk = Abc_Clock();
 	Abc_NtkForEachPo( pNtk , pObj , i )
 	{
 	   bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , i ) );
-	   printf( "Pb_BddComputeSp() : compute prob for %d-th Po\n" , i );
-	   //clk = Abc_Clock();
+      Pb_BddResetProb( dd , bFunc ); 
+	   if ( fVerbose ) printf( "Pb_BddComputeSp() : compute prob for %d-th Po\n" , i );
+	   clk = Abc_Clock();
       Pb_BddComputeProb( pNtk , bFunc , numExist );
-	   //Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
-	   printf( "Bddsp : numPo = %d " , i );
+	   if ( fVerbose ) {
+         Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
+	      printf( "Bddsp : numPo = %d " , i );
+      }
 		temp = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
 		if ( temp > maxProb ) {
 		   maxProb = temp;
-			maxId   = i;
+         maxId   = i;
 		}
-		Pb_BddPrintProb( pNtk , bFunc , numExist );
+      if ( fVerbose ) Pb_BddPrintProb( pNtk , bFunc , numExist );
 	}
-	Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
+	if ( fVerbose ) Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
 	printf( "  > max prob = %f , numPo = %d\n" , maxProb , maxId );
-#endif
 	Abc_NtkFreeGlobalBdds( pNtk , 1 );
 }
 
@@ -428,24 +417,17 @@ Pb_NtkBuildGlobalBdds( Abc_Ntk_t * pNtk , int numExist , int fGrp )
     DdManager * dd;
     DdNode * bFunc;
     int nBddSizeMax , fReorder , fDropInternal , fVerbose , Counter , k , i;
-    int maxId;
-    float temp , maxProb;
 
     // set defaults
 	 nBddSizeMax   = ABC_INFINITY;
 	 fReorder      = ( numExist > 0 ) ? 0 : 1;
 	 fDropInternal = 1;
 	 fVerbose      = 0;
-    maxId         = -1;
-    maxProb       = 0.0;
-
     // remove dangling nodes
     Abc_AigCleanup( (Abc_Aig_t *)pNtk->pManFunc );
-
     // start the manager
     assert( Abc_NtkGlobalBdd(pNtk) == NULL );
     dd = Cudd_Init( Abc_NtkPiNum(pNtk), 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0 );
-    
     // NZ : group variables
     if ( numExist > 0 && fGrp ) {
        printf( " >  Start grouping PI and AI variables\n" );
@@ -454,50 +436,40 @@ Pb_NtkBuildGlobalBdds( Abc_Ntk_t * pNtk , int numExist , int fGrp )
        fReorder = 1;
        printf( " >  Done\n" );
     }
-    
     pAttMan = Vec_AttAlloc( Abc_NtkObjNumMax(pNtk) + 1, dd, (void (*)(void*))Extra_StopManager, NULL, (void (*)(void*,void*))Cudd_RecursiveDeref );
     Vec_PtrWriteEntry( pNtk->vAttrs, VEC_ATTR_GLOBAL_BDD, pAttMan );
-
     // set reordering
     if ( fReorder ) Cudd_AutodynEnable( dd, CUDD_REORDER_SYMM_SIFT );
-
     // assign the constant node BDD
     pObj = Abc_AigConst1(pNtk);
-    if ( Abc_ObjFanoutNum(pObj) > 0 )
-    {
-        bFunc = dd->one;
-        Abc_ObjSetGlobalBdd( pObj, bFunc );   Cudd_Ref( bFunc );
+    if ( Abc_ObjFanoutNum(pObj) > 0 ) {
+       bFunc = dd->one;
+       Abc_ObjSetGlobalBdd( pObj, bFunc );   Cudd_Ref( bFunc );
     }
     // set the elementary variables
     Abc_NtkForEachPi( pNtk, pObj, i )
         if ( Abc_ObjFanoutNum(pObj) > 0 )
         {
             bFunc = dd->vars[i];
-//            bFunc = dd->vars[Abc_NtkCiNum(pNtk) - 1 - i];
             Abc_ObjSetGlobalBdd( pObj, bFunc );  Cudd_Ref( bFunc );
         }
-
     // collect the global functions of the COs
     Counter = 0;
     // construct the BDDs
     pProgress = Extra_ProgressBarStart( stdout, Abc_NtkNodeNum(pNtk) );
     Abc_NtkForEachPo( pNtk, pObj, i )
     {
-       printf( "i = %d " , i);
-       fflush( stdout );
         // NZ : group variables if they were free
         if ( numExist > 0 && fGrp && !dd->tree ) {
            Cudd_MakeTreeNode( dd , 0 , numExist , MTR_DEFAULT );
            Cudd_MakeTreeNode( dd , numExist , Abc_NtkPiNum(pNtk)-numExist , MTR_DEFAULT );
         }
         bFunc = Abc_NodeGlobalBdds_rec( dd, Abc_ObjFanin0(pObj), nBddSizeMax, fDropInternal, pProgress, &Counter, fVerbose );
-        if ( bFunc == NULL )
-        {
+        if ( bFunc == NULL ) {
             if ( fVerbose )
             printf( "Constructing global BDDs is aborted.\n" );
             Abc_NtkFreeGlobalBdds( pNtk, 0 );
             Cudd_Quit( dd ); 
-
             // reset references
             Abc_NtkForEachObj( pNtk, pObj, i )
                 if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBi(pObj) )
@@ -510,34 +482,8 @@ Pb_NtkBuildGlobalBdds( Abc_Ntk_t * pNtk , int numExist , int fGrp )
         }
         bFunc = Cudd_NotCond( bFunc, (int)Abc_ObjFaninC0(pObj) );  Cudd_Ref( bFunc ); 
         Abc_ObjSetGlobalBdd( pObj, bFunc );
-        // NZ : compute signal prob
-        if ( numExist > 0 ) {
-           if ( Cudd_ReadInvPerm( dd , 0 ) > numExist-1 ) {
-              printf( "  > AI(%d) is ordered before PI(%d) --> shuffle back!\n" , Cudd_ReadInvPerm(dd , 0) , numExist );
-              if ( Pb_BddShuffleGroup( dd , numExist , Abc_NtkPiNum(pNtk)-numExist ) == 0 ) {
-                 Abc_Print( -1 , "Bdd Shuffle has failed.\n" );
-                 Abc_NtkFreeGlobalBdds( pNtk , 0 );
-                 Cudd_Quit( dd ); 
-                 return NULL;
-              }
-           }
-        }
-        printf( "Computing %d-th Po : " , i );
-        Pb_BddResetProb( dd , bFunc );
-        Pb_BddComputeProb( pNtk , bFunc , numExist );
-        temp = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
-        if ( temp >= maxProb ) {
-           maxProb = temp;
-           maxId   = i;
-        }
-		  printf( "prob = %f , cur max = %f , numPo = %d\n" , temp , maxProb , maxId );
-        fflush( stdout );
     }
-    // NZ : print max prob
-	 printf( "  > max prob = %f , numPo = %d\n" , maxProb , maxId );
-
     Extra_ProgressBarStop( pProgress );
-
     // reset references
     Abc_NtkForEachObj( pNtk, pObj, i )
         if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBi(pObj) )
@@ -546,7 +492,6 @@ Pb_NtkBuildGlobalBdds( Abc_Ntk_t * pNtk , int numExist , int fGrp )
         if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBo(pObj) )
             Abc_ObjForEachFanin( pObj, pFanin, k )
                 pFanin->vFanouts.nSize++;
-
     // reorder one more time
     if ( fReorder )
     {
