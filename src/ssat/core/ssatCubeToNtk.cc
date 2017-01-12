@@ -285,6 +285,7 @@ Pb_WriteWMCCla( FILE * out , Abc_Ntk_t * pNtk )
 
 // FIXME: disable fraig due to complexity
 // SOP to BDD ?? (not via AIG)
+// in Abc_NtkCollapse, always strash ...
 double
 SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
 {
@@ -302,7 +303,7 @@ SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
    Abc_NtkForEachPi( pNtk , pObj , i )
 	   pObj->dTemp = (float)_quan[_rootVars[0][i]];
 
-   prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 1 );
+   prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 0 , 0 );
    Abc_NtkDelete( pNtkCopy );
    //Abc_NtkDelete( pNtkAig );
    Abc_NtkDelete( pNtk );

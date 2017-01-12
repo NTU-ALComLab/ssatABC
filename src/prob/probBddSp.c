@@ -35,21 +35,21 @@ ABC_NAMESPACE_IMPL_START
 ////////////////////////////////////////////////////////////////////////
 
 // external methods
-extern void*   Abc_NtkBuildGlobalBdds ( Abc_Ntk_t * , int , int , int , int );
-extern DdNode* Abc_NodeGlobalBdds_rec ( DdManager * , Abc_Obj_t * , int , int , ProgressBar * , int * , int );
-extern MtrNode* Cudd_MakeTreeNode     ( DdManager * , unsigned int , unsigned int , unsigned int );
+extern void*   Abc_NtkBuildGlobalBdds       ( Abc_Ntk_t * , int , int , int , int );
+extern DdNode* Abc_NodeGlobalBdds_rec       ( DdManager * , Abc_Obj_t * , int , int , ProgressBar * , int * , int );
+extern MtrNode* Cudd_MakeTreeNode           ( DdManager * , unsigned int , unsigned int , unsigned int );
 // main methods
-float Pb_BddComputeSp           ( Abc_Ntk_t * , int , int , int );
-void  Pb_BddComputeAllSp        ( Abc_Ntk_t * , int , int );
+float Pb_BddComputeSp                       ( Abc_Ntk_t * , int , int , int , int );
+void  Pb_BddComputeAllSp                    ( Abc_Ntk_t * , int , int );
 // helpers
-DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
-DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
-void       Pb_BddResetProb           ( DdManager * , DdNode * );
-void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int );
-float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int );
-void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
-void       Pb_BddPrintExSol          ( Abc_Ntk_t * , DdNode * , int , int );
-int        Pb_BddShuffleGroup        ( DdManager * , int , int );
+static DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
+static DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
+static void       Pb_BddResetProb           ( DdManager * , DdNode * );
+static void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int );
+static float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int );
+static void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
+static void       Pb_BddPrintExSol          ( Abc_Ntk_t * , DdNode * , int , int );
+static int        Pb_BddShuffleGroup        ( DdManager * , int , int );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -68,22 +68,21 @@ int        Pb_BddShuffleGroup        ( DdManager * , int , int );
 ***********************************************************************/
 
 float
-Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
+Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp , int fVerbose )
 {
    DdManager * dd;
 	DdNode * bFunc;
 	abctime clk;
    float prob;
 
-	//printf( "Pb_BddComputeSp() : build bdd for %d-th Po\n" , numPo );
+	if ( fVerbose ) printf( "  > Pb_BddComputeSp() : build bdd for %d-th Po\n" , numPo );
 	clk = Abc_Clock();
    dd  = Abc_NtkPoBuildGlobalBdd( pNtk , numPo , numExist , fGrp );
 	if ( !dd ) {
 	   Abc_Print( -1 , "Bdd construction has failed.\n" );
 		return -1;
 	}
-	//Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
-   
+	if ( fVerbose ) Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
    // NZ : check exist/random variables are correctly ordered
    if ( numExist > 0 ) {
       if ( Cudd_ReadInvPerm( dd , 0 ) > numExist-1 ) {
@@ -95,19 +94,17 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
          }
       }
    }
-
-	//printf( "Pb_BddComputeSp() : compute prob for %d-th Po (%s) on its bdd\n" , numPo , Abc_ObjName(Abc_NtkPo(pNtk,numPo)));
 	bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , numPo ) );
-	//printf( "bFunc = %p\n" , bFunc );
-	//printf( "Pb_BddComputeSp() : compute prob for %d-th Po (%s) on its bdd\n" , numPo , Abc_ObjName(Abc_NtkPo(pNtk,numPo)));
 	clk = Abc_Clock();
 	Pb_BddResetProb( dd , bFunc );
    Pb_BddComputeProb( pNtk , bFunc , numExist );
-	//Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
+	if ( fVerbose ) Abc_PrintTime( 1 , "  > Prob computation" , Abc_Clock() - clk );
 	
-	//printf( "Bddsp : numPo = %d " , numPo );
    prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
-   //Pb_BddPrintProb( pNtk , bFunc , numExist );
+   if ( fVerbose ) {
+      printf( "  > %d-th Po" , numPo );
+      Pb_BddPrintProb( pNtk , bFunc , numExist );
+   }
 	Abc_NtkFreeGlobalBdds( pNtk , 1 );
    return prob;
 }
@@ -125,17 +122,6 @@ Pb_BddResetProb( DdManager * dd , DdNode * bFunc )
    DdNode * node;
    Cudd_ForeachNode( dd , bFunc , gen , node )
       Cudd_Regular(node)->pMax = Cudd_Regular(node)->pMin = Cudd_IsConstant(node) ? 1.0 : -1.0;
-#if 0
-   if ( !Cudd_IsConstant( bFunc ) ) {
-      if ( Cudd_Regular( bFunc )->pMax == -1.0 );  // FIXME: bad practice! use uninitialized values
-		else {
-         Cudd_Regular( bFunc )->pMax = Cudd_Regular( bFunc )->pMin = -1.0;
-		   Pb_BddResetProb( Cudd_T( bFunc ) );
-		   Pb_BddResetProb( Cudd_E( bFunc ) );
-		}
-	}
-	else Cudd_Regular(bFunc)->pMax = Cudd_Regular(bFunc)->pMin = 1.0;
-#endif
 }
 
 float
@@ -148,9 +134,7 @@ Pb_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
    fComp = Cudd_IsComplement( bFunc );
 
 	if ( Cudd_IsConstant( bFunc ) ) return Cudd_IsComplement( bFunc ) ? 0.0 : 1.0;
-	if ( Cudd_Regular( bFunc )->pMax != -1.0 ) {} // computed node
-   else {
-		// compute value for this node if it is not visited
+	if ( Cudd_Regular( bFunc )->pMax == -1.0 ) { // unvisited node
 		if ( numPi < numExist ) { // exist var -> max / min
 	      pThenMax = Pb_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numExist );    
 	      pElseMax = Pb_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numExist );
