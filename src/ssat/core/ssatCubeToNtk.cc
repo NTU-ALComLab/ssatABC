@@ -283,17 +283,19 @@ Pb_WriteWMCCla( FILE * out , Abc_Ntk_t * pNtk )
 
 ***********************************************************************/
 
+// FIXME: disable fraig due to complexity
+// SOP to BDD ?? (not via AIG)
 double
 SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
 {
-   Fraig_Params_t Params , * pParams = &Params;
+   //Fraig_Params_t Params , * pParams = &Params;
    Abc_Ntk_t * pNtk , * pNtkCopy , * pNtkAig;
    Abc_Obj_t * pObj;
    double prob;
    int i;
    
    pNtkCopy = Abc_NtkDup( pNtkCube );
-   Fraig_ParamsSetDefault( pParams );
+   //Fraig_ParamsSetDefault( pParams );
    pNtkAig = Abc_NtkStrash ( pNtkCopy , 0 , 1 , 0 );
    //pNtk    = Abc_NtkFraig  ( pNtkAig , pParams , 0 , 0 );
 	pNtk = pNtkAig;
