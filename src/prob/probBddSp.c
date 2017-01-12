@@ -44,7 +44,7 @@ void  Pb_BddComputeAllSp        ( Abc_Ntk_t * , int , int );
 // helpers
 DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
 DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
-void       Pb_BddResetProb           ( DdNode * );
+void       Pb_BddResetProb           ( DdManager * , DdNode * );
 void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int );
 float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int );
 void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
@@ -101,7 +101,7 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp )
 	//printf( "bFunc = %p\n" , bFunc );
 	//printf( "Pb_BddComputeSp() : compute prob for %d-th Po (%s) on its bdd\n" , numPo , Abc_ObjName(Abc_NtkPo(pNtk,numPo)));
 	clk = Abc_Clock();
-	Pb_BddResetProb( bFunc );
+	Pb_BddResetProb( dd , bFunc );
    Pb_BddComputeProb( pNtk , bFunc , numExist );
 	//Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
 	
@@ -119,9 +119,14 @@ Pb_BddComputeProb( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
 }
 
 void
-Pb_BddResetProb( DdNode * bFunc )
+Pb_BddResetProb( DdManager * dd , DdNode * bFunc )
 {
-	if ( !Cudd_IsConstant( bFunc ) ) {
+   DdGen  * gen;
+   DdNode * node;
+   Cudd_ForeachNode( dd , bFunc , gen , node )
+      Cudd_Regular(node)->pMax = Cudd_Regular(node)->pMin = Cudd_IsConstant(node) ? 1.0 : -1.0;
+#if 0
+   if ( !Cudd_IsConstant( bFunc ) ) {
       if ( Cudd_Regular( bFunc )->pMax == -1.0 );  // FIXME: bad practice! use uninitialized values
 		else {
          Cudd_Regular( bFunc )->pMax = Cudd_Regular( bFunc )->pMin = -1.0;
@@ -130,6 +135,7 @@ Pb_BddResetProb( DdNode * bFunc )
 		}
 	}
 	else Cudd_Regular(bFunc)->pMax = Cudd_Regular(bFunc)->pMin = 1.0;
+#endif
 }
 
 float
@@ -533,7 +539,7 @@ Pb_NtkBuildGlobalBdds( Abc_Ntk_t * pNtk , int numExist , int fGrp )
            }
         }
         printf( "Computing %d-th Po : " , i );
-        Pb_BddResetProb( bFunc );
+        Pb_BddResetProb( dd , bFunc );
         Pb_BddComputeProb( pNtk , bFunc , numExist );
         temp = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
         if ( temp >= maxProb ) {
