@@ -55,7 +55,6 @@ static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 void
 SsatSolver::initCubeNetwork( int upper , int lower , bool fAll )
 {
-   _satPb = _unsatPb = 0.0;
    char name[32];
    _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "qesto_cubes_network" );
@@ -88,12 +87,10 @@ SsatSolver::ntkCreatePi( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars )
    Abc_Obj_t * pPi;
    char name[1024];
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
-      //printf( "  > Create Pi for randome variable %d\n" , _rootVars[0][i]+1 );
       pPi = Abc_NtkCreatePi( pNtkCube );
       sprintf( name , "r%d" , _rootVars[0][i]+1 );
       Abc_ObjAssignName( pPi , name , "" );
       Vec_PtrWriteEntry( vMapVars , _rootVars[0][i] , pPi );
-      //printf( "  > Var %d map to Obj %s\n" , _rootVars[0][i]+1 , Abc_ObjName(pPi) );
    }
 }
 

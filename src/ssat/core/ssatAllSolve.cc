@@ -53,8 +53,8 @@ double
 SsatSolver::aSolve( double range , int upper , int lower , bool fMini )
 {
    _s2 = buildAllSelector();
-   assert( isRVar( _rootVars[0][0] ) ); // only support 2SSAT
-   return aSolve2SSAT( range , upper , lower , fMini );
+   if ( isAVar( _rootVars[0][0] ) ) return aSolve2QBF();
+   else                             return aSolve2SSAT( range , upper , lower , fMini );
 }
 
 /**Function*************************************************************
@@ -78,6 +78,26 @@ SsatSolver::buildAllSelector()
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
       while ( _rootVars[0][i] >= S->nVars() ) S->newVar();
    return S;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [All-Sat 2QBF solving internal function]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+bool
+SsatSolver::aSolve2QBF()
+{
+   // TODO
+   printf( "  > Under construction...\n" );
+   return false;
 }
 
 /**Function*************************************************************

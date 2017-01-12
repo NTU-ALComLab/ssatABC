@@ -52,7 +52,7 @@ class SsatSolver {
 
 public:
    // Constructor/Destructor:
-   SsatSolver() : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) {}
+   SsatSolver() : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) {}
    ~SsatSolver();
    // Problem specification:
    void        readSSAT( gzFile& );
@@ -76,6 +76,7 @@ private:
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    bool        qSolve2QBF         ();
    double      qSolve2SSAT        ( double , int , int , bool );
+   bool        aSolve2QBF         ();
    double      aSolve2SSAT        ( double , int , int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
