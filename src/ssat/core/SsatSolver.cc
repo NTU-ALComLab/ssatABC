@@ -220,10 +220,11 @@ mapWeight( Var x , vec<double> & weights , double weight )
 void
 SsatSolver::toDimacs( FILE * f , Clause & c , vec<Var> & map , Var & max )
 {
-   if ( _s2->satisfied(c) ) return;
+   Solver * S = _s1;
+   if ( S->satisfied(c) ) return;
 
    for ( int i = 0 ; i < c.size() ; ++i )
-      if ( _s2->value(c[i]) != l_False )
+      if ( S->value(c[i]) != l_False )
          fprintf( f , "%s%d " , sign(c[i]) ? "-" : "" , mapVar( var(c[i]) , map , max ) + 1 );
    fprintf( f , "0\n" );
 }
@@ -291,10 +292,7 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
    for ( int i = 0 ; i < S->clauses.size() ; ++i )
       toDimacs( f , S->ca[S->clauses[i]] , map , max );
 
-   for ( int i = 0 ; i < assumps.size() ; ++i ) {
-      fprintf( f , "w %d -1\n" , mapVar( var(assumps[i]) , map , max ) + 1 );
-   }
-   // toDimacsWeighted( f , weights , max );
+   toDimacsWeighted( f , weights , max );
 }
 
 /**Function*************************************************************
@@ -357,7 +355,6 @@ SsatSolver::erSolve2SSAT()
    abctime clk = Abc_Clock();
    
    for(;;) {
-      test();
       if ( !_s2->solve() )
          return _satPb;
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
@@ -369,17 +366,15 @@ SsatSolver::erSolve2SSAT()
          _s2->addClause( sBkCla );
       }
       else { // SAT case
-         // Write to wcnf for Cachet to do MC
-         // Add Learn Clause to 2
-         sBkCla.clear();
-         subvalue = countModels(eLits, 1);
-         cout << "  > Get subvalue: " << subvalue << '\n';
+         subvalue = countModels(eLits);
          if( subvalue > _satPb ) _satPb = subvalue;
+
+         sBkCla.clear();
          collectBkClaER( sBkCla );
          _s2->addClause( sBkCla );
       }
    }
-   return _satPb; // lower bound
+   return _satPb;
 }
 
 Solver*
@@ -624,16 +619,17 @@ SsatSolver::baseProb() const
 ***********************************************************************/
 
 double
-SsatSolver::countModels( const vec<Lit> & sBkCla, bool er )
+SsatSolver::countModels( const vec<Lit> & sBkCla )
 {
    FILE * file;
    int length = 1024;
    char prob_str[length] , cmdModelCount[length];
 
-   vec<Lit> assump( sBkCla.size() );
-   for ( int i = 0 ; i < sBkCla.size() ; ++i ) assump[i] = ~sBkCla[i];
+   // vec<Lit> assump( sBkCla.size() );
+   // for ( int i = 0 ; i < sBkCla.size() ; ++i ) assump[i] = ~sBkCla[i];
    
-   toDimacsWeighted( "temp.wcnf" , assump );
+   // toDimacsWeighted( "temp.wcnf" , assump );
+   toDimacsWeighted( "temp.wcnf" , sBkCla );
    sprintf( cmdModelCount , "bin/cachet temp.wcnf > tmp.log");
    if ( system( cmdModelCount ) ) {
       fprintf( stderr , "Error! Problems with cachet execution...\n" );

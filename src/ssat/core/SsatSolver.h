@@ -91,7 +91,7 @@ private:
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    double      baseProb           () const;
-   double      countModels        ( const vec<Lit>& , bool );
+   double      countModels        ( const vec<Lit>& );
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& );
