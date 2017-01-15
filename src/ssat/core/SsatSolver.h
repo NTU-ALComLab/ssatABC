@@ -79,10 +79,7 @@ private:
    double      qSolve2SSAT        ( double , int , int , bool );
    bool        aSolve2QBF         ();
    double      aSolve2SSAT        ( double , int , int , bool );
-   
-   // New Function
    double      erSolve2SSAT       ();
-
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    void        collectBkClaER     ( vec<Lit>& );
