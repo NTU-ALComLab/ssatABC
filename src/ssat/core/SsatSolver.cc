@@ -249,8 +249,10 @@ SsatSolver::toDimacsWeighted( const char * file , const vec<Lit> & assumps )
 void
 SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
 {
+   Solver * S = _s1;
+
    // Handle case when solver is in contradictory state:
-   if ( !_s2->ok ) {
+   if ( !S->ok ) {
       fprintf( f , "p cnf 1 2\n1 0\n-1 0\n" );
       return;
    }
@@ -262,12 +264,12 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
    
    // map var to 0 ~ max
    // map 0 ~ max to original weight
-   for ( int i = 0 ; i < _s2->clauses.size() ; ++i )
-      if ( !_s2->satisfied( _s2->ca[_s2->clauses[i]]) ) {
+   for ( int i = 0 ; i < S->clauses.size() ; ++i )
+      if ( !S->satisfied( S->ca[S->clauses[i]]) ) {
          cnt++;
-         Clause& c = _s2->ca[_s2->clauses[i]];
+         Clause& c = S->ca[S->clauses[i]];
          for ( int j = 0 ; j < c.size(); ++j )
-            if ( _s2->value(c[j]) != l_False ) {
+            if ( S->value(c[j]) != l_False ) {
                tmpVar = mapVar( var(c[j]) , map , max );
                mapWeight( tmpVar, weights, ( isRVar(var(c[j])) ? _quan[var(c[j])] : -1 ) );
             }
@@ -286,10 +288,13 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
       fprintf( f , "%s%d 0\n" , sign(assumps[i]) ? "-" : "" , mapVar( var(assumps[i]) , map , max ) + 1 );
    }
 
-   for ( int i = 0 ; i < _s2->clauses.size() ; ++i )
-      toDimacs( f , _s2->ca[_s2->clauses[i]] , map , max );
+   for ( int i = 0 ; i < S->clauses.size() ; ++i )
+      toDimacs( f , S->ca[S->clauses[i]] , map , max );
 
-   toDimacsWeighted( f , weights , max );
+   for ( int i = 0 ; i < assumps.size() ; ++i ) {
+      fprintf( f , "w %d -1\n" , mapVar( var(assumps[i]) , map , max ) + 1 );
+   }
+   // toDimacsWeighted( f , weights , max );
 }
 
 /**Function*************************************************************
@@ -307,9 +312,14 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
 double
 SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini )
 {
-   if ( _numLv != 2 || !isEVar( _rootVars[1][0] ) ) {
+   if ( _numLv != 2 ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
       return false;
+   }
+   else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) ) {
+      double ans = erSolve2SSAT();
+      cout << "  > Answer:" << ans;
+      return ans;
    }
    return ( fAll ? aSolve( range , upper , lower , fMini ) : 
                    qSolve( range , upper , lower , fMini ) );
@@ -324,6 +334,87 @@ SsatSolver::qSolve( double range , int upper , int lower , bool fMini )
    if ( isAVar( _rootVars[0][0] ) ) return qSolve2QBF();
    else                             return qSolve2SSAT( range , upper , lower , fMini );
 }
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+double
+SsatSolver::erSolve2SSAT()
+{
+   _s1->simplify();
+   _s2 = buildERSelector();
+   
+   vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
+   double subvalue;
+   abctime clk = Abc_Clock();
+   
+   for(;;) {
+      test();
+      if ( !_s2->solve() )
+         return _satPb;
+      for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
+         eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
+
+      if ( !_s1->solve(eLits) ) { // UNSAT case
+         sBkCla.clear();
+         miniUnsatCore( _s1->conflict , sBkCla );
+         _s2->addClause( sBkCla );
+      }
+      else { // SAT case
+         // Write to wcnf for Cachet to do MC
+         // Add Learn Clause to 2
+         sBkCla.clear();
+         subvalue = countModels(eLits, 1);
+         cout << "  > Get subvalue: " << subvalue << '\n';
+         if( subvalue > _satPb ) _satPb = subvalue;
+         collectBkClaER( sBkCla );
+         _s2->addClause( sBkCla );
+      }
+   }
+   return _satPb; // lower bound
+}
+
+Solver*
+SsatSolver::buildERSelector()
+{
+   Solver * S = new Solver;
+   
+   for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
+      while ( _rootVars[0][i] >= S->nVars() ) S->newVar();
+   
+   return S;
+}
+
+void
+SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
+{
+   bool block = true;
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      Clause & c = _s1->ca[_s1->clauses[i]];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( isEVar(var(c[j])) && _s1->modelValue(c[j]) == l_True ) {
+            block = false;
+            break;
+         }
+      }
+      if ( block ) {
+         for ( int j = 0 ; j < c.size() ; ++j ) {
+            if ( isEVar(var(c[j])) )
+               sBkCla.push (c[j]);
+         }
+      }
+      block = true;
+   }
+}
+
 
 /**Function*************************************************************
 
@@ -533,7 +624,7 @@ SsatSolver::baseProb() const
 ***********************************************************************/
 
 double
-SsatSolver::countModels( const vec<Lit> & sBkCla )
+SsatSolver::countModels( const vec<Lit> & sBkCla, bool er )
 {
    FILE * file;
    int length = 1024;

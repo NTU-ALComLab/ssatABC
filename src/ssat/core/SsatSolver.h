@@ -72,20 +72,26 @@ private:
    void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
    // solve helpers
    Solver *    buildQestoSelector ();
+   Solver *    buildERSelector    ();
    Solver *    buildAllSelector   ();
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    bool        qSolve2QBF         ();
    double      qSolve2SSAT        ( double , int , int , bool );
    bool        aSolve2QBF         ();
    double      aSolve2SSAT        ( double , int , int , bool );
+   
+   // New Function
+   double      erSolve2SSAT       ();
+
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
+   void        collectBkClaER     ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& ) const;
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    double      baseProb           () const;
-   double      countModels        ( const vec<Lit>& );
+   double      countModels        ( const vec<Lit>& , bool );
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& );
