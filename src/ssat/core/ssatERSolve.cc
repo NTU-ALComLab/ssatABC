@@ -79,9 +79,7 @@ SsatSolver::erSolve2SSAT()
          if( subvalue > _satPb ) _satPb = subvalue;
 
          sBkCla.clear();
-         for ( int j = 0 ; j < eLits.size() ; ++j )
-            sBkCla.push( ~eLits[j] );
-         // collectBkClaER( sBkCla );
+         collectBkClaER( sBkCla );
          _s2->addClause( sBkCla );
       }
    }
@@ -106,17 +104,17 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       Clause & c = _s1->ca[_s1->clauses[i]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _s1->modelValue(c[j]) == l_True ) {
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
             block = false;
             break;
          }
       }
-      if ( block ) {
-         for ( int j = 0 ; j < c.size() ; ++j ) {
-            if ( isEVar(var(c[j])) )
+
+      if ( block )
+         for ( int j = 0 ; j < c.size() ; ++j )
+            if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
                sBkCla.push (c[j]);
-         }
-      }
+
       block = true;
    }
 }
