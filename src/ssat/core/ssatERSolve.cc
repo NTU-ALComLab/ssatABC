@@ -76,7 +76,9 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       }
       else { // SAT case
          if ( fBdd ) {
-            subvalue = clauseToNetwork( eLits );
+            printf( "  > current Lv.0 exist assignments:\n" );
+            dumpCla( eLits );
+            subvalue = clauseToNetwork();
          }
          else subvalue = countModels( eLits );
          if ( subvalue > _satPb ) {

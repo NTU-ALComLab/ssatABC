@@ -436,10 +436,67 @@ SsatSolver::erNtkCreatePo( Abc_Ntk_t * pNtkClause )
 }
 
 double
-SsatSolver::clauseToNetwork( const vec<Lit> & eLits )
+SsatSolver::clauseToNetwork()
 {
-   Ssat_DumpCubeNtk( _pNtkCube );
-   return 0.0;
+   Abc_Obj_t * pObj , * pObjCla;
+   int i;
+   Abc_NtkForEachNode( _pNtkCube , pObj , i ) Abc_NtkDeleteObj( pObj );
+   pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars );
+   if ( pObjCla ) {
+      erNtkPatchPoCheck( _pNtkCube , pObjCla );
+      // TODO: BDD computation
+      return 0.0;
+   }
+   return 1.0;
+}
+
+Abc_Obj_t*
+SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars )
+{
+   Abc_Obj_t * pObj , * pObjCla = NULL;
+   int * pfCompl = new int[_s1->nVars()];
+   char name[1024];
+   bool select;
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      select = true;
+      Clause & c = _s1->ca[_s1->clauses[i]];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+            select = false;
+            break;
+         }
+      }
+      if ( select ) {
+         pObj = Abc_NtkCreateNode( pNtkClause );
+         sprintf( name , "c%d" , i );
+         Abc_ObjAssignName( pObj , name , "" );
+         for ( int j = 0 ; j < c.size() ; ++j ) {
+            if ( _level[var(c[j])] ) {
+               Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(c[j]) ) );
+               assert( j <= _s1->nVars()-1 );
+               pfCompl[j] = sign(c[j]) ? 1 : 0;
+            }
+            Abc_ObjSetData( pObj , Abc_SopCreateOr( (Mem_Flex_t*)pNtkClause->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
+         }
+         pObjCla = Ssat_SopAnd2Obj( pObjCla , pObj );
+      }
+   }
+   delete[] pfCompl;
+   return pObjCla;
+}
+
+void
+SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
+{
+   assert( !Abc_ObjFaninNum( Abc_NtkPo( pNtkClause , 0 ) ) );
+   Abc_ObjAddFanin( Abc_NtkPo( pNtkClause , 0 ) , pObjCla );
+   if ( !Abc_NtkCheck( pNtkClause ) ) {
+      Abc_Print( -1 , "Something wrong with clauses to network ...\n" );
+      Abc_NtkDelete( pNtkClause );
+      exit(1);
+   }
+   Ssat_DumpCubeNtk( pNtkClause );
+   //Abc_NtkShow( pNtkClause , 0 , 0 , 1 );
 }
 
 ////////////////////////////////////////////////////////////////////////
