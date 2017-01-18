@@ -61,6 +61,7 @@ extern void Pb_WriteWMC         ( Abc_Ntk_t * , char * , int , int );
 extern void Pb_WriteSSAT        ( Abc_Ntk_t * , char * , int , int , int );
 /*=== probBddSp.c ==========================================================*/
 extern float Pb_BddComputeSp     ( Abc_Ntk_t * , int , int , int , int );
+extern float Pb_BddComputeRESp   ( Abc_Ntk_t * , int , int , int , int );
 extern void  Pb_BddComputeAllSp  ( Abc_Ntk_t * , int , int , int );
 /*=== probMiter.c ==========================================================*/
 extern Abc_Ntk_t * Pb_ProbMiter       ( Abc_Ntk_t * , Abc_Ntk_t * , int );

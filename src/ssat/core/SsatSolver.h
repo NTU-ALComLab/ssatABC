@@ -113,6 +113,7 @@ private:
    double      clauseToNetwork    ();
    Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkPatchPoCheck  ( Abc_Ntk_t * , Abc_Obj_t * );
+   double      erNtkBddComputeSp  ( Abc_Ntk_t * );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;

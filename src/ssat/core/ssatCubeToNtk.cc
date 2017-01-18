@@ -29,7 +29,6 @@ extern "C" {
    Abc_Ntk_t * Abc_NtkDarToCnf ( Abc_Ntk_t * , char * , int , int , int );
    int         Abc_NtkDSat     ( Abc_Ntk_t * , ABC_INT64_T , ABC_INT64_T , int , int , int , int , int , int , int );
 };
-
 // helper functions
 static Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
 static Abc_Obj_t * Ssat_SopOr2Obj    ( Abc_Obj_t * , Abc_Obj_t * );
@@ -444,8 +443,7 @@ SsatSolver::clauseToNetwork()
    pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars );
    if ( pObjCla ) {
       erNtkPatchPoCheck( _pNtkCube , pObjCla );
-      // TODO: BDD computation
-      return 0.0;
+      return erNtkBddComputeSp( _pNtkCube );
    }
    return 1.0;
 }
@@ -471,7 +469,7 @@ SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars )
          sprintf( name , "c%d" , i );
          Abc_ObjAssignName( pObj , name , "" );
          for ( int j = 0 ; j < c.size() ; ++j ) {
-            if ( _level[var(c[j])] ) {
+            if ( _level[var(c[j])] && _s1->value(c[j]) != l_False ) { //FIXME: bug is here
                Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(c[j]) ) );
                assert( j <= _s1->nVars()-1 );
                pfCompl[j] = sign(c[j]) ? 1 : 0;
@@ -497,6 +495,39 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
    }
    Ssat_DumpCubeNtk( pNtkClause );
    //Abc_NtkShow( pNtkClause , 0 , 0 , 1 );
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Compute SSAT value by BDD signal probability.]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+double
+SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause )
+{
+   Abc_Ntk_t * pNtkCopy , * pNtkAig;
+   Abc_Obj_t * pObj;
+   double prob;
+   int i;
+   
+   pNtkCopy = Abc_NtkDup( pNtkClause );
+   pNtkAig  = Abc_NtkStrash( pNtkCopy , 0 , 1 , 0 );
+   Abc_NtkForEachPi( pNtkAig , pObj , i )
+   {
+      if ( i < _rootVars[1].size() )
+	      pObj->dTemp = (float)_quan[_rootVars[1][i]];
+   }
+   prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 1 );
+   Abc_NtkDelete( pNtkCopy );
+   Abc_NtkDelete( pNtkAig );
+   return prob;
 }
 
 ////////////////////////////////////////////////////////////////////////

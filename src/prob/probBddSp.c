@@ -40,13 +40,16 @@ extern DdNode* Abc_NodeGlobalBdds_rec       ( DdManager * , Abc_Obj_t * , int , 
 extern MtrNode* Cudd_MakeTreeNode           ( DdManager * , unsigned int , unsigned int , unsigned int );
 // main methods
 float Pb_BddComputeSp                       ( Abc_Ntk_t * , int , int , int , int );
+float Pb_BddComputeRESp                     ( Abc_Ntk_t * , int , int , int , int );
 void  Pb_BddComputeAllSp                    ( Abc_Ntk_t * , int , int , int );
 // helpers
 static DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
 static DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
+static DdManager* Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
 static void       Pb_BddResetProb           ( DdManager * , DdNode * );
 static void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int );
 static float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int );
+static float      Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int );
 static void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
 static void       Pb_BddPrintExSol          ( Abc_Ntk_t * , DdNode * , int , int );
 static int        Pb_BddShuffleGroup        ( DdManager * , int , int );
@@ -500,6 +503,215 @@ Pb_NtkBuildGlobalBdds( Abc_Ntk_t * pNtk , int numExist , int fGrp )
     }
 //    Cudd_PrintInfo( dd, stdout );
     return dd;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [compute signal prob by bdd]
+
+  Description [For RE-2SSAT.]
+               
+  SideEffects [Lots of codes are similar, FIXME later!]
+
+  SeeAlso     []
+
+***********************************************************************/
+
+float
+Pb_BddComputeRESp( Abc_Ntk_t * pNtk , int numPo , int numRand , int fGrp , int fVerbose )
+{
+   DdManager * dd;
+	DdNode * bFunc;
+	abctime clk;
+   float prob;
+
+	if ( fVerbose ) printf( "  > Pb_BddComputeSp() : build bdd for %d-th Po\n" , numPo );
+	clk = Abc_Clock();
+   dd  = Ssat_NtkPoBuildGlobalBdd( pNtk , numPo , numRand , fGrp );
+	if ( !dd ) {
+	   Abc_Print( -1 , "Bdd construction has failed.\n" );
+		return -1;
+	}
+	if ( fVerbose ) Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
+   // NZ : check random/exist variables are correctly ordered
+   if ( numRand < Abc_NtkPiNum( pNtk ) ) {
+      if ( Cudd_ReadInvPerm( dd , 0 ) > numRand-1 ) {
+         if ( fVerbose ) printf( "  > exist var(%d) is ordered before random var --> shuffle back!\n" , Cudd_ReadInvPerm(dd , 0) );
+         if ( Pb_BddShuffleGroup( dd , numRand , Abc_NtkPiNum(pNtk)-numRand ) == 0 ) {
+            Abc_Print( -1 , "Bdd Shuffle has failed.\n" );
+	         Abc_NtkFreeGlobalBdds( pNtk , 1 );
+            return -1;
+         }
+      }
+   }
+	bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , numPo ) );
+   //Abc_NodeShowBdd( Abc_ObjFanin0(Abc_NtkPo(pNtk,numPo)) );
+   //exit(1);
+	clk = Abc_Clock();
+	Pb_BddResetProb( dd , bFunc );
+   Ssat_BddComputeProb_rec( pNtk , bFunc , numRand );
+	if ( fVerbose ) Abc_PrintTime( 1 , "  > Prob computation" , Abc_Clock() - clk );
+	
+   prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
+   if ( fVerbose ) printf( "  > %d-th Po, sat prob = %f\n" , numPo , prob );
+	Abc_NtkFreeGlobalBdds( pNtk , 1 );
+   return prob;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [build a global bdd for one Po]
+
+  Description [For RE-2SSAT.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+DdManager* 
+Ssat_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numRand , int fGrp )
+{
+    ProgressBar * pProgress;
+    Abc_Obj_t * pObj, * pFanin;
+    Vec_Att_t * pAttMan;
+    DdManager * dd;
+    DdNode * bFunc;
+    int nBddSizeMax , fReorder , fDropInternal , fVerbose , Counter , k , i;
+
+    // set defaults
+	 nBddSizeMax   = ABC_INFINITY;
+	 fReorder      = ( numRand < Abc_NtkPiNum( pNtk ) ) ? 0 : 1;
+	 fDropInternal = 1;
+	 fVerbose      = 0;
+
+    // remove dangling nodes
+    Abc_AigCleanup( (Abc_Aig_t *)pNtk->pManFunc );
+
+    // start the manager
+    assert( !Abc_NtkGlobalBdd( pNtk ) );
+    dd = Cudd_Init( Abc_NtkPiNum( pNtk ) , 0 , CUDD_UNIQUE_SLOTS , CUDD_CACHE_SLOTS , 0 );
+    // NZ : group variables
+    if ( numRand < Abc_NtkPiNum( pNtk ) && fGrp ) {
+       printf( "  >  Start grouping random and exist variables\n" );
+       Cudd_MakeTreeNode( dd , 0 , numRand , MTR_DEFAULT );
+       Cudd_MakeTreeNode( dd , numRand , Abc_NtkPiNum(pNtk)-numRand , MTR_DEFAULT );
+       fReorder = 1;
+       printf( "  >  Grouping done\n" );
+    }
+    pAttMan = Vec_AttAlloc( Abc_NtkObjNumMax( pNtk ) + 1, dd, (void (*)(void*))Extra_StopManager, NULL, (void (*)(void*,void*))Cudd_RecursiveDeref );
+    Vec_PtrWriteEntry( pNtk->vAttrs, VEC_ATTR_GLOBAL_BDD, pAttMan );
+
+    if ( fReorder ) Cudd_AutodynEnable( dd , CUDD_REORDER_SYMM_SIFT );
+
+    // assign the constant node BDD
+    pObj = Abc_AigConst1( pNtk );
+    if ( Abc_ObjFanoutNum(pObj) > 0 ) {
+       bFunc = dd->one;
+       Abc_ObjSetGlobalBdd( pObj , bFunc );   
+		 Cudd_Ref( bFunc );
+    }
+    // set the elementary variables (Pi`s)
+    Abc_NtkForEachPi( pNtk , pObj , i )
+	 {
+       if ( Abc_ObjFanoutNum(pObj) > 0 ) {
+          bFunc = dd->vars[i];
+          Abc_ObjSetGlobalBdd( pObj , bFunc );  
+			 Cudd_Ref( bFunc );
+       }
+	 }
+    // construct the BDD for numPo
+    Counter   = 0;
+    pProgress = Extra_ProgressBarStart( stdout , Abc_NtkNodeNum( pNtk ) );
+    pObj      = Abc_NtkPo( pNtk , numPo );
+    
+	 extern DdNode* Abc_NodeGlobalBdds_rec ( DdManager * , Abc_Obj_t * , int , int , ProgressBar * , int * , int );
+    bFunc     = Abc_NodeGlobalBdds_rec( dd, Abc_ObjFanin0( pObj ), nBddSizeMax, fDropInternal, pProgress, &Counter, fVerbose );
+    if ( !bFunc ) {
+       if ( fVerbose ) printf( "Constructing global BDDs is aborted.\n" );
+       Abc_NtkFreeGlobalBdds( pNtk , 0 );
+       Cudd_Quit( dd ); 
+       // reset references
+       Abc_NtkForEachObj( pNtk, pObj, i )
+          if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBi(pObj) )
+             pObj->vFanouts.nSize = 0;
+       Abc_NtkForEachObj( pNtk, pObj, i )
+          if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBo(pObj) )
+             Abc_ObjForEachFanin( pObj, pFanin, k )
+                        pFanin->vFanouts.nSize++;
+            return NULL;
+    }
+    bFunc = Cudd_NotCond( bFunc , (int)Abc_ObjFaninC0(pObj) );  
+	 Cudd_Ref( bFunc ); 
+    Abc_ObjSetGlobalBdd( pObj , bFunc );
+    Extra_ProgressBarStop( pProgress );
+    // reset references
+    Abc_NtkForEachObj( pNtk, pObj, i )
+        if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBi(pObj) )
+            pObj->vFanouts.nSize = 0;
+    Abc_NtkForEachObj( pNtk, pObj, i )
+        if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBo(pObj) )
+            Abc_ObjForEachFanin( pObj, pFanin, k )
+                pFanin->vFanouts.nSize++;
+    // reorder one more time
+    if ( fReorder ) {
+        Cudd_ReduceHeap( dd, CUDD_REORDER_SYMM_SIFT, 1 );
+        Cudd_AutodynDisable( dd );
+    }
+    return dd;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Compute signal prob on BDD.]
+
+  Description [For RE-2SSAT.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+float
+Ssat_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numRand )
+{
+	float prob , pThenMax , pElseMax , pThenMin , pElseMin;
+	int numPi , fComp;
+	
+	numPi = Cudd_Regular( bFunc )->index;
+   fComp = Cudd_IsComplement( bFunc );
+
+	if ( Cudd_IsConstant( bFunc ) ) return Cudd_IsComplement( bFunc ) ? 0.0 : 1.0;
+	if ( Cudd_Regular( bFunc )->pMax == -1.0 ) { // unvisited node
+		if ( numPi >= numRand ) { // exist var -> max / min
+	      pThenMax = Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand );    
+	      pElseMax = Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand );
+			pThenMin = Cudd_IsComplement(Cudd_T(bFunc)) ? 1.0-Cudd_Regular(Cudd_T(bFunc))->pMax : Cudd_Regular(Cudd_T(bFunc))->pMin;
+			pElseMin = Cudd_IsComplement(Cudd_E(bFunc)) ? 1.0-Cudd_Regular(Cudd_E(bFunc))->pMax : Cudd_Regular(Cudd_E(bFunc))->pMin;
+			//printf( "pThenMax = %f , pThenMin = %f , pElseMax = %f , pElseMin = %f\n" , pThenMax , pThenMin , pElseMax , pElseMin );
+		   Cudd_Regular( bFunc )->pMax = ( pThenMax >= pElseMax ) ? pThenMax : pElseMax;
+		   Cudd_Regular( bFunc )->pMin = ( pThenMin <= pElseMin ) ? pThenMin : pElseMin;
+		   Cudd_Regular( bFunc )->cMax = ( pThenMax >= pElseMax ) ? 1 : 0;
+		   Cudd_Regular( bFunc )->cMin = ( pThenMin <= pElseMin ) ? 1 : 0;
+			printf( "   > (exist) %s(%d-th) , pMax = %f , pMin = %f " , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , numPi , Cudd_Regular(bFunc)->pMax , Cudd_Regular(bFunc)->pMin );
+			printf( " cMax = %d , cMin = %d\n" , Cudd_Regular(bFunc)->cMax , Cudd_Regular(bFunc)->cMin );
+		}
+		else { // random var -> avg
+         float prob1 , prob2;
+	      prob  = Abc_NtkPi( pNtk , numPi )->dTemp;
+         printf( "  > prob = %f\n" , prob );
+         prob1 = Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand );
+         prob2 = Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand );
+		   Cudd_Regular( bFunc )->pMax = Cudd_Regular( bFunc )->pMin = 
+				                           prob        * Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand ) +
+		                                 (1.0-prob)  * Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand );
+			printf( "  > prob1 = %f, prob2= %f\n" , prob1 , prob2 );
+         printf( "   > (random) %s , pMax = %f\n" , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , Cudd_Regular(bFunc)->pMax );
+		}
+	}
+	return fComp ? 1.0-Cudd_Regular( bFunc )->pMin : Cudd_Regular( bFunc )->pMax;
 }
 
 ////////////////////////////////////////////////////////////////////////

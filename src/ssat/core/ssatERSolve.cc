@@ -53,6 +53,7 @@ double
 SsatSolver::erSolve2SSAT( bool fBdd )
 {
    _s1->simplify();
+   dumpCla( *_s1 );
    _s2 = buildERSelector();
    if ( fBdd ) initClauseNetwork();
    
