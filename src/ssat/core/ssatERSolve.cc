@@ -39,15 +39,16 @@ using namespace std;
 
 /**Function*************************************************************
 
-  Synopsis    [Solve ER or ERE type of SSAT]
+  Synopsis    [Solve ER or ERE type of SSAT.]
 
-  Description []
+  Description [Use BDD or Cachet to evaluate weight.]
                
   SideEffects []
 
   SeeAlso     []
 
 ***********************************************************************/
+
 double
 SsatSolver::erSolve2SSAT( bool fBdd )
 {
@@ -56,19 +57,17 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
-   //abctime clk = Abc_Clock();
+   _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
+   abctime clk = Abc_Clock();
 
-   if ( _numLv == 2 )
-      cout << "  > Run ER SSAT." << '\n';
-   else if ( _numLv == 3 )
-      cout << "  > Run ERE SSAT." << '\n';
-   
    for(;;) {
-      if ( !_s2->solve() )
+      if ( !_s2->solve() ) {
+         printf( "  > optimizing assignment to exist vars:\n" );
+         dumpCla( _erModel );
          return _satPb;
+      }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-
       if ( !_s1->solve(eLits) ) { // UNSAT case
          sBkCla.clear();
          miniUnsatCore( _s1->conflict , sBkCla );
@@ -79,9 +78,13 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             Abc_Print( -1 , "Bdd computation under construction!\n" );
             exit(1);
          }
-         else subvalue = countModels(eLits);
-         if( subvalue > _satPb ) _satPb = subvalue;
-
+         else subvalue = countModels( eLits );
+         if ( subvalue > _satPb ) {
+            printf( "  > find a better solution!\n" );
+            Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
+            _satPb = subvalue;
+            eLits.copyTo( _erModel );
+         }
          sBkCla.clear();
          collectBkClaER( sBkCla );
          _s2->addClause( sBkCla );
@@ -99,8 +102,9 @@ SsatSolver::buildERSelector()
 void
 SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
 {
-   bool block = true;
+   bool block;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      block = true;
       Clause & c = _s1->ca[_s1->clauses[i]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
          if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
@@ -108,13 +112,12 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
             break;
          }
       }
-
-      if ( block )
-         for ( int j = 0 ; j < c.size() ; ++j )
+      if ( block ) {
+         for ( int j = 0 ; j < c.size() ; ++j ) {
             if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
                sBkCla.push (c[j]);
-
-      block = true;
+         }
+      }
    }
 }
 

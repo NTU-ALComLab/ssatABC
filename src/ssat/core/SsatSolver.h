@@ -139,6 +139,7 @@ private:
    double            _satPb;           // current SAT pb, lower bound
    int               _upperLimit;      // number of UNSAT cubes to invoke network construction
    int               _lowerLimit;      // number of SAT cubes to invoke network construction
+   vec<Lit>          _erModel;         // optimizer for ER-2SSAT
 };
 
 // Implementation of inline methods:
