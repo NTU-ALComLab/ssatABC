@@ -155,5 +155,5 @@ alias pmt "probmiter"
 # ssat alias
 alias ss "ssat"
 alias qq "ss sdimacs/example.sdimacs"
-alias zz "ss -R 0 sdimacs/c17_2.sdimacs"
+alias zz "ss -b sdimacs/c17_ERE.sdimacs"
 alias aa "ss sdimacs/c432.sdimacs"

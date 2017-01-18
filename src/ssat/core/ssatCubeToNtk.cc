@@ -379,6 +379,69 @@ Ssat_DumpCubeNtk( Abc_Ntk_t * pNtk )
    printf( "\n" );
 }
 
+/**Function*************************************************************
+
+  Synopsis    [Construct circuits from clauses.]
+
+  Description [For ER-2SSAT.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::initClauseNetwork()
+{
+   char name[32];
+   _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
+   sprintf( name , "er_clauses_network" );
+   _pNtkCube->pName = Extra_UtilStrsav( name );
+   _vMapVars = Vec_PtrStart( _s1->nVars() );
+   erNtkCreatePi( _pNtkCube , _vMapVars ); 
+   erNtkCreatePo( _pNtkCube ); 
+}
+
+void
+SsatSolver::erNtkCreatePi( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars )
+{
+   Abc_Obj_t * pPi;
+   char name[1024];
+   for ( int i = 0 ; i < _rootVars[1].size() ; ++i ) {
+      pPi = Abc_NtkCreatePi( pNtkClause );
+      sprintf( name , "r%d" , _rootVars[1][i]+1 );
+      Abc_ObjAssignName( pPi , name , "" );
+      Vec_PtrWriteEntry( vMapVars , _rootVars[1][i] , pPi );
+   }
+   if ( _numLv == 2 ) return;
+   else if ( _numLv == 3 ) {
+      for ( int i = 0 ; i < _rootVars[2].size() ; ++i ) {
+         pPi = Abc_NtkCreatePi( pNtkClause );
+         sprintf( name , "e%d" , _rootVars[2][i]+1 );
+         Abc_ObjAssignName( pPi , name , "" );
+         Vec_PtrWriteEntry( vMapVars , _rootVars[2][i] , pPi );
+      }
+   }
+   else {
+      Abc_Print( -1 , "Unexpected number of levels (%d)\n" , _numLv );
+      exit(1);
+   }
+}
+
+void
+SsatSolver::erNtkCreatePo( Abc_Ntk_t * pNtkClause )
+{
+   Abc_ObjAssignName( Abc_NtkCreatePo(pNtkClause) , "clause_output" , "" );
+}
+
+double
+SsatSolver::clauseToNetwork( const vec<Lit> & eLits )
+{
+   Ssat_DumpCubeNtk( _pNtkCube );
+   return 0.0;
+}
+
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////

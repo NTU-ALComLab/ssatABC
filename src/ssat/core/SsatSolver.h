@@ -106,6 +106,11 @@ private:
    void        ntkPatchPoCheck    ( Abc_Ntk_t * , Abc_Obj_t * , bool );
    void        ntkWriteWcnf       ( Abc_Ntk_t * );
    double      ntkBddComputeSp    ( Abc_Ntk_t * , bool );
+   // construct circuits from clauses for ER-2SSAT
+   void        initClauseNetwork  ();
+   void        erNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * );
+   void        erNtkCreatePo      ( Abc_Ntk_t * );
+   double      clauseToNetwork    ( const vec<Lit>& );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;

@@ -54,6 +54,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
 {
    _s1->simplify();
    _s2 = buildERSelector();
+   if ( fBdd ) initClauseNetwork();
    
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
@@ -75,8 +76,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       }
       else { // SAT case
          if ( fBdd ) {
-            Abc_Print( -1 , "Bdd computation under construction!\n" );
-            exit(1);
+            subvalue = clauseToNetwork( eLits );
          }
          else subvalue = countModels( eLits );
          if ( subvalue > _satPb ) {
