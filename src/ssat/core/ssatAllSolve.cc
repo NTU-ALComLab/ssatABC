@@ -73,8 +73,6 @@ Solver*
 SsatSolver::buildAllSelector()
 {
    Solver * S = new Solver;
-   vec<Lit> uLits;
-   
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
       while ( _rootVars[0][i] >= S->nVars() ) S->newVar();
    return S;

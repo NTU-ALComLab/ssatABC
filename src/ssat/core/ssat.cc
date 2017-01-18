@@ -75,15 +75,16 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    abctime clk;
    double range;
    int upper , lower , c;
-   bool fAll , fMini;
+   bool fAll , fMini , fBdd;
 
    range  = 0.01;
    upper  = 1;
    lower  = 65536;
    fAll   = false;
    fMini  = true;
+   fBdd   = false;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "RULamh" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambh" ) ) != EOF )
    {
       switch ( c )
       {
@@ -120,6 +121,9 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
          case 'm':
             fMini ^= 1;
             break;
+         case 'b':
+            fBdd ^= 1;
+            break;
          case 'h':
             goto usage;
          default:
@@ -136,7 +140,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzclose(in);
    clk  = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
-   pSsat->solveSsat( range , upper , lower , fAll , fMini );
+   pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd );
    Abc_Print( -2 , "\n  > Upper bound = %f\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %f\n" , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
@@ -145,13 +149,14 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-amh] <file>\n" );
+   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-ambh] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
    Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , 0.01 );
    Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , upper );
    Abc_Print( -2 , "\t-L <num>  : number of SAT   cubes for lower bound, default=%d (-1: construct only once)\n" , lower );
    Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=false\n" );
    Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=true\n" );
+   Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=Cachet\n" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );
    Abc_Print( -2 , "\tfile      : the sdimacs file\n" );
    return 1;

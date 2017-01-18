@@ -57,19 +57,20 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   double      solveSsat( double , int , int , bool , bool ); // Solve 2SSAT/2QBF
+   double      solveSsat( double , int , int , bool , bool , bool ); // Solve 2SSAT/2QBF
    double      upperBound() const { return 1.0 - _unsatPb; }
    double      lowerBound() const { return _satPb; }
    // Testing interface:
    void        test() const;
 private:
    // member functions
-   // solve interface
-   double      qSolve( double , int , int , bool ); // Qesto-like solve
-   double      aSolve( double , int , int , bool ); // All-SAT enumeration solve
    // read helpers
    Solver *    parse_SDIMACS      ( gzFile& );
    void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
+   // solve interface
+   double      qSolve             ( double , int , int , bool ); // Qesto-like solve
+   double      aSolve             ( double , int , int , bool ); // All-SAT enumeration solve
+   double      erSolve2SSAT       ( bool ); // Solve ER/ERE-2SSAT
    // solve helpers
    Solver *    buildQestoSelector ();
    Solver *    buildERSelector    ();
@@ -79,7 +80,6 @@ private:
    double      qSolve2SSAT        ( double , int , int , bool );
    bool        aSolve2QBF         ();
    double      aSolve2SSAT        ( double , int , int , bool );
-   double      erSolve2SSAT       ();
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    void        collectBkClaER     ( vec<Lit>& );

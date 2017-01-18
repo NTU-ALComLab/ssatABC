@@ -10,7 +10,7 @@
   
   Affiliation [NTU]
 
-  Date        [16, Dec., 2016]
+  Date        [14, Jan., 2017]
 
 ***********************************************************************/
 
@@ -49,14 +49,14 @@ using namespace std;
 
 ***********************************************************************/
 double
-SsatSolver::erSolve2SSAT()
+SsatSolver::erSolve2SSAT( bool fBdd )
 {
    _s1->simplify();
    _s2 = buildERSelector();
    
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
-   abctime clk = Abc_Clock();
+   //abctime clk = Abc_Clock();
 
    if ( _numLv == 2 )
       cout << "  > Run ER SSAT." << '\n';
@@ -75,7 +75,11 @@ SsatSolver::erSolve2SSAT()
          _s2->addClause( sBkCla );
       }
       else { // SAT case
-         subvalue = countModels(eLits);
+         if ( fBdd ) {
+            Abc_Print( -1 , "Bdd computation under construction!\n" );
+            exit(1);
+         }
+         else subvalue = countModels(eLits);
          if( subvalue > _satPb ) _satPb = subvalue;
 
          sBkCla.clear();
@@ -89,12 +93,7 @@ SsatSolver::erSolve2SSAT()
 Solver*
 SsatSolver::buildERSelector()
 {
-   Solver * S = new Solver;
-   
-   for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
-      while ( _rootVars[0][i] >= S->nVars() ) S->newVar();
-   
-   return S;
+   return buildAllSelector();
 }
 
 void

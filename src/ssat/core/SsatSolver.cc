@@ -198,17 +198,17 @@ SsatSolver::readPrefix( StreamBuffer & in , Solver & S , double prob ,
 ***********************************************************************/
 
 double
-SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini )
+SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , bool fBdd )
 {
    if ( _numLv > 3 ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
       return false;
    }
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
-      return erSolve2SSAT();
-
-   return ( fAll ? aSolve( range , upper , lower , fMini ) : 
-                   qSolve( range , upper , lower , fMini ) );
+      return erSolve2SSAT( fBdd );
+   else
+      return ( fAll ? aSolve( range , upper , lower , fMini ) : 
+                      qSolve( range , upper , lower , fMini ) );
 }
    
 double
