@@ -53,7 +53,7 @@ double
 SsatSolver::erSolve2SSAT( bool fBdd )
 {
    _s1->simplify();
-   dumpCla( *_s1 );
+   //dumpCla( *_s1 );
    _s2 = buildERSelector();
    if ( fBdd ) initClauseNetwork();
    
@@ -77,13 +77,13 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       }
       else { // SAT case
          if ( fBdd ) {
-            printf( "  > current Lv.0 exist assignments:\n" );
-            dumpCla( eLits );
+            //printf( "  > current Lv.0 exist assignments:\n" );
+            //dumpCla( eLits );
             subvalue = clauseToNetwork();
          }
          else subvalue = countModels( eLits );
          if ( subvalue > _satPb ) {
-            printf( "  > find a better solution!\n" );
+            printf( "  > find a better solution(%f)!\n" , subvalue );
             Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
             _satPb = subvalue;
             eLits.copyTo( _erModel );

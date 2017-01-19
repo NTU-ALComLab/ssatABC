@@ -49,7 +49,7 @@ static DdManager* Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
 static void       Pb_BddResetProb           ( DdManager * , DdNode * );
 static void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int );
 static float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int );
-static float      Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int );
+static float      Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int , int );
 static void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
 static void       Pb_BddPrintExSol          ( Abc_Ntk_t * , DdNode * , int , int );
 static int        Pb_BddShuffleGroup        ( DdManager * , int , int );
@@ -207,7 +207,7 @@ Pb_BddPrintExSol( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist , int max )
 int
 Pb_BddShuffleGroup( DdManager * dd , int numExist , int numRand )
 {
-   printf( "Pb_BddShuffleGroup() : shuffle AI and PI\n" );
+   //printf( "Pb_BddShuffleGroup() : shuffle AI and PI\n" );
    int * perm , RetValue , i , n;
 
    perm = ABC_ALLOC( int , numExist+numRand );
@@ -549,7 +549,7 @@ Pb_BddComputeRESp( Abc_Ntk_t * pNtk , int numPo , int numRand , int fGrp , int f
    //exit(1);
 	clk = Abc_Clock();
 	Pb_BddResetProb( dd , bFunc );
-   Ssat_BddComputeProb_rec( pNtk , bFunc , numRand );
+   Ssat_BddComputeProb_rec( pNtk , bFunc , numRand , Cudd_IsComplement( bFunc ) );
 	if ( fVerbose ) Abc_PrintTime( 1 , "  > Prob computation" , Abc_Clock() - clk );
 	
    prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
@@ -594,11 +594,11 @@ Ssat_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numRand , int fGrp 
     dd = Cudd_Init( Abc_NtkPiNum( pNtk ) , 0 , CUDD_UNIQUE_SLOTS , CUDD_CACHE_SLOTS , 0 );
     // NZ : group variables
     if ( numRand < Abc_NtkPiNum( pNtk ) && fGrp ) {
-       printf( "  >  Start grouping random and exist variables\n" );
+       //printf( "  >  Start grouping random and exist variables\n" );
        Cudd_MakeTreeNode( dd , 0 , numRand , MTR_DEFAULT );
        Cudd_MakeTreeNode( dd , numRand , Abc_NtkPiNum(pNtk)-numRand , MTR_DEFAULT );
        fReorder = 1;
-       printf( "  >  Grouping done\n" );
+       //printf( "  >  Grouping done\n" );
     }
     pAttMan = Vec_AttAlloc( Abc_NtkObjNumMax( pNtk ) + 1, dd, (void (*)(void*))Extra_StopManager, NULL, (void (*)(void*,void*))Cudd_RecursiveDeref );
     Vec_PtrWriteEntry( pNtk->vAttrs, VEC_ATTR_GLOBAL_BDD, pAttMan );
@@ -675,7 +675,7 @@ Ssat_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numRand , int fGrp 
 ***********************************************************************/
 
 float
-Ssat_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numRand )
+Ssat_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numRand , int fNot )
 {
 	float prob , pThenMax , pElseMax , pThenMin , pElseMin;
 	int numPi , fComp;
@@ -683,11 +683,18 @@ Ssat_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numRand )
 	numPi = Cudd_Regular( bFunc )->index;
    fComp = Cudd_IsComplement( bFunc );
 
-	if ( Cudd_IsConstant( bFunc ) ) return Cudd_IsComplement( bFunc ) ? 0.0 : 1.0;
+	if ( Cudd_IsConstant( bFunc ) ) {
+      //printf( "  > visiting const node %d\n" , Cudd_IsComplement(bFunc) ? 0 : 1 );
+      return Cudd_IsComplement( bFunc ) ? 0.0 : 1.0;
+   }
 	if ( Cudd_Regular( bFunc )->pMax == -1.0 ) { // unvisited node
+      //printf( "  > visiting node with decision var = %d\n" , numPi );
 		if ( numPi >= numRand ) { // exist var -> max / min
-	      pThenMax = Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand );    
-	      pElseMax = Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand );
+         //printf( "    > exist var\n" );
+         //printf( "      > then branch\n" );
+	      pThenMax = Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand , fNot ); 
+         //printf( "      > else branch\n" );
+	      pElseMax = Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand , fNot );
 			pThenMin = Cudd_IsComplement(Cudd_T(bFunc)) ? 1.0-Cudd_Regular(Cudd_T(bFunc))->pMax : Cudd_Regular(Cudd_T(bFunc))->pMin;
 			pElseMin = Cudd_IsComplement(Cudd_E(bFunc)) ? 1.0-Cudd_Regular(Cudd_E(bFunc))->pMax : Cudd_Regular(Cudd_E(bFunc))->pMin;
 			//printf( "pThenMax = %f , pThenMin = %f , pElseMax = %f , pElseMin = %f\n" , pThenMax , pThenMin , pElseMax , pElseMin );
@@ -695,23 +702,28 @@ Ssat_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numRand )
 		   Cudd_Regular( bFunc )->pMin = ( pThenMin <= pElseMin ) ? pThenMin : pElseMin;
 		   Cudd_Regular( bFunc )->cMax = ( pThenMax >= pElseMax ) ? 1 : 0;
 		   Cudd_Regular( bFunc )->cMin = ( pThenMin <= pElseMin ) ? 1 : 0;
-			printf( "   > (exist) %s(%d-th) , pMax = %f , pMin = %f " , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , numPi , Cudd_Regular(bFunc)->pMax , Cudd_Regular(bFunc)->pMin );
-			printf( " cMax = %d , cMin = %d\n" , Cudd_Regular(bFunc)->cMax , Cudd_Regular(bFunc)->cMin );
+			//printf( "   > (exist) %s(%d-th) , pMax = %f , pMin = %f " , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , numPi , Cudd_Regular(bFunc)->pMax , Cudd_Regular(bFunc)->pMin );
+			//printf( " cMax = %d , cMin = %d\n" , Cudd_Regular(bFunc)->cMax , Cudd_Regular(bFunc)->cMin );
 		}
 		else { // random var -> avg
-         float prob1 , prob2;
+         //float prob1 , prob2;
 	      prob  = Abc_NtkPi( pNtk , numPi )->dTemp;
-         printf( "  > prob = %f\n" , prob );
-         prob1 = Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand );
-         prob2 = Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand );
+         //printf( "    > rand var, prob = %f\n" , prob );
+         //printf( "      > then branch\n" );
+         //prob1 = Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand , fNot );
+         //printf( "      > else branch\n" );
+         //prob2 = Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand , fNot );
 		   Cudd_Regular( bFunc )->pMax = Cudd_Regular( bFunc )->pMin = 
-				                           prob        * Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand ) +
-		                                 (1.0-prob)  * Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand );
-			printf( "  > prob1 = %f, prob2= %f\n" , prob1 , prob2 );
-         printf( "   > (random) %s , pMax = %f\n" , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , Cudd_Regular(bFunc)->pMax );
+				                           prob        * Ssat_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numRand , fNot ) +
+		                                 (1.0-prob)  * Ssat_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numRand , fNot );
+			//printf( "   > prob1 = %f, prob2= %f\n" , prob1 , prob2 );
+         //printf( "   > (random) %s , pMax = %f\n" , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , Cudd_Regular(bFunc)->pMax );
 		}
 	}
-	return fComp ? 1.0-Cudd_Regular( bFunc )->pMin : Cudd_Regular( bFunc )->pMax;
+   if ( fNot ) // forall quantified!
+	   return fComp ? 1.0-Cudd_Regular( bFunc )->pMax : Cudd_Regular( bFunc )->pMin;
+   else
+	   return fComp ? 1.0-Cudd_Regular( bFunc )->pMin : Cudd_Regular( bFunc )->pMax;
 }
 
 ////////////////////////////////////////////////////////////////////////

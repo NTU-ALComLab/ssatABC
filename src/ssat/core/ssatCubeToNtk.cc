@@ -493,8 +493,9 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
       Abc_NtkDelete( pNtkClause );
       exit(1);
    }
-   Ssat_DumpCubeNtk( pNtkClause );
+   //Ssat_DumpCubeNtk( pNtkClause );
    //Abc_NtkShow( pNtkClause , 0 , 0 , 1 );
+   //exit(1);
 }
 
 /**Function*************************************************************
@@ -524,7 +525,7 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause )
       if ( i < _rootVars[1].size() )
 	      pObj->dTemp = (float)_quan[_rootVars[1][i]];
    }
-   prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 1 );
+   prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
    Abc_NtkDelete( pNtkCopy );
    Abc_NtkDelete( pNtkAig );
    return prob;
