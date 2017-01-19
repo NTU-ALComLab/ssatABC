@@ -469,7 +469,7 @@ SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars )
          sprintf( name , "c%d" , i );
          Abc_ObjAssignName( pObj , name , "" );
          for ( int j = 0 ; j < c.size() ; ++j ) {
-            if ( _level[var(c[j])] && _s1->value(c[j]) != l_False ) { //FIXME: bug is here
+            if ( _level[var(c[j])] && _s1->value(c[j]) != l_False ) {
                Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(c[j]) ) );
                assert( j <= _s1->nVars()-1 );
                pfCompl[j] = sign(c[j]) ? 1 : 0;
@@ -525,7 +525,7 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause )
       if ( i < _rootVars[1].size() )
 	      pObj->dTemp = (float)_quan[_rootVars[1][i]];
    }
-   prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
+   prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 1 );
    Abc_NtkDelete( pNtkCopy );
    Abc_NtkDelete( pNtkAig );
    return prob;

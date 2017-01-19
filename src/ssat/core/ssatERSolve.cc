@@ -77,16 +77,16 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       }
       else { // SAT case
          if ( fBdd ) {
-            //printf( "  > current Lv.0 exist assignments:\n" );
-            //dumpCla( eLits );
             subvalue = clauseToNetwork();
          }
          else subvalue = countModels( eLits );
          if ( subvalue > _satPb ) {
             printf( "  > find a better solution(%f)!\n" , subvalue );
+            dumpCla( eLits );
             Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
             _satPb = subvalue;
             eLits.copyTo( _erModel );
+            if ( _satPb == 1 ) exit(1);
          }
          sBkCla.clear();
          collectBkClaER( sBkCla );
