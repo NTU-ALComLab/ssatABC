@@ -86,7 +86,9 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
             _satPb = subvalue;
             eLits.copyTo( _erModel );
-            //if ( _satPb == 1 ) exit(1);
+            //Io_Write( _pNtkCube , "cube.blif" , IO_FILE_BLIF );
+            //exit(1);
+            if ( _satPb == 1 ) exit(1);
          }
          sBkCla.clear();
          collectBkClaER( sBkCla );
