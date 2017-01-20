@@ -53,15 +53,12 @@ double
 SsatSolver::erSolve2SSAT( bool fBdd )
 {
    _s1->simplify();
-   //dumpCla( *_s1 );
    _s2 = buildERSelector();
    if ( fBdd ) initClauseNetwork();
-   
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = Abc_Clock();
-
    for(;;) {
       if ( !_s2->solve() ) {
          printf( "  > optimizing assignment to exist vars:\n" );
@@ -76,19 +73,12 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          _s2->addClause( sBkCla );
       }
       else { // SAT case
-         if ( fBdd ) {
-            subvalue = clauseToNetwork();
-         }
-         else subvalue = countModels( eLits );
+         subvalue = fBdd ? clauseToNetwork() : countModels( eLits );
          if ( subvalue > _satPb ) {
-            printf( "  > find a better solution(%f)!\n" , subvalue );
-            dumpCla( eLits );
+            printf( "  > find a better solution , value = %f\n" , subvalue );
             Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
             _satPb = subvalue;
             eLits.copyTo( _erModel );
-            //Io_Write( _pNtkCube , "cube.blif" , IO_FILE_BLIF );
-            //exit(1);
-            if ( _satPb == 1 ) exit(1);
          }
          sBkCla.clear();
          collectBkClaER( sBkCla );

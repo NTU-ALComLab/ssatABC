@@ -471,15 +471,10 @@ SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars )
          for ( int j = 0 ; j < c.size() ; ++j ) {
             if ( _level[var(c[j])] && _s1->value(c[j]) != l_False ) {
                Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(c[j]) ) );
-               assert( j <= _s1->nVars()-1 );
-               //pfCompl[j] = sign(c[j]) ? 1 : 0;
                pfCompl[Abc_ObjFaninNum(pObj)-1] = sign(c[j]) ? 1 : 0;
-               //printf( "%d\n" , pfCompl[j] );
             }
          }
          Abc_ObjSetData( pObj , Abc_SopCreateOr( (Mem_Flex_t*)pNtkClause->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
-         //for ( int k = 0 ; k < Abc_ObjFaninNum(pObj) ; ++k ) printf( "%d" , pfCompl[k] );
-         //printf( "\n  > data = %s\n" , (char*)Abc_ObjData(pObj) );
          pObjCla = Ssat_SopAnd2Obj( pObjCla , pObj );
       }
    }
@@ -497,9 +492,6 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
       Abc_NtkDelete( pNtkClause );
       exit(1);
    }
-   //Ssat_DumpCubeNtk( pNtkClause );
-   //Abc_NtkShow( pNtkClause , 0 , 0 , 1 );
-   //exit(1);
 }
 
 /**Function*************************************************************
@@ -532,7 +524,6 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause )
    prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
    Abc_NtkDelete( pNtkCopy );
    Abc_NtkDelete( pNtkAig );
-   //if ( prob == 1 ) Ssat_DumpCubeNtk( pNtkClause );
    return prob;
 }
 
