@@ -1,0 +1,70 @@
+#+LANGUAGE:    en
+#+OPTIONS:     H:2 num:nil toc:nil \n:nil @:t ::t |:t ^:t f:t TeX:t
+
+
+* CNFgen formula generator and tools
+
+
+#+begin_html
+   <a href='https://travis-ci.org/MassimoLauria/cnfgen'>
+       <img
+       src='https://travis-ci.org/MassimoLauria/cnfgen.svg?branch=master'
+       alt='Build Status' />
+   </a>
+   <a href='http://cnfgen.readthedocs.org/en/latest/?badge=latest'>
+       <img
+       src='http://readthedocs.org/projects/cnfgen/badge/?version=latest'
+       alt='Documentation Status' />
+   </a>   
+#+end_html
+
+  This repository provides the command
+
+  - =cnfgen= formula generator;
+
+  and  the  following  python  scripts, designed  to  operate  from/to
+  dimacs CNFs:
+
+  - =cnfshuffle= random shuffler;
+
+  - =cnftransform= apply litfing or substitution; 
+
+#  - =kthgraph2pebformula= make pebbling formula from a DAG.
+
+  You  can get  a brief  help on  how to  use these  tools by  running
+  =<program_name> --help= from the command line.
+
+  Run =cnfgen --help= to get a list of the implemented formula families.
+  To get  more specific information  on one  class of formula  use the
+  command
+
+  : cnfgen <formula_type> --help
+
+  See the webpage of the project at http://massimolauria.github.io/cnfgen/
+
+** Installation
+   
+   You can install CNFgen from  [[http://pypi.python.org][Python Package Index]], together with all
+   its dependencies, typing either
+
+   : easy_install [--user] cnfgen
+
+   or
+
+   : pip install  [--user] cnfgen
+
+   Otherwise  it is  possible  to install  from  source, assuming  the
+   requirements are already installed, using
+   
+   : python setup.py install [--user]
+
+   The =--user= option allows to install  the package in the user home
+   directory. If you do that please check that the target location for
+   the command line utilities are in your $PATH.
+
+** Contribution 
+
+   Please contribute to the code by sending pull requests. 
+
+
+Copyright 2012, 2013, 2014, 2015, 2016 © Massimo Lauria ([[mailto:lauria.massimo@gmail.com][lauria.massimo@gmail.com]])
