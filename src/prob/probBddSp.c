@@ -169,7 +169,7 @@ void
 Pb_BddPrintProb( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
 {
 	int i , n;
-   printf( " , prob = %f\n" , Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax );
+   printf( " , prob = %e\n" , Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax );
 	if ( Cudd_Regular( bFunc )->index < numExist ) { // exist var
 	   if ( pNtk->pModel ) printf( "  > [Warning] Reset model\n" );
 		else {

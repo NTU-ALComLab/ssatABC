@@ -145,8 +145,8 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    clk  = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
    pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd );
-   Abc_Print( -2 , "\n  > Upper bound = %f\n" , pSsat->upperBound() );
-   Abc_Print( -2 , "  > Lower bound = %f\n"   , pSsat->lowerBound() );
+   Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
+   Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
    printf("\n");
    delete pSsat;

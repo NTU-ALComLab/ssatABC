@@ -297,7 +297,7 @@ SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
    Abc_NtkForEachPi( pNtk , pObj , i )
 	   pObj->dTemp = (float)_quan[_rootVars[0][i]];
 
-   prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 0 , 0 );
+   prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 0 , 1 );
    Abc_NtkDelete( pNtkCopy );
    //Abc_NtkDelete( pNtkAig );
    Abc_NtkDelete( pNtk );

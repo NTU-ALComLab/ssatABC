@@ -58,7 +58,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
-   //abctime clk = Abc_Clock();
+   abctime clk = Abc_Clock();
    for(;;) {
       if ( !_s2->solve() ) {
          printf( "\n  > optimizing assignment to exist vars:\n" );
@@ -75,8 +75,9 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       else { // SAT case
          subvalue = fBdd ? clauseToNetwork() : countModels( eLits );
          if ( subvalue > _satPb ) {
-            //printf( "  > find a better solution , value = %f\n" , subvalue );
-            //Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
+            printf( "  > find a better solution , value = %f\n" , subvalue );
+            Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
+            fflush(stdout);
             _satPb = subvalue;
             eLits.copyTo( _erModel );
          }
