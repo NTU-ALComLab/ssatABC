@@ -77,9 +77,9 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    int upper , lower , c;
    bool fAll , fMini , fBdd;
 
-   range  = 0.01;
-   upper  = 1;
-   lower  = 65536;
+   range  = 0.0;
+   upper  = -1;
+   lower  = -1;
    fAll   = true;
    fMini  = true;
    fBdd   = false;
