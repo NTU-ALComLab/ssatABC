@@ -200,7 +200,7 @@ SsatSolver::readPrefix( StreamBuffer & in , Solver & S , double prob ,
 double
 SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , bool fBdd )
 {
-   if ( _numLv > 3 ) {
+   if ( _numLv > 3 || _numLv == 1 ) {
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
       return false;
    }

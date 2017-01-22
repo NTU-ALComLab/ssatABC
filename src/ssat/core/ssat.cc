@@ -80,7 +80,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    range  = 0.01;
    upper  = 1;
    lower  = 65536;
-   fAll   = false;
+   fAll   = true;
    fMini  = true;
    fBdd   = false;
    Extra_UtilGetoptReset();
@@ -131,10 +131,14 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
       }
    }
    if ( argc != globalUtilOptind + 1 ) {
-      Abc_Print( -1 , "No ssat file!\n" );
+      Abc_Print( -1 , "Missing ssat file!\n" );
       goto usage;
    }
    in = gzopen( argv[globalUtilOptind] , "rb" );
+   if ( in == Z_NULL ) {
+      Abc_Print( -1 , "There is no ssat file %s\n" , argv[globalUtilOptind] );
+      return 1;
+   }
    pSsat = new SsatSolver;
    pSsat->readSSAT(in);
    gzclose(in);
@@ -142,7 +146,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
    pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd );
    Abc_Print( -2 , "\n  > Upper bound = %f\n" , pSsat->upperBound() );
-   Abc_Print( -2 , "  > Lower bound = %f\n" , pSsat->lowerBound() );
+   Abc_Print( -2 , "  > Lower bound = %f\n"   , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
    printf("\n");
    delete pSsat;
@@ -154,7 +158,7 @@ usage:
    Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , 0.01 );
    Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , upper );
    Abc_Print( -2 , "\t-L <num>  : number of SAT   cubes for lower bound, default=%d (-1: construct only once)\n" , lower );
-   Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=false\n" );
+   Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=true\n" );
    Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=true\n" );
    Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=Cachet\n" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );

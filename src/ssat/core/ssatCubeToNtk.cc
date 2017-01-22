@@ -62,8 +62,10 @@ SsatSolver::initCubeNetwork( int upper , int lower , bool fAll )
    ntkCreatePi( _pNtkCube , _vMapVars ); 
    ntkCreatePo( _pNtkCube ); 
    if ( !fAll ) ntkCreateSelDef ( _pNtkCube , _vMapVars );
-   if ( upper > 0 ) _unsatClause.capacity( _upperLimit=upper );
-   if ( lower > 0 ) _satClause.capacity( _lowerLimit=lower );
+   _upperLimit = upper;
+   _lowerLimit = lower;
+   (_upperLimit > 0) ? _unsatClause.capacity( _upperLimit ) : _unsatClause.capacity( 1000000 );
+   (_lowerLimit > 0) ?   _satClause.capacity( _lowerLimit ) :   _satClause.capacity( 1000000 );
    _unsatClause.clear();
    _satClause.clear();
 }
@@ -141,8 +143,6 @@ SsatSolver::ntkCreateNode( Abc_Ntk_t * pNtkCube , Vec_Ptr_t * vMapVars , bool sa
    int * pfCompl = new int[_s2->nVars()];
    pObjCube = NULL;
    for ( int i = 0 ; i < learntClause.size() ; ++i ) {
-      //printf( "  > %3d-th learnt clause\n" , i );
-      //dumpCla( learntClause[i] );
       if ( learntClause[i].size() ) {
          assert( learntClause[i].size() <= _s2->nVars() );
          pObj = Abc_NtkCreateNode( pNtkCube );
@@ -174,8 +174,6 @@ SsatSolver::ntkPatchPoCheck( Abc_Ntk_t * pNtkCube , Abc_Obj_t * pObjCube , bool 
       Abc_NtkDelete( pNtkCube );
       exit(1);
    }
-   //Ssat_DumpCubeNtk( pNtkCube );
-   //Abc_NtkShow( pNtkCube , 0 , 0 , 1 );
 }
 
 /**Function*************************************************************
