@@ -74,6 +74,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       }
       else { // SAT case
          subvalue = fBdd ? clauseToNetwork() : countModels( eLits );
+         //subvalue = 0.0;
          if ( subvalue > _satPb ) {
             printf( "  > find a better solution , value = %f\n" , subvalue );
             Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );

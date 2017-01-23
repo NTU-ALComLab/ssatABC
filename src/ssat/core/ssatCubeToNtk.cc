@@ -68,16 +68,19 @@ SsatSolver::initCubeNetwork( int upper , int lower , bool fAll )
    (_lowerLimit > 0) ?   _satClause.capacity( _lowerLimit ) :   _satClause.capacity( 1000000 );
    _unsatClause.clear();
    _satClause.clear();
+   _nSatCube = _nUnsatCube = 0;
 }
 
 double
 SsatSolver::cubeToNetwork( bool sat )
 {
-   vec< vec<Lit> > & learntClause = (sat) ? _satClause : _unsatClause;
+   vec< vec<Lit> > & learntClause = sat ? _satClause : _unsatClause;
    if ( !learntClause.size() ) return (sat ? _satPb : _unsatPb);
    
    Abc_Obj_t * pObjCube = ntkCreateNode( _pNtkCube , _vMapVars , sat );
+   int & nCube = sat ? _nSatCube : _nUnsatCube;
    ntkPatchPoCheck( _pNtkCube ,  pObjCube , sat );
+   nCube += learntClause.size();
    learntClause.clear();
    return ntkBddComputeSp( _pNtkCube , sat );
 }
@@ -297,7 +300,7 @@ SsatSolver::ntkBddComputeSp( Abc_Ntk_t * pNtkCube , bool sat )
    Abc_NtkForEachPi( pNtk , pObj , i )
 	   pObj->dTemp = (float)_quan[_rootVars[0][i]];
 
-   prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 0 , 1 );
+   prob = (double)Pb_BddComputeSp( pNtk , (int)sat , 0 , 0 , 0 );
    Abc_NtkDelete( pNtkCopy );
    //Abc_NtkDelete( pNtkAig );
    Abc_NtkDelete( pNtk );

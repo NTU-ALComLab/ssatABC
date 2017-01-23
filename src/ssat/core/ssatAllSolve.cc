@@ -120,7 +120,8 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
-         return (_satPb = cubeToNetwork(true));
+         //return (_satPb = cubeToNetwork(true));
+         return _satPb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
