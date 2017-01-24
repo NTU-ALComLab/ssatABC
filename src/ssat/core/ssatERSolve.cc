@@ -57,6 +57,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    if ( fBdd ) initClauseNetwork();
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
+   int dropIndex;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = Abc_Clock();
    for(;;) {
@@ -73,8 +74,8 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          _s2->addClause( sBkCla );
       }
       else { // SAT case
-         subvalue = fBdd ? clauseToNetwork() : countModels( eLits );
-         //subvalue = 0.0;
+         dropIndex = eLits.size();
+         subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
          if ( subvalue > _satPb ) {
             printf( "  > find a better solution , value = %f\n" , subvalue );
             Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
@@ -82,8 +83,21 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             _satPb = subvalue;
             eLits.copyTo( _erModel );
          }
+         else { // partial assignment pruning
+            // TODO
+#if 0
+            printf( "  > Try to drop some assignments!\n" );
+            while ( countModels( eLits , --dropIndex ) <= _satPb ) {
+               if ( dropIndex == 0 ) {
+                  Abc_Print( -1 , "Something wrong with dropping...\n" );
+                  exit(1);
+               }
+            }
+            ++dropIndex; // drop [dropIndex,end]
+#endif
+         }
          sBkCla.clear();
-         collectBkClaER( sBkCla );
+         collectBkClaER( sBkCla , dropIndex );
          _s2->addClause( sBkCla );
       }
    }
@@ -96,6 +110,31 @@ SsatSolver::buildERSelector()
    return buildAllSelector();
 }
 
+void
+SsatSolver::collectBkClaER( vec<Lit> & sBkCla , int dropIndex )
+{
+   vec<bool> drop( _s1->nVars() , false );
+   for ( int i = dropIndex ; i < _rootVars[0].size() ; ++i ) drop[_rootVars[0][i]] = true;
+
+   bool block;
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      block = true;
+      Clause & c = _s1->ca[_s1->clauses[i]];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( drop[var(c[j])] || isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+            block = false;
+            break;
+         }
+      }
+      if ( block ) {
+         for ( int j = 0 ; j < c.size() ; ++j ) {
+            if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
+               sBkCla.push (c[j]);
+         }
+      }
+   }
+}
+#if 0
 void
 SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
 {
@@ -117,7 +156,7 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
       }
    }
 }
-
+#endif
 /**Function*************************************************************
 
   Synopsis    [Counting models under an exist assignment]
@@ -130,8 +169,9 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
 
 ***********************************************************************/
 
+//TODO
 double
-SsatSolver::countModels( const vec<Lit> & sBkCla )
+SsatSolver::countModels( const vec<Lit> & sBkCla , int dropIndex )
 {
    FILE * file;
    int length = 1024;
