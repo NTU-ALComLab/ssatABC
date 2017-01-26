@@ -85,14 +85,14 @@ private:
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    void        collectBkClaER     ( vec<Lit>& , int );
-   //void        collectBkClaER     ( vec<Lit>& );
+   void        collectBkClaER     ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& ) const;
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& , int );
-   //double      countModels        ( const vec<Lit>& );
+   double      countModels        ( const vec<Lit>& );
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& );

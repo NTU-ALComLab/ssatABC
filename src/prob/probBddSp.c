@@ -130,6 +130,7 @@ Pb_BddResetProb( DdManager * dd , DdNode * bFunc )
       Cudd_Regular(node)->pMax = Cudd_Regular(node)->pMin = Cudd_IsConstant(node) ? 1.0 : -1.0;
 }
 
+//FIXME: this is buggy!!!
 float
 Pb_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
 {

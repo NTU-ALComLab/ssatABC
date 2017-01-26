@@ -58,12 +58,14 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
    int dropIndex;
+   int nCachet = 0;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = Abc_Clock();
    for(;;) {
       if ( !_s2->solve() ) {
          printf( "\n  > optimizing assignment to exist vars:\n" );
          dumpCla( _erModel );
+         printf( " >  number of calls to Cachet:%5d\n" , nCachet );
          return _satPb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
@@ -74,8 +76,17 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          _s2->addClause( sBkCla );
       }
       else { // SAT case
+         printf( "  > current assignment:\t" );
+         dumpCla( eLits );
          dropIndex = eLits.size();
+         // FIXME
+         if ( _s1->nClauses() == 0 ) {
+            Abc_Print( -1 , "  > There is no clause left ...\n" );
+            Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
+         }
          subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
+         ++nCachet;
+         //subvalue = 0.0;
          if ( subvalue > _satPb ) {
             printf( "  > find a better solution , value = %f\n" , subvalue );
             Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
@@ -97,7 +108,9 @@ SsatSolver::erSolve2SSAT( bool fBdd )
 #endif
          }
          sBkCla.clear();
-         collectBkClaER( sBkCla , dropIndex );
+         collectBkClaER( sBkCla );
+         printf( "  > blocking clause:\n" );
+         dumpCla( sBkCla );
          _s2->addClause( sBkCla );
       }
    }
@@ -128,13 +141,15 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla , int dropIndex )
       }
       if ( block ) {
          for ( int j = 0 ; j < c.size() ; ++j ) {
+            cout << ( sign(c[j]) ? "-": "" ) << var(c[j])+1 << " ";
             if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
                sBkCla.push (c[j]);
          }
+         cout << "\n";
       }
    }
 }
-#if 0
+
 void
 SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
 {
@@ -156,7 +171,7 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
       }
    }
 }
-#endif
+
 /**Function*************************************************************
 
   Synopsis    [Counting models under an exist assignment]
