@@ -65,7 +65,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       if ( !_s2->solve() ) {
          printf( "\n  > optimizing assignment to exist vars:\n" );
          dumpCla( _erModel );
-         printf( " >  number of calls to Cachet:%5d\n" , nCachet );
+         printf( "  > number of calls to Cachet:%5d\n" , nCachet );
          return _satPb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
@@ -76,8 +76,8 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          _s2->addClause( sBkCla );
       }
       else { // SAT case
-         printf( "  > current assignment:\t" );
-         dumpCla( eLits );
+         // printf( "  > current assignment:\t" );
+         // dumpCla( eLits );
          dropIndex = eLits.size();
          // FIXME
          if ( _s1->nClauses() == 0 ) {
@@ -88,8 +88,8 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          ++nCachet;
          //subvalue = 0.0;
          if ( subvalue > _satPb ) {
-            printf( "  > find a better solution , value = %f\n" , subvalue );
-            Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
+            // printf( "  > find a better solution , value = %f\n" , subvalue );
+            // Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
             fflush(stdout);
             _satPb = subvalue;
             eLits.copyTo( _erModel );
@@ -109,8 +109,8 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          }
          sBkCla.clear();
          collectBkClaER( sBkCla );
-         printf( "  > blocking clause:\n" );
-         dumpCla( sBkCla );
+         // printf( "  > blocking clause:\n" );
+         // dumpCla( sBkCla );
          _s2->addClause( sBkCla );
       }
    }
