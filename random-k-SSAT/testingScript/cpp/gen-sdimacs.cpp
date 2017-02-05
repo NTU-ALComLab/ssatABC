@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <cstdlib>
 #include <iostream>
 #include <cstring>
 #include <fstream>
@@ -49,15 +48,15 @@ int main(int argc, char ** argv) {
         file_out << line << '\n';
         
         if (line[0] == 'p') {
-          // r p [vars]
-          file_out << "r " << p;
-          for(int i = 0; i < l; ++i) {
+          // e [vars]
+          file_out << "e";
+          for(int i = l; i < n; ++i) {
             file_out << " " << i+1;
           }
           file_out << " 0\n";
-          // e [vars]
-          file_out << "e ";
-          for(int i = l; i < n; ++i) {
+          // r p [vars]
+          file_out << "r " << p;
+          for(int i = 0; i < l; ++i) {
             file_out << " " << i+1;
           }
           file_out << " 0\n";
