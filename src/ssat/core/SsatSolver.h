@@ -60,6 +60,8 @@ public:
    double      solveSsat( double , int , int , bool , bool , bool ); // Solve 2SSAT/2QBF
    double      upperBound() const { return 1.0 - _unsatPb; }
    double      lowerBound() const { return _satPb; }
+   int         nSatCube()   const { return _nSatCube; }
+   int         nUnsatCube() const { return _nUnsatCube; }
    // Testing interface:
    void        test() const;
 private:
@@ -82,12 +84,14 @@ private:
    double      aSolve2SSAT        ( double , int , int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
+   void        collectBkClaER     ( vec<Lit>& , int );
    void        collectBkClaER     ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& ) const;
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    double      baseProb           () const;
+   double      countModels        ( const vec<Lit>& , int );
    double      countModels        ( const vec<Lit>& );
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
@@ -145,6 +149,8 @@ private:
    Abc_Obj_t       * _pConst1;         // network Const1 node
    double            _unsatPb;         // current UNSAT pb, uppper bound
    double            _satPb;           // current SAT pb, lower bound
+   int               _nSatCube;        // number of collected SAT cubes
+   int               _nUnsatCube;      // number of collected UNSAT cubes
    int               _upperLimit;      // number of UNSAT cubes to invoke network construction
    int               _lowerLimit;      // number of SAT cubes to invoke network construction
    vec<Lit>          _erModel;         // optimizer for ER-2SSAT

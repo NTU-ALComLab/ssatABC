@@ -378,6 +378,10 @@ SsatSolver::miniUnsatCore( const vec<Lit> & conflt , vec<Lit> & sBkCla )
       }
       else sBkCla.push( conflict[i] );
    }
+   // FIXME: turn off mini, no bug?
+   vec<Lit> check(sBkCla.size());
+   for ( int i = 0 ; i < sBkCla.size() ; ++i ) check[i] = ~sBkCla[i];
+   assert( !_s1->solve(check) );
 }
    
 void

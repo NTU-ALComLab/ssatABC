@@ -77,9 +77,9 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    int upper , lower , c;
    bool fAll , fMini , fBdd;
 
-   range  = 0.01;
-   upper  = 1;
-   lower  = 65536;
+   range  = 0.0;
+   upper  = -1;
+   lower  = -1;
    fAll   = true;
    fMini  = true;
    fBdd   = false;
@@ -145,8 +145,10 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    clk  = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
    pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd );
-   Abc_Print( -2 , "\n  > Upper bound = %f\n" , pSsat->upperBound() );
-   Abc_Print( -2 , "  > Lower bound = %f\n"   , pSsat->lowerBound() );
+   Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
+   Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
+   //Abc_Print( -2 , "  > #UNSAT cubes = %d\n" , pSsat->nUnsatCube() );
+   //Abc_Print( -2 , "  > #SAT   cubes = %d\n" , pSsat->nSatCube() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
    printf("\n");
    delete pSsat;

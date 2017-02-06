@@ -130,6 +130,7 @@ Pb_BddResetProb( DdManager * dd , DdNode * bFunc )
       Cudd_Regular(node)->pMax = Cudd_Regular(node)->pMin = Cudd_IsConstant(node) ? 1.0 : -1.0;
 }
 
+//FIXME: this is buggy!!!
 float
 Pb_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
 {
@@ -169,7 +170,7 @@ void
 Pb_BddPrintProb( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
 {
 	int i , n;
-   printf( " , prob = %f\n" , Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax );
+   printf( " , prob = %e\n" , Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax );
 	if ( Cudd_Regular( bFunc )->index < numExist ) { // exist var
 	   if ( pNtk->pModel ) printf( "  > [Warning] Reset model\n" );
 		else {

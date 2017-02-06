@@ -154,6 +154,6 @@ alias pmt "probmiter"
 
 # ssat alias
 alias ss "ssat"
-alias qq "ss -b sdimacs/sand-10.sdimacs"
-alias aa "ss -b sdimacs/sand-3.sdimacs"
-alias zz "ss -b sdimacs/c432_er.sdimacs"
+alias qq "ss -b benchmark/sand-castle-67/SC-1.sdimacs"
+alias zz "ss expSsat/ssatER/sand-castle/sdimacs/SC-5.sdimacs"
+alias aa "ss expSsat/ssatER/sand-castle/sdimacs/SC-10.sdimacs"

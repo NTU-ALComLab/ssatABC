@@ -120,7 +120,8 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
-         return (_satPb = cubeToNetwork(true));
+         //return (_satPb = cubeToNetwork(true));
+         return _satPb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
@@ -130,6 +131,11 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
             sBkCla.copyTo( _unsatClause.last() );
+            if ( !sBkCla.size() ) { // FIXME: temp sol for UNSAT matrix
+               _unsatPb = 1.0;
+               _satPb   = 0.0;
+               return _satPb;
+            }
             _s2->addClause( sBkCla );
          }
          else {
@@ -139,7 +145,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
          if ( unsatCubeListFull() ) {
             printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
             _unsatPb = cubeToNetwork(false);
-            printf( "  > current unsat prob = %f\n" , _unsatPb );
+            printf( "  > current unsat prob = %e\n" , _unsatPb );
             Abc_PrintTime( 1 , "  > current unsat time" , Abc_Clock() - clk );
             fflush(stdout);
          }
@@ -153,7 +159,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
          if ( satCubeListFull() ) {
             printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
             _satPb = cubeToNetwork(true);
-            printf( "  > current sat prob = %f\n" , _satPb );
+            printf( "  > current sat prob = %e\n" , _satPb );
             Abc_PrintTime( 1 , "  > current sat time" , Abc_Clock() - clk );
             fflush(stdout);
          }
