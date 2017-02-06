@@ -8,15 +8,15 @@ using namespace std;
 
 int main( int argc , char ** argv )
 {
-  bool sdimacs = false , blif = false;
+  bool sdimacs = false , blif = false , multi = false;;
   int frames;
   int vars, clauses;
   char name[128];
   double pro[5] = { 0.5 , 0.67 , 0.25 , 0.75 , 0.5 };
   FILE * file;
 
-  if( argc != 3 ) {
-    cout << "./gen <format> <# of frames>" << '\n';
+  if( argc != 4 ) {
+    cout << "./gen <format> <# of frames> <prefix type>" << '\n';
     return 1;
   }
   if      ( !strcmp( argv[1] , "sdimacs" ) ) sdimacs = true;
@@ -27,26 +27,41 @@ int main( int argc , char ** argv )
      return 1;
   }
   frames = atoi(argv[2]);
-  
-  cout << "  > Get # of frames = " << frames << " format " << ( blif ? "blif" : (sdimacs ? "sdimacs" : "ssat") ) << endl;
+  if      ( !strcmp( argv[3] , "multi"  ) ) multi = true;
+  else if ( !strcmp( argv[3] , "single" ) ) multi = false;
+  else {
+     cout << "Unknown prefix type " << argv[3] << endl;
+     return 1;
+  }
+  cout << "  > Get # of frames = " << frames << " , format = " << ( blif ? "blif" : (sdimacs ? "sdimacs" : "ssat") ) 
+       << " , multi = " << (multi ? "true" : "false") << endl;
 
   if( frames < 1 ) {
     cout << "  > # of frames must be greater than 0." << '\n';
     return 1;
   }
 
-  sprintf( name , "SC-%d.%s" , frames , blif ? "blif" : (sdimacs ? "sdimacs" : "ssat" ) );
+  sprintf( name , "SC-%d_%s.%s" , frames , (multi ? "m" : "s") , blif ? "blif" : (sdimacs ? "sdimacs" : "ssat" ) );
   file = fopen( name , "w" );
   
   if( blif ) {
+     for ( int i = 0 ; i < frames ; ++i ) {
+        for ( int j = 0 ; j < 5 ; ++j )
+           fprintf( file , "c %f\n" , pro[j] );
+     }
     fprintf( file , ".model SC%d\n" , frames );
     fprintf( file , ".inputs" );
-    for( int i = 0 ; i < frames ; ++i ) {
-      fprintf( file , " CHOOSE_%d", i );
-    // with original order !
-    // }
-    // for( int i = 0 ; i < frames ; ++i ) {
-      fprintf( file , " D1_%d E1_%d E2_%d E3_%d E4_%d", i , i , i , i , i );
+    if ( multi ) {
+       for( int i = 0 ; i < frames ; ++i ) {
+         fprintf( file , " CHOOSE_%d", i );
+         fprintf( file , " D1_%d E1_%d E2_%d E3_%d E4_%d", i , i , i , i , i );
+       }
+    }
+    else {
+       for( int i = 0 ; i < frames ; ++i )
+          fprintf( file , " CHOOSE_%d", i );
+       for( int i = 0 ; i < frames ; ++i ) 
+         fprintf( file , " D1_%d E1_%d E2_%d E3_%d E4_%d", i , i , i , i , i );
     }
     fprintf( file , "\n.outputs CAS_%d\n" , frames );
     for( int i = 0 ; i < frames ; ++i ) {
