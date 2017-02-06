@@ -94,8 +94,8 @@ private:
    double      countModels        ( const vec<Lit>& , int );
    double      countModels        ( const vec<Lit>& );
    // write file for Model Counting
-   void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
-   void        toDimacsWeighted   ( const char* , const vec<Lit>& );
+   void        toDimacsWeighted   ( FILE* , const vec<Lit>& , int );
+   void        toDimacsWeighted   ( const char* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
    // construct circuits from cubes for Model Counting

@@ -65,19 +65,20 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       if ( !_s2->solve() ) {
          printf( "\n  > optimizing assignment to exist vars:\n" );
          dumpCla( _erModel );
-         printf( "  > number of calls to Cachet:%5d\n" , nCachet );
+         printf( "  > number of calls to Cachet:%10d\n" , nCachet );
          return _satPb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(eLits) ) { // UNSAT case
          sBkCla.clear();
-         miniUnsatCore( _s1->conflict , sBkCla );
-         _s2->addClause( sBkCla );
+         // miniUnsatCore( _s1->conflict , sBkCla );
+         // _s2->addClause( sBkCla );
+         _s2->addClause( _s1->conflict );
       }
       else { // SAT case
-         // printf( "  > current assignment:\t" );
-         // dumpCla( eLits );
+         printf( "  > current assignment:\t" );
+         dumpCla( eLits );
          dropIndex = eLits.size();
          // FIXME
          if ( _s1->nClauses() == 0 ) {
@@ -85,10 +86,11 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
          }
          subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
+         if(subvalue == 1 ) break;
          ++nCachet;
          //subvalue = 0.0;
          if ( subvalue > _satPb ) {
-            // printf( "  > find a better solution , value = %f\n" , subvalue );
+            printf( "  > find a better solution , value = %f\n" , subvalue );
             // Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
             fflush(stdout);
             _satPb = subvalue;
@@ -109,8 +111,8 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          }
          sBkCla.clear();
          collectBkClaER( sBkCla );
-         // printf( "  > blocking clause:\n" );
-         // dumpCla( sBkCla );
+         printf( "  > blocking clause:\n" );
+         dumpCla( sBkCla );
          _s2->addClause( sBkCla );
       }
    }
@@ -196,7 +198,10 @@ SsatSolver::countModels( const vec<Lit> & sBkCla , int dropIndex )
    // for ( int i = 0 ; i < sBkCla.size() ; ++i ) assump[i] = ~sBkCla[i];
    
    // toDimacsWeighted( "temp.wcnf" , assump );
-   toDimacsWeighted( "temp.wcnf" , sBkCla );
+   // toDimacsWeighted( "temp.wcnf" , sBkCla );
+   cout << "dropIndex: " << dropIndex << " , clause: ";
+   dumpCla(sBkCla);
+   toDimacsWeighted( "temp.wcnf" , sBkCla , dropIndex );
    sprintf( cmdModelCount , "bin/cachet temp.wcnf > tmp.log");
    if ( system( cmdModelCount ) ) {
       fprintf( stderr , "Error! Problems with cachet execution...\n" );
@@ -252,7 +257,7 @@ void
 SsatSolver::toDimacs( FILE * f , Clause & c , vec<Var> & map , Var & max )
 {
    Solver * S = _s1;
-   if ( S->satisfied(c) ) return;
+   // if ( S->satisfied(c) ) return;
 
    for ( int i = 0 ; i < c.size() ; ++i )
       if ( S->value(c[i]) != l_False )
@@ -268,17 +273,17 @@ SsatSolver::toDimacsWeighted( FILE * f , vec<double> & weights , Var & max )
 }
 
 void
-SsatSolver::toDimacsWeighted( const char * file , const vec<Lit> & assumps )
+SsatSolver::toDimacsWeighted( const char * file , const vec<Lit> & assumps , int dropIndex )
 {
    FILE * f = fopen( file , "wr" );
    if ( f == NULL )
       fprintf( stderr , "could not open file %s\n" , file ), exit(1);
-   toDimacsWeighted( f , assumps );
+   toDimacsWeighted( f , assumps , dropIndex );
    fclose(f);
 }
 
 void
-SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
+SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropIndex )
 {
    Solver * S = _s1;
 
@@ -292,11 +297,15 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
    int cnt = 0;
    vec<Var> map;
    vec<double> weights;
+   bool select = true;
    
    // map var to 0 ~ max
    // map 0 ~ max to original weight
-   for ( int i = 0 ; i < S->clauses.size() ; ++i )
-      if ( !S->satisfied( S->ca[S->clauses[i]]) ) {
+   for ( int i = 0 ; i < S->clauses.size() ; ++i ) {
+      Clause& c = S->ca[S->clauses[i]];
+      for ( int j = 0 ; j < c.size(); ++j )
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && S->modelValue(c[j]) == l_True && var(c[j]) < dropIndex ) select = false;
+      if ( select == true ) {
          cnt++;
          Clause& c = S->ca[S->clauses[i]];
          for ( int j = 0 ; j < c.size(); ++j )
@@ -305,17 +314,19 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
                mapWeight( tmpVar, weights, ( isRVar(var(c[j])) ? _quan[var(c[j])] : -1 ) );
             }
       }
+      select = true;
+   }
 
    // Assumptions are added as unit clauses:
-   cnt += assumps.size();
-   for ( int i = 0 ; i < assumps.size() ; ++i ) {
+   cnt += dropIndex;
+   for ( int i = 0 ; i < dropIndex ; ++i ) {
       tmpVar = mapVar( var(assumps[i]) , map , max );
       mapWeight( tmpVar , weights , ( isRVar(var(assumps[i])) ? _quan[var(assumps[i])] : -1 ) );
    }
 
    fprintf(f, "p cnf %d %d\n", max, cnt);
 
-   for ( int i = 0 ; i < assumps.size() ; ++i ) {
+   for ( int i = 0 ; i < dropIndex ; ++i ) {
       fprintf( f , "%s%d 0\n" , sign(assumps[i]) ? "-" : "" , mapVar( var(assumps[i]) , map , max ) + 1 );
    }
 
