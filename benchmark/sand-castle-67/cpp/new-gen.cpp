@@ -45,9 +45,14 @@ int main( int argc , char ** argv )
   file = fopen( name , "w" );
   
   if( blif ) {
+     fprintf( file , "c primary inputs quantification\n" );
      for ( int i = 0 ; i < frames ; ++i ) {
-        for ( int j = 0 ; j < 5 ; ++j )
-           fprintf( file , "c %f\n" , pro[j] );
+        fprintf( file , "c input CHOOSE_%d E\n", i );
+        fprintf( file , "c input D1_%d R %f\n" , i , pro[0] );
+        fprintf( file , "c input E1_%d R %f\n" , i , pro[1] );
+        fprintf( file , "c input E2_%d R %f\n" , i , pro[2] );
+        fprintf( file , "c input E3_%d R %f\n" , i , pro[3] );
+        fprintf( file , "c input E4_%d R %f\n" , i , pro[4] );
      }
     fprintf( file , ".model SC%d\n" , frames );
     fprintf( file , ".inputs" );
