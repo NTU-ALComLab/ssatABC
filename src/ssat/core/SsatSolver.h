@@ -21,6 +21,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <map>
+#include <fstream>
+#include <iostream>
 #include <zlib.h>
 
 // minisat headers

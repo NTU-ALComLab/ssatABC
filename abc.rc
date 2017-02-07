@@ -154,6 +154,8 @@ alias pmt "probmiter"
 
 # ssat alias
 alias ss "ssat"
-alias qq "ss -b benchmark/sand-castle-67/SC-1.sdimacs"
+alias rp "readpntk"
+alias sst "ssat_test"
+alias qq "rp benchmark/sand-castle-67/cpp/SC-3_m.blif"
 alias zz "ss expSsat/ssatER/sand-castle/sdimacs/SC-5.sdimacs"
 alias aa "ss expSsat/ssatER/sand-castle/sdimacs/SC-10.sdimacs"
