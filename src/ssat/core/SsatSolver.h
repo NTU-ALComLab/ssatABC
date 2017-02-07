@@ -97,7 +97,7 @@ private:
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
-   void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
+   void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& , int );
    // construct circuits from cubes for Model Counting
    void        initCubeNetwork    ( int , int , bool );
    bool        unsatCubeListFull  () const { return (_unsatClause.size() == _upperLimit); };
