@@ -78,6 +78,10 @@ private:
    double      qSolve             ( double , int , int , bool ); // Qesto-like solve
    double      aSolve             ( double , int , int , bool ); // All-SAT enumeration solve
    double      erSolve2SSAT       ( bool ); // Solve ER/ERE-2SSAT
+   // branch and bound helpers
+   void        ntkBuildPrefix     ( Abc_Ntk_t * );
+   Solver *    ntkBuildSolver     ( Abc_Ntk_t * );
+   bool        binaryDecrement    ( vec<Lit> & ) const;
    // solve helpers
    Solver *    buildQestoSelector ();
    Solver *    buildERSelector    ();

@@ -329,7 +329,7 @@ SsatCommandBranchBound( Abc_Frame_t * pAbc , int argc , char ** argv )
    Abc_Ntk_t * pNtk;
    SsatSolver * pSsat;
    char * pFileName;
-   int fResyn , numExist = 0 , c;
+   int fResyn , c;
    abctime clk = Abc_Clock();
 
    fResyn = 1;
