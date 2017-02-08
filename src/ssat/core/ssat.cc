@@ -28,7 +28,7 @@ extern "C" void Ssat_Init ( Abc_Frame_t * );
 extern "C" void Ssat_End  ( Abc_Frame_t * );
 
 static int SsatCommandSSAT       ( Abc_Frame_t * pAbc , int argc , char ** argv );
-static int SsatCommandReadPntk   ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static int SsatCommandCktBddsp   ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int SsatCommandTest       ( Abc_Frame_t * pAbc , int argc , char ** argv );
 
 // static helpers
@@ -42,7 +42,7 @@ map<string,double> quanMap; // Pi name -> quan prob , -1 means exist
 
 /**Function*************************************************************
 
-  Synopsis    [Start / Stop the eda package]
+  Synopsis    [Start / Stop the ssat package]
 
   Description []
                
@@ -56,7 +56,7 @@ void
 Ssat_Init( Abc_Frame_t * pAbc )
 {
    Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"      , SsatCommandSSAT     , 0 );
-   Cmd_CommandAdd( pAbc , "z SSAT" , "readpntk"  , SsatCommandReadPntk , 1 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "cktbddsp"  , SsatCommandCktBddsp , 1 );
    Cmd_CommandAdd( pAbc , "z SSAT" , "ssat_test" , SsatCommandTest     , 0 );
 }
 
@@ -192,19 +192,24 @@ usage:
 ***********************************************************************/
 
 int 
-SsatCommandReadPntk( Abc_Frame_t * pAbc , int argc , char ** argv )
+SsatCommandCktBddsp( Abc_Frame_t * pAbc , int argc , char ** argv )
 {
    Abc_Ntk_t * pNtk;
    Abc_Obj_t * pObj;
    char * pFileName;
    char sCmd[1000];
-   int numExist = 0 , i , c;
+   int fResyn , numExist = 0 , i , c;
+   abctime clk = Abc_Clock();
 
+   fResyn = 1;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "sh" ) ) != EOF )
    {
       switch ( c )
       {
+         case 's':
+            fResyn ^= 1;
+            break;
          case 'h':
             goto usage;
          default:
@@ -232,23 +237,20 @@ SsatCommandReadPntk( Abc_Frame_t * pAbc , int argc , char ** argv )
       return 1;
    }
    Abc_FrameReplaceCurrentNetwork( pAbc , pNtk );
-   printf( "  > before running resyn2:\n" );
-   Cmd_CommandExecute( pAbc , "ps" );
-   printf( "  > after running resyn2:\n" );
-   Cmd_CommandExecute( pAbc , "resyn2" );
-   Cmd_CommandExecute( pAbc , "ps" );
+   fResyn ? Cmd_CommandExecute( pAbc , "resyn2" ) : Cmd_CommandExecute( pAbc , "st" );
    Cmd_CommandExecute( pAbc , "sst" );
    pNtk = Abc_FrameReadNtk( pAbc );
    Abc_NtkForEachPi( pNtk , pObj , i )
       if ( pObj->dTemp == -1 ) ++numExist;
    sprintf( sCmd , "bddsp -g -E %d" , numExist );
-   printf( "  > running %s:\n" , sCmd );
    Cmd_CommandExecute( pAbc , sCmd );
+   Abc_PrintTime( 1 , "  > Time consumed" , Abc_Clock() - clk );
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: readpntk [-h] <file>\n" );
-   Abc_Print( -2 , "\t     read probabilistic network in blif format\n" );
+   Abc_Print( -2 , "usage: cktbddsp [-sh] <file>\n" );
+   Abc_Print( -2 , "\t     read probabilistic network in blif format and apply bddsp\n" );
+   Abc_Print( -2 , "\t-s        : toggles using resyn2 , default = yes\n" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );
    Abc_Print( -2 , "\tfile      : the blif file\n" );
    return 1;
