@@ -51,11 +51,12 @@ int main( int argc , char ** argv )
         fprintf( file , "%d %d %d " , i * 9 + 4 , i * 9 + 5 , i * 9 + 6 );
       fprintf( file , "0\n" );
 
+      fprintf( file , "r 0.5 3 0" );
       for ( int i = 0 ; i < frames ; ++i )
         for ( int j = 0 ; j < 2 ; ++j )
           fprintf( file , "r %f %d 0\n" , pro[j] , i * 9 + 7 + j );
 
-      fprintf( file , "e 1 2 3 " );
+      fprintf( file , "e 1 2 " );
       for ( int i = 0 ; i < frames ; ++i )
         fprintf( file , "%d %d %d %d " , i * 9 + 9 , i * 9 + 10 , i * 9 + 11 , i * 9 + 12 );
       fprintf( file , "0\n" );
@@ -65,46 +66,78 @@ int main( int argc , char ** argv )
       for ( int i = 0 ; i < frames ; ++i )
         fprintf( file , "%d x%d E\n%d x%d E\n%d x%d E\n" , i*9+4 , i*9+4 , i*9+5 , i*9+5 , i*9+6 , i*9+6 );
 
+      fprintf( file , "3 x3 R 0.5\n" );
       for ( int i = 0 ; i < frames ; ++i )
         for ( int j = 0 ; j < 2 ; ++j )
           fprintf( file , "%d x%d R %f\n" , i*9+7+j , i*9+7+j , pro[j] );
-      fprintf( file , "1 x1 E\n2 x2 E\n3 x3 E\n" );
+      
+      fprintf( file , "1 x1 E\n2 x2 E\n" );
       for ( int i = 0 ; i < frames ; ++i )
         fprintf( file , "%d x%d E\n%d x%d E\n%d x%d E\n%d x%d E\n" , i*9+9, i*9+9, i*9+10, i*9+10, i*9+11, i*9+11, i*9+12, i*9+12 );
     }
     // Initial conditions & Goal.
     fprintf( file , "-1 0\n-2 0\n-%d 0\n%d 0\n", vars-1, vars );
-    for ( int i = 0 ; i < frames ; ++i ) {
+      fprintf( file , "%d %d %d 0\n" , 0 * 9 + 4 , 0 * 9 + 5 , 0 * 9 + 6 );
+      fprintf( file , "-%d -%d 0\n" , 0 * 9 + 4 , 0 * 9 + 5 );
+      fprintf( file , "-%d -%d 0\n" , 0 * 9 + 4 , 0 * 9 + 6 );
+      fprintf( file , "-%d -%d 0\n" , 0 * 9 + 5 , 0 * 9 + 6 );
+      fprintf( file , "-%d -%d -%d %d 0\n" , 0 * 9 + 4 , 0 * 9 + 3 , 0 * 9 + 7 , 0 * 9 + 10 );
+      fprintf( file , "-%d -%d %d -%d 0\n" , 0 * 9 + 4 , 0 * 9 + 3 , 0 * 9 + 7 , 0 * 9 + 10 );
+      fprintf( file , "-%d %d -%d %d 0\n"  , 0 * 9 + 4 , 0 * 9 + 3 , 0 * 9 + 8 , 0 * 9 + 10 );
+      fprintf( file , "-%d %d %d -%d 0\n"  , 0 * 9 + 4 , 0 * 9 + 3 , 0 * 9 + 8 , 0 * 9 + 10 );
+      fprintf( file , "-%d -%d 0\n" , 0 * 9 + 5 , 0 * 9 + 10 );
+      fprintf( file , "-%d -%d 0\n" , 0 * 9 + 6 , 0 * 9 + 10 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 4 , 0 * 9 + 3 , 0 * 9 + 9 );
+      fprintf( file , "-%d %d -%d 0\n" , 0 * 9 + 4 , 0 * 9 + 3 , 0 * 9 + 9 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 5 , 0 * 9 + 3 , 0 * 9 + 9 );
+      fprintf( file , "-%d %d -%d 0\n" , 0 * 9 + 5 , 0 * 9 + 3 , 0 * 9 + 9 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 6 , 0 * 9 + 3 , 0 * 9 + 9 );
+      fprintf( file , "-%d %d -%d 0\n" , 0 * 9 + 6 , 0 * 9 + 3 , 0 * 9 + 9 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 4 , 0 * 9 + 1 , 0 * 9 + 11 );
+      fprintf( file , "-%d %d -%d 0\n" , 0 * 9 + 4 , 0 * 9 + 1 , 0 * 9 + 11 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 5 , 0 * 9 + 1 , 0 * 9 + 11 );
+      fprintf( file , "-%d %d -%d %d 0\n" , 0 * 9 + 5 , 0 * 9 + 1 , 0 * 9 + 3 , 0 * 9 + 11 );
+      fprintf( file , "-%d %d %d -%d 0\n" , 0 * 9 + 5 , 0 * 9 + 1 , 0 * 9 + 3 , 0 * 9 + 11 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 6 , 0 * 9 + 1 , 0 * 9 + 11 );
+      fprintf( file , "-%d %d -%d -%d 0\n" , 0 * 9 + 6 , 0 * 9 + 1 , 0 * 9 + 3 , 0 * 9 + 11 );
+      fprintf( file , "-%d %d %d %d 0\n" , 0 * 9 + 6 , 0 * 9 + 1 , 0 * 9 + 3 , 0 * 9 + 11 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 4 , 0 * 9 + 2 , 0 * 9 + 12 );
+      fprintf( file , "-%d %d -%d 0\n" , 0 * 9 + 4 , 0 * 9 + 2 , 0 * 9 + 12 );
+      fprintf( file , "-%d -%d -%d 0\n" , 0 * 9 + 5 , 0 * 9 + 3 , 0 * 9 + 12 );
+      fprintf( file , "-%d %d %d 0\n" , 0 * 9 + 5 , 0 * 9 + 3 , 0 * 9 + 12 );
+      fprintf( file , "-%d -%d %d 0\n" , 0 * 9 + 6 , 0 * 9 + 3 , 0 * 9 + 12 );
+      fprintf( file , "-%d %d -%d 0\n" , 0 * 9 + 6 , 0 * 9 + 3 , 0 * 9 + 12 );
+    for ( int i = 1 ; i < frames ; ++i ) {
       fprintf( file , "%d %d %d 0\n" , i * 9 + 4 , i * 9 + 5 , i * 9 + 6 );
       fprintf( file , "-%d -%d 0\n" , i * 9 + 4 , i * 9 + 5 );
       fprintf( file , "-%d -%d 0\n" , i * 9 + 4 , i * 9 + 6 );
       fprintf( file , "-%d -%d 0\n" , i * 9 + 5 , i * 9 + 6 );
-      fprintf( file , "-%d -%d -%d %d 0\n" , i * 9 + 4 , i * 9 + 3 , i * 9 + 7 , i * 9 + 10 );
-      fprintf( file , "-%d -%d %d -%d 0\n" , i * 9 + 4 , i * 9 + 3 , i * 9 + 7 , i * 9 + 10 );
-      fprintf( file , "-%d %d -%d %d 0\n"  , i * 9 + 4 , i * 9 + 3 , i * 9 + 8 , i * 9 + 10 );
-      fprintf( file , "-%d %d %d -%d 0\n"  , i * 9 + 4 , i * 9 + 3 , i * 9 + 8 , i * 9 + 10 );
+      fprintf( file , "-%d -%d -%d %d 0\n" , i * 9 + 4 , i * 9 , i * 9 + 7 , i * 9 + 10 );
+      fprintf( file , "-%d -%d %d -%d 0\n" , i * 9 + 4 , i * 9 , i * 9 + 7 , i * 9 + 10 );
+      fprintf( file , "-%d %d -%d %d 0\n"  , i * 9 + 4 , i * 9 , i * 9 + 8 , i * 9 + 10 );
+      fprintf( file , "-%d %d %d -%d 0\n"  , i * 9 + 4 , i * 9 , i * 9 + 8 , i * 9 + 10 );
       fprintf( file , "-%d -%d 0\n" , i * 9 + 5 , i * 9 + 10 );
       fprintf( file , "-%d -%d 0\n" , i * 9 + 6 , i * 9 + 10 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 4 , i * 9 + 3 , i * 9 + 9 );
-      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 4 , i * 9 + 3 , i * 9 + 9 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 5 , i * 9 + 3 , i * 9 + 9 );
-      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 5 , i * 9 + 3 , i * 9 + 9 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 6 , i * 9 + 3 , i * 9 + 9 );
-      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 6 , i * 9 + 3 , i * 9 + 9 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 4 , i * 9 + 1 , i * 9 + 11 );
-      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 4 , i * 9 + 1 , i * 9 + 11 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 5 , i * 9 + 1 , i * 9 + 11 );
-      fprintf( file , "-%d %d -%d %d 0\n" , i * 9 + 5 , i * 9 + 1 , i * 9 + 3 , i * 9 + 11 );
-      fprintf( file , "-%d %d %d -%d 0\n" , i * 9 + 5 , i * 9 + 1 , i * 9 + 3 , i * 9 + 11 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 6 , i * 9 + 1 , i * 9 + 11 );
-      fprintf( file , "-%d %d -%d -%d 0\n" , i * 9 + 6 , i * 9 + 1 , i * 9 + 3 , i * 9 + 11 );
-      fprintf( file , "-%d %d %d %d 0\n" , i * 9 + 6 , i * 9 + 1 , i * 9 + 3 , i * 9 + 11 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 4 , i * 9 + 2 , i * 9 + 12 );
-      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 4 , i * 9 + 2 , i * 9 + 12 );
-      fprintf( file , "-%d -%d -%d 0\n" , i * 9 + 5 , i * 9 + 3 , i * 9 + 12 );
-      fprintf( file , "-%d %d %d 0\n" , i * 9 + 5 , i * 9 + 3 , i * 9 + 12 );
-      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 6 , i * 9 + 3 , i * 9 + 12 );
-      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 6 , i * 9 + 3 , i * 9 + 12 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 4 , i * 9 , i * 9 + 9 );
+      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 4 , i * 9 , i * 9 + 9 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 5 , i * 9 , i * 9 + 9 );
+      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 5 , i * 9 , i * 9 + 9 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 6 , i * 9 , i * 9 + 9 );
+      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 6 , i * 9 , i * 9 + 9 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 4 , i * 9 + 2 , i * 9 + 11 );
+      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 4 , i * 9 + 2 , i * 9 + 11 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 5 , i * 9 + 2 , i * 9 + 11 );
+      fprintf( file , "-%d %d -%d %d 0\n" , i * 9 + 5 , i * 9 + 2 , i * 9 , i * 9 + 11 );
+      fprintf( file , "-%d %d %d -%d 0\n" , i * 9 + 5 , i * 9 + 2 , i * 9 , i * 9 + 11 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 6 , i * 9 + 2 , i * 9 + 11 );
+      fprintf( file , "-%d %d -%d -%d 0\n" , i * 9 + 6 , i * 9 + 2 , i * 9 , i * 9 + 11 );
+      fprintf( file , "-%d %d %d %d 0\n" , i * 9 + 6 , i * 9 + 2 , i * 9 , i * 9 + 11 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 4 , i * 9 + 3 , i * 9 + 12 );
+      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 4 , i * 9 + 3 , i * 9 + 12 );
+      fprintf( file , "-%d -%d -%d 0\n" , i * 9 + 5 , i * 9 , i * 9 + 12 );
+      fprintf( file , "-%d %d %d 0\n" , i * 9 + 5 , i * 9 , i * 9 + 12 );
+      fprintf( file , "-%d -%d %d 0\n" , i * 9 + 6 , i * 9 , i * 9 + 12 );
+      fprintf( file , "-%d %d -%d 0\n" , i * 9 + 6 , i * 9 , i * 9 + 12 );
     }
   }
 
