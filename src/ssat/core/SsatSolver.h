@@ -80,7 +80,7 @@ private:
    double      erSolve2SSAT       ( bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
-   Solver *    ntkBuildSolver     ( Abc_Ntk_t * );
+   Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
    bool        binaryDecrement    ( vec<Lit> & ) const;
    // solve helpers
    Solver *    buildQestoSelector ();
