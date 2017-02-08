@@ -27,9 +27,10 @@ using namespace std;
 extern "C" void Ssat_Init ( Abc_Frame_t * );
 extern "C" void Ssat_End  ( Abc_Frame_t * );
 
-static int SsatCommandSSAT       ( Abc_Frame_t * pAbc , int argc , char ** argv );
-static int SsatCommandCktBddsp   ( Abc_Frame_t * pAbc , int argc , char ** argv );
-static int SsatCommandTest       ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static int SsatCommandSSAT         ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static int SsatCommandBranchBound  ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static int SsatCommandCktBddsp     ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static int SsatCommandTest         ( Abc_Frame_t * pAbc , int argc , char ** argv );
 
 // static helpers
 static bool Ssat_NtkReadQuan     ( char * );
@@ -55,9 +56,10 @@ map<string,double> quanMap; // Pi name -> quan prob , -1 means exist
 void 
 Ssat_Init( Abc_Frame_t * pAbc )
 {
-   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"      , SsatCommandSSAT     , 0 );
-   Cmd_CommandAdd( pAbc , "z SSAT" , "cktbddsp"  , SsatCommandCktBddsp , 1 );
-   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat_test" , SsatCommandTest     , 0 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"        , SsatCommandSSAT        , 0 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "branchbound" , SsatCommandBranchBound , 1 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "cktbddsp"    , SsatCommandCktBddsp    , 1 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat_test"   , SsatCommandTest        , 0 );
 }
 
 void 
@@ -307,6 +309,81 @@ Ssat_NtkReadQuan( char * pFileName )
    }
    in.close();
    return true;
+}
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+int 
+SsatCommandBranchBound( Abc_Frame_t * pAbc , int argc , char ** argv )
+{
+   Abc_Ntk_t * pNtk;
+   SsatSolver * pSsat;
+   char * pFileName;
+   int fResyn , numExist = 0 , c;
+   abctime clk = Abc_Clock();
+
+   fResyn = 1;
+   Extra_UtilGetoptReset();
+   while ( ( c = Extra_UtilGetopt( argc, argv, "sh" ) ) != EOF )
+   {
+      switch ( c )
+      {
+         case 's':
+            fResyn ^= 1;
+            break;
+         case 'h':
+            goto usage;
+         default:
+            goto usage;
+      }
+   }
+   if ( argc != globalUtilOptind + 1 ) {
+      Abc_Print( -1 , "Missing probabilistic network file!\n" );
+      goto usage;
+   }
+   pFileName = argv[globalUtilOptind];
+   if ( Io_ReadFileType( pFileName ) != IO_FILE_BLIF ) {
+      Abc_Print( -1 , "Only support blif format for now!\n" );
+      return 1;
+   }
+   pNtk = Io_Read( pFileName , Io_ReadFileType(pFileName) , 1 , 0 );
+   if ( !pNtk ) {
+      Abc_Print( -1 , "Reading network %s has failed!\n" , pFileName );
+      return 1;
+   }
+   // read quantification structure and build global map
+   if ( !Ssat_NtkReadQuan( pFileName ) ) {
+      Abc_Print( -1 , "Reading quantification has failed!\n" );
+      Abc_NtkDelete( pNtk );
+      return 1;
+   }
+   Abc_FrameReplaceCurrentNetwork( pAbc , pNtk );
+   fResyn ? Cmd_CommandExecute( pAbc , "resyn2" ) : Cmd_CommandExecute( pAbc , "st" );
+   Cmd_CommandExecute( pAbc , "sst" );
+   pNtk = Abc_FrameReadNtk( pAbc );
+   pSsat = new SsatSolver;
+   pSsat->solveBranchBound( pNtk );
+   delete pSsat;
+   Abc_PrintTime( 1 , "  > Time consumed" , Abc_Clock() - clk );
+   return 0;
+
+usage:
+   Abc_Print( -2 , "usage: branchbound [-sh] <file>\n" );
+   Abc_Print( -2 , "\t     read prob ckt and solve by branch and bound method\n" );
+   Abc_Print( -2 , "\t-s        : toggles using resyn2 , default = yes\n" );
+   Abc_Print( -2 , "\t-h        : prints the command summary\n" );
+   Abc_Print( -2 , "\tfile      : the blif file\n" );
+   return 1;
 }
 
 /**Function*************************************************************

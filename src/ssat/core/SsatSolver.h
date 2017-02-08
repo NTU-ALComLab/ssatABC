@@ -61,6 +61,8 @@ public:
    void        readSSAT( gzFile& );
    // Ssat Solving:
    double      solveSsat( double , int , int , bool , bool , bool ); // Solve 2SSAT/2QBF
+   // ER-2-Ssat solving by branch and bound method
+   void        solveBranchBound( Abc_Ntk_t* );
    double      upperBound() const { return 1.0 - _unsatPb; }
    double      lowerBound() const { return _satPb; }
    int         nSatCube()   const { return _nSatCube; }
@@ -121,6 +123,8 @@ private:
    Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkPatchPoCheck  ( Abc_Ntk_t * , Abc_Obj_t * );
    double      erNtkBddComputeSp  ( Abc_Ntk_t * );
+   // All-Sat enumeration-based model counting
+   double      allSatModelCount   ( Solver * , const vec<Lit>& , double );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;

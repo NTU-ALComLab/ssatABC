@@ -155,6 +155,7 @@ alias pmt "probmiter"
 # ssat alias
 alias ss "ssat"
 alias cb "cktbddsp"
+alias bb "branchbound"
 alias sst "ssat_test"
 alias qq "cb benchmark/sand-castle-67/cpp/SC-3_s.blif"
 alias zz "ss expSsat/ssatER/sand-castle/sdimacs/SC-5.sdimacs"
