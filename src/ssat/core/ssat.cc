@@ -197,8 +197,8 @@ SsatCommandReadPntk( Abc_Frame_t * pAbc , int argc , char ** argv )
    Abc_Ntk_t * pNtk;
    Abc_Obj_t * pObj;
    char * pFileName;
-   int i , c;
-   map<string,double>::iterator it;
+   char sCmd[1000];
+   int numExist = 0 , i , c;
 
    Extra_UtilGetoptReset();
    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
@@ -231,17 +231,19 @@ SsatCommandReadPntk( Abc_Frame_t * pAbc , int argc , char ** argv )
       Abc_NtkDelete( pNtk );
       return 1;
    }
-   Abc_NtkForEachPi( pNtk , pObj , i )
-   {
-      it = quanMap.find( string(Abc_ObjName(pObj)) );
-      if ( it == quanMap.end() ) {
-         Abc_Print( -1 , "Pi %s has no quantifier!\n" , Abc_ObjName(pObj) );
-         Abc_NtkDelete( pNtk );
-         return 1;
-      }
-      pObj->dTemp = (float)it->second;
-   }
    Abc_FrameReplaceCurrentNetwork( pAbc , pNtk );
+   printf( "  > before running resyn2:\n" );
+   Cmd_CommandExecute( pAbc , "ps" );
+   printf( "  > after running resyn2:\n" );
+   Cmd_CommandExecute( pAbc , "resyn2" );
+   Cmd_CommandExecute( pAbc , "ps" );
+   Cmd_CommandExecute( pAbc , "sst" );
+   pNtk = Abc_FrameReadNtk( pAbc );
+   Abc_NtkForEachPi( pNtk , pObj , i )
+      if ( pObj->dTemp == -1 ) ++numExist;
+   sprintf( sCmd , "bddsp -g -E %d" , numExist );
+   printf( "  > running %s:\n" , sCmd );
+   Cmd_CommandExecute( pAbc , sCmd );
    return 0;
 
 usage:
@@ -320,13 +322,22 @@ Ssat_NtkReadQuan( char * pFileName )
 int 
 SsatCommandTest( Abc_Frame_t * pAbc , int argc , char ** argv )
 {
+   map<string,double>::iterator it;
    Abc_Ntk_t * pNtk = Abc_FrameReadNtk( pAbc );
    Abc_Obj_t * pObj;
    int i;
 
    if ( !pNtk ) return 1;
    Abc_NtkForEachPi( pNtk , pObj , i )
-      printf( "  > %10s --> %f\n" , Abc_ObjName(pObj) , pObj->dTemp );
+   {
+      it = quanMap.find( string(Abc_ObjName(pObj)) );
+      if ( it == quanMap.end() ) {
+         Abc_Print( -1 , "Pi %s has no quantifier!\n" , Abc_ObjName(pObj) );
+         Abc_NtkDelete( pNtk );
+         return 1;
+      }
+      pObj->dTemp = (float)it->second;
+   }
    return 0;
 }
 
