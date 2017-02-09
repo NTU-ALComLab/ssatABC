@@ -69,7 +69,7 @@ SsatSolver::solveBranchBound( Abc_Ntk_t * pNtk )
 #endif
    eLits.growTo( _rootVars[0].size() );
    for ( int i = 0 ; i < eLits.size() ; ++i )
-      eLits[i] = mkLit( _rootVars[0][i] , false ); 
+      eLits[i] = mkLit( _rootVars[0][i] , true ); 
    do {
       tempValue = allSatModelCount( _s1 , eLits , _satPb );
       if ( _satPb < tempValue ) {
@@ -176,7 +176,7 @@ bool
 SsatSolver::binaryIncrement( vec<Lit> & eLits ) const
 {
    for ( int i = eLits.size()-1 ; i > -1 ; --i ) {
-      if ( !sign( eLits[i] ) ) {
+      if ( sign( eLits[i] ) ) {
          for ( int j = i ; j < eLits.size() ; ++j )
             eLits[j] = ~eLits[j];
          return true;
