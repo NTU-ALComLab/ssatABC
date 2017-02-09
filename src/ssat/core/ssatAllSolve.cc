@@ -191,7 +191,9 @@ SsatSolver::miniHitSet( vec<Lit> & sBkCla ) const
    if ( minterm.size() )
       miniHitDropLit ( sBkCla , minterm , pick );
    // sanity check: avoid duplicated lits --> invalid write!
-   if ( sBkCla.size() > _rootVars[0].size() ) {
+   //if ( sBkCla.size() > _rootVars[0].size() ) {
+   // FIXME: share hitting set problem!!
+   if ( sBkCla.size() > _rootVars[1].size() ) {
       Abc_Print( -1 , "Wrong hitting set!!!\n" );
       dumpCla(sBkCla);
       exit(1);

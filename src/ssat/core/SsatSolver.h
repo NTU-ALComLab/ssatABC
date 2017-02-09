@@ -165,6 +165,7 @@ private:
    int               _upperLimit;      // number of UNSAT cubes to invoke network construction
    int               _lowerLimit;      // number of SAT cubes to invoke network construction
    vec<Lit>          _erModel;         // optimizer for ER-2SSAT
+   vec<Var>          _control;         // control variables for model counting
 };
 
 // Implementation of inline methods:

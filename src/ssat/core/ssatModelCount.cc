@@ -33,7 +33,7 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-#define DEBUG
+//#define DEBUG
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -60,8 +60,14 @@ SsatSolver::allSatModelCount( Solver * s , const vec<Lit> & assump , double curV
    fflush(stdout);
 #endif
    vec<Lit> rLits( _rootVars[1].size() ) , rHits , eLits;
+   eLits.capacity( assump.size() + _control.size() + 1 );
    assump.copyTo(eLits);
-   vec<CRef> bkClaRef;
+   // create a new control variable
+   _control.push( s->newVar() );
+   for ( int i = 0 ; i < _control.size() ; ++i ) 
+      eLits.push( mkLit(_control[i]) );
+   eLits.last() = ~eLits.last();
+   //vec<CRef> bkClaRef;
    double count = 0.0 , prob;
 
    while ( s->solve( eLits ) ) {
@@ -83,17 +89,17 @@ SsatSolver::allSatModelCount( Solver * s , const vec<Lit> & assump , double curV
       for ( int i = 0 ; i < rHits.size() ; ++i )
          prob *= sign(rHits[i]) ? _quan[var(rHits[i])] : 1 - _quan[var(rHits[i])];
       count += prob;
-      if ( count >= 1 - curVal || !rHits.size() ) break;
-      else if ( rHits.size() == 1 ) eLits.push( rHits[0] );
+      if ( count >= 1 - curVal ) break;
       else {
+         rHits.push( mkLit(_control.last()) );
          s->addClause( rHits );
-         bkClaRef.push( s->clauses[s->nClauses()-1] );
+         //bkClaRef.push( s->clauses[s->nClauses()-1] );
       }
    }
    printf( "  > current value: %f\n" , 1-count );
    fflush(stdout);
-   for ( int i = 0 ; i < bkClaRef.size() ; ++i )
-      s->removeClause( bkClaRef[i] );
+   //for ( int i = 0 ; i < bkClaRef.size() ; ++i )
+     // s->removeClause( bkClaRef[i] );
    return 1 - count;
 }
 
