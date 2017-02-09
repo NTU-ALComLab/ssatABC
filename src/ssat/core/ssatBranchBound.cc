@@ -33,6 +33,8 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+#define DEBUG
+
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -53,22 +55,30 @@ void
 SsatSolver::solveBranchBound( Abc_Ntk_t * pNtk )
 {
    vec<Lit> eLits;
-   Abc_Obj_t * pObj;
    double tempValue = 0.0;
-   int i;
 
    _satPb = 0.0;
-   _s1 = ntkBuildSolver( pNtk , true ); // assert Po to be false
+   _s1 = ntkBuildSolver( pNtk , true ); //assert Po to be false
    ntkBuildPrefix( pNtk );
-   // TODO: initialize eLits to 1111..1111
+#ifdef DEBUG
+   Abc_Obj_t * pObj;
+   int i;
+   Abc_NtkForEachObj( pNtk , pObj , i )
+      printf( "  > id = %d , name = %s\n" , Abc_ObjId(pObj) , Abc_ObjName(pObj) );
+   test();
+#endif
+   eLits.growTo( _rootVars[0].size() );
+   for ( int i = 0 ; i < eLits.size() ; ++i )
+      eLits[i] = mkLit( _rootVars[0][i] , false ); 
    do {
       tempValue = allSatModelCount( _s1 , eLits , _satPb );
+      printf( "  > tempValue = %f\n" , tempValue );
       if ( _satPb < tempValue ) {
          printf( "  > find better solution! (%f)\n" , tempValue );
          _satPb = tempValue;
          eLits.copyTo( _erModel );
       }
-   } while ( binaryDecrement( eLits ) );
+   } while ( binaryIncrement( eLits ) );
    printf( "\n  > optimized value: %f\n" , _satPb );
    printf( "  > optimizing assignment to exist vars:\n" );
    dumpCla( _erModel );
@@ -92,9 +102,7 @@ SsatSolver::ntkBuildSolver( Abc_Ntk_t * pNtk , bool negative )
    Abc_Obj_t * pObj;
    int i;
    Solver * s = new Solver;
-
-   Abc_NtkForEachObj( pNtk , pObj , i )
-      while ( s->nVars() <= Abc_ObjId(pObj) ) s->newVar();
+   while ( s->nVars() <= Abc_NtkObjNumMax(pNtk) ) s->newVar();
    Abc_NtkForEachNode( pNtk , pObj , i )
    {
       // (c v -a v -b)
@@ -130,7 +138,8 @@ SsatSolver::ntkBuildPrefix( Abc_Ntk_t * pNtk )
    Abc_Obj_t * pObj;
    int i;
 
-   for ( int i = 0 ; i < 3 ; ++i ) _rootVars.push();
+   _numLv = 3;
+   for ( int i = 0 ; i < _numLv ; ++i ) _rootVars.push();
    _rootVars[0].capacity( Abc_NtkPiNum(pNtk)   );
    _rootVars[1].capacity( Abc_NtkPiNum(pNtk)   );
    _rootVars[2].capacity( Abc_NtkNodeNum(pNtk) );
@@ -156,7 +165,7 @@ SsatSolver::ntkBuildPrefix( Abc_Ntk_t * pNtk )
 
   Synopsis    [Iterate all exist assignments.]
 
-  Description [Decrement 1, return false if eLits = 00...00.]
+  Description [Increment 1, return false if eLits = 111...111.]
                
   SideEffects []
 
@@ -165,9 +174,8 @@ SsatSolver::ntkBuildPrefix( Abc_Ntk_t * pNtk )
 ***********************************************************************/
 
 bool
-SsatSolver::binaryDecrement( vec<Lit> & eLits ) const
+SsatSolver::binaryIncrement( vec<Lit> & eLits ) const
 {
-   // TODO: decrement exist assignment
    return false;
 }
 

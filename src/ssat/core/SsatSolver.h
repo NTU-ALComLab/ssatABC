@@ -81,7 +81,7 @@ private:
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
-   bool        binaryDecrement    ( vec<Lit> & ) const;
+   bool        binaryIncrement    ( vec<Lit> & ) const;
    // solve helpers
    Solver *    buildQestoSelector ();
    Solver *    buildERSelector    ();
