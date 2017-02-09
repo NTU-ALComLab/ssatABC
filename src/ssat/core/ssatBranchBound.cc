@@ -33,7 +33,7 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-#define DEBUG
+//#define DEBUG
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -176,6 +176,13 @@ SsatSolver::ntkBuildPrefix( Abc_Ntk_t * pNtk )
 bool
 SsatSolver::binaryIncrement( vec<Lit> & eLits ) const
 {
+   for ( int i = eLits.size()-1 ; i > -1 ; --i ) {
+      if ( !sign( eLits[i] ) ) {
+         for ( int j = i ; j < eLits.size() ; ++j )
+            eLits[j] = ~eLits[j];
+         return true;
+      }
+   }
    return false;
 }
 
