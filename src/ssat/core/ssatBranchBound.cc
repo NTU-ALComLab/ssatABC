@@ -33,7 +33,7 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-//#define DEBUG
+#define DEBUG
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -72,7 +72,6 @@ SsatSolver::solveBranchBound( Abc_Ntk_t * pNtk )
       eLits[i] = mkLit( _rootVars[0][i] , false ); 
    do {
       tempValue = allSatModelCount( _s1 , eLits , _satPb );
-      printf( "  > tempValue = %f\n" , tempValue );
       if ( _satPb < tempValue ) {
          printf( "  > find better solution! (%f)\n" , tempValue );
          _satPb = tempValue;
