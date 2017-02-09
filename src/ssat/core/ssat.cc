@@ -244,8 +244,23 @@ SsatCommandCktBddsp( Abc_Frame_t * pAbc , int argc , char ** argv )
    pNtk = Abc_FrameReadNtk( pAbc );
    Abc_NtkForEachPi( pNtk , pObj , i )
       if ( pObj->dTemp == -1 ) ++numExist;
+
+   //Abc_ObjForEachFanout( Abc_NtkPi(pNtk,0) , pObj , i )
+     // Abc_ObjPatchFanin( pObj , Abc_NtkPi(pNtk,0), Abc_ObjNot(Abc_AigConst1(pNtk)) );
+   
+  // Cmd_CommandExecute( pAbc , "st" );
+  // Cmd_CommandExecute( pAbc , "sst" );
+   
    sprintf( sCmd , "bddsp -g -E %d" , numExist );
    Cmd_CommandExecute( pAbc , sCmd );
+   
+   /*Abc_ObjForEachFanout( Abc_AigConst1(pNtk) , pObj , i )
+      Abc_ObjPatchFanin( pObj , Abc_AigConst1(pNtk) , Abc_NtkPi(pNtk,0) );
+   
+   Abc_ObjForEachFanout( Abc_NtkPi(pNtk,0) , pObj , i )
+      Abc_ObjPatchFanin( pObj , Abc_NtkPi(pNtk,0), Abc_AigConst1(pNtk) );
+   
+   Cmd_CommandExecute( pAbc , sCmd );*/
    Abc_PrintTime( 1 , "  > Time consumed" , Abc_Clock() - clk );
    return 0;
 
