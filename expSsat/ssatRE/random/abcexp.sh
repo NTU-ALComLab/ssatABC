@@ -1,10 +1,10 @@
-dir=/users/nianze/ssat/ssatABC
+dir=/home/users/nianze/ssat/ssatABC
 bin=${dir}/bin/abc
 bch=${dir}/expSsat/ssatRE/random
 log=${dir}/expSsat/ssatRE/random/log
 tot=1000
 #k_arr=( 3 5 7 9 )
-k_arr=( 4 6 8 )
+k_arr=( 3 4 5 6 7 8 9 )
 
 
 for k in "${k_arr[@]}"
