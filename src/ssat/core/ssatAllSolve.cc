@@ -152,7 +152,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
       }
       else { // SAT case
          sBkCla.clear();
-         miniHitSet( sBkCla );
+         miniHitSet( sBkCla , 0 ); // random var at Lv.0
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
@@ -181,7 +181,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
 ***********************************************************************/
 
 void
-SsatSolver::miniHitSet( vec<Lit> & sBkCla ) const
+SsatSolver::miniHitSet( vec<Lit> & sBkCla , int randLv ) const
 {
    vec<Lit> minterm;
    minterm.capacity(_rootVars[0].size());
@@ -191,9 +191,7 @@ SsatSolver::miniHitSet( vec<Lit> & sBkCla ) const
    if ( minterm.size() )
       miniHitDropLit ( sBkCla , minterm , pick );
    // sanity check: avoid duplicated lits --> invalid write!
-   //if ( sBkCla.size() > _rootVars[0].size() ) {
-   // FIXME: share hitting set problem!!
-   if ( sBkCla.size() > _rootVars[1].size() ) {
+   if ( sBkCla.size() > _rootVars[randLv].size() ) {
       Abc_Print( -1 , "Wrong hitting set!!!\n" );
       dumpCla(sBkCla);
       exit(1);

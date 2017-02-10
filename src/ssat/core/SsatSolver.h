@@ -95,7 +95,7 @@ private:
    void        collectBkCla       ( vec<Lit>& );
    void        collectBkClaER     ( vec<Lit>& , int );
    void        collectBkClaER     ( vec<Lit>& );
-   void        miniHitSet         ( vec<Lit>& ) const;
+   void        miniHitSet         ( vec<Lit>& , int ) const;
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;

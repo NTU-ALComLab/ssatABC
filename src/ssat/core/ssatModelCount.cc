@@ -77,7 +77,7 @@ SsatSolver::allSatModelCount( Solver * s , const vec<Lit> & assump , double curV
       fflush(stdout);
 #endif
       rHits.clear();
-      miniHitSet( rHits ); // get rHits in clause form
+      miniHitSet( rHits , 1 ); // rand vars at Lv.1
 #ifdef DEBUG
       printf( "  > hitting set:\n" );
       dumpCla( rHits );
