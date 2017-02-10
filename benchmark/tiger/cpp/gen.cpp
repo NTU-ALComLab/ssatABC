@@ -35,7 +35,7 @@ int main( int argc , char ** argv )
     cout << "  > # of frames must be greater than 0." << '\n';
     return 1;
   }
-  sprintf( name , "SC-%d.%s" , frames , format.c_str() );
+  sprintf( name , "Tiger-%d.%s" , frames , format.c_str() );
   file = fopen( name , "w" );
 
   if( format == "blif" ) {
