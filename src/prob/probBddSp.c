@@ -47,8 +47,8 @@ static DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
 static DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
 static DdManager* Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
 static void       Pb_BddResetProb           ( DdManager * , DdNode * );
-static void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int );
-static float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int );
+static void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int , int );
+static float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int , int );
 static float      Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int , int );
 static void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
 static void       Pb_BddPrintExSol          ( Abc_Ntk_t * , DdNode * , int , int );
@@ -103,7 +103,7 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp , int fV
 	bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , numPo ) );
 	clk = Abc_Clock();
 	Pb_BddResetProb( dd , bFunc );
-   Pb_BddComputeProb( pNtk , bFunc , numExist );
+   Pb_BddComputeProb( pNtk , bFunc , numExist , Cudd_IsComplement(bFunc) );
 	if ( fVerbose ) Abc_PrintTime( 1 , "  > Prob computation" , Abc_Clock() - clk );
 	
    prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
@@ -116,9 +116,9 @@ Pb_BddComputeSp( Abc_Ntk_t * pNtk , int numPo , int numExist , int fGrp , int fV
 }
 
 void
-Pb_BddComputeProb( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
+Pb_BddComputeProb( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist , int fNot )
 {
-	Pb_BddComputeProb_rec( pNtk , bFunc , numExist );
+	Pb_BddComputeProb_rec( pNtk , bFunc , numExist , fNot );
 }
 
 void
@@ -131,6 +131,54 @@ Pb_BddResetProb( DdManager * dd , DdNode * bFunc )
 }
 
 //FIXME: this is buggy!!!
+#if 1
+float
+Pb_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist , int fNot )
+{
+	float prob , pThenMax , pElseMax , pThenMin , pElseMin;
+	int numPi , fComp;
+	
+	numPi = Cudd_Regular( bFunc )->index;
+   fComp = Cudd_IsComplement( bFunc );
+
+	if ( Cudd_IsConstant( bFunc ) ) return Cudd_IsComplement( bFunc ) ? 0.0 : 1.0;
+	if ( Cudd_Regular( bFunc )->pMax == -1.0 ) {
+		// compute value for this node if it is not visited
+		if ( numPi < numExist ) {
+         if ( fNot ) { // forall var -> min
+	         pThenMin = Pb_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numExist , fNot ); 
+	         pElseMin = Pb_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numExist , fNot );
+			   pThenMax = Cudd_IsComplement(Cudd_T(bFunc)) ? 1.0-Cudd_Regular(Cudd_T(bFunc))->pMin : Cudd_Regular(Cudd_T(bFunc))->pMax;
+			   pElseMax = Cudd_IsComplement(Cudd_E(bFunc)) ? 1.0-Cudd_Regular(Cudd_E(bFunc))->pMin : Cudd_Regular(Cudd_E(bFunc))->pMax;
+         }
+         else { // exist var ->max
+	         pThenMax = Pb_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numExist , fNot ); 
+	         pElseMax = Pb_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numExist , fNot );
+			   pThenMin = Cudd_IsComplement(Cudd_T(bFunc)) ? 1.0-Cudd_Regular(Cudd_T(bFunc))->pMax : Cudd_Regular(Cudd_T(bFunc))->pMin;
+			   pElseMin = Cudd_IsComplement(Cudd_E(bFunc)) ? 1.0-Cudd_Regular(Cudd_E(bFunc))->pMax : Cudd_Regular(Cudd_E(bFunc))->pMin;
+			   //printf( "pThenMax = %f , pThenMin = %f , pElseMax = %f , pElseMin = %f\n" , pThenMax , pThenMin , pElseMax , pElseMin );
+			   //printf( "   > (exist) %s(%d-th) , pMax = %f , pMin = %f " , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , numPi , Cudd_Regular(bFunc)->pMax , Cudd_Regular(bFunc)->pMin );
+			   //printf( " cMax = %d , cMin = %d\n" , Cudd_Regular(bFunc)->cMax , Cudd_Regular(bFunc)->cMin );
+         }
+		   Cudd_Regular( bFunc )->pMax = ( pThenMax >= pElseMax ) ? pThenMax : pElseMax;
+		   Cudd_Regular( bFunc )->pMin = ( pThenMin <= pElseMin ) ? pThenMin : pElseMin;
+		   Cudd_Regular( bFunc )->cMax = ( pThenMax >= pElseMax ) ? 1 : 0;
+		   Cudd_Regular( bFunc )->cMin = ( pThenMin <= pElseMin ) ? 1 : 0;
+		}
+		else { // random var -> avg
+	      prob  = Abc_NtkPi( pNtk , numPi )->dTemp;
+		   Cudd_Regular( bFunc )->pMax = Cudd_Regular( bFunc )->pMin = 
+				                           prob        * Pb_BddComputeProb_rec( pNtk , Cudd_T( bFunc ) , numExist , fNot ) +
+		                                 (1.0-prob)  * Pb_BddComputeProb_rec( pNtk , Cudd_E( bFunc ) , numExist , fNot );
+			//printf( "   > (random) %s , pMax = %f\n" , Abc_ObjName( Abc_NtkPi(pNtk,numPi) ) , Cudd_Regular(bFunc)->pMax );
+		}
+	}
+   if ( fNot )
+	   return fComp ? 1.0-Cudd_Regular( bFunc )->pMax : Cudd_Regular( bFunc )->pMin;
+   else
+	   return fComp ? 1.0-Cudd_Regular( bFunc )->pMin : Cudd_Regular( bFunc )->pMax;
+}
+#else
 float
 Pb_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
 {
@@ -165,6 +213,7 @@ Pb_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
 	}
 	return fComp ? 1.0-Cudd_Regular( bFunc )->pMin : Cudd_Regular( bFunc )->pMax;
 }
+#endif
 
 void  
 Pb_BddPrintProb( Abc_Ntk_t * pNtk , DdNode * bFunc , int numExist )
@@ -367,6 +416,7 @@ Pb_BddComputeAllSp( Abc_Ntk_t * pNtk , int numExist , int fGrp , int fVerbose )
 	   Abc_Print( -1 , "Bdd construction has failed.\n" );
 		return;
 	}
+#if 0
 	if ( fVerbose ) Abc_PrintTime( 1 , "  > Bdd construction" , Abc_Clock() - clk );
    // NZ : check exist/random variables are correctly ordered
    if ( numExist > 0 ) {
@@ -400,7 +450,8 @@ Pb_BddComputeAllSp( Abc_Ntk_t * pNtk , int numExist , int fGrp , int fVerbose )
 	}
 	if ( fVerbose ) Abc_PrintTime( 1 , "  > Probability computation" , Abc_Clock() - clk );
 	printf( "  > max prob = %f , numPo = %d\n" , maxProb , maxId );
-	Abc_NtkFreeGlobalBdds( pNtk , 1 );
+#endif
+   Abc_NtkFreeGlobalBdds( pNtk , 1 );
 }
 
 /**Function*************************************************************
