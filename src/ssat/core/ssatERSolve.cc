@@ -88,8 +88,8 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          ++nCachet;
          //subvalue = 0.0;
          if ( subvalue > _satPb ) {
-            // printf( "  > find a better solution , value = %f\n" , subvalue );
-            // Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
+            printf( "  > find a better solution , value = %f\n" , subvalue );
+            Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
             fflush(stdout);
             _satPb = subvalue;
             eLits.copyTo( _erModel );
