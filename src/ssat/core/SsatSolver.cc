@@ -497,6 +497,26 @@ SsatSolver::test() const
    }
 }
 
+/**Function*************************************************************
+
+  Synopsis    [Handling interruption.]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::interrupt()
+{
+   printf( "[Warning] interruption occurs, before exit ...\n" );
+   printf( "\n  > Upper bound = %e\n" , 1-cubeToNetwork(false) );
+   //printf( "  > Lower bound = %e\n"   , cubeToNetwork(true)  );
+}
+
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////

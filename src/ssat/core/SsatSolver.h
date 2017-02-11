@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 #include <map>
 #include <fstream>
 #include <iostream>
@@ -69,6 +70,8 @@ public:
    int         nUnsatCube() const { return _nUnsatCube; }
    // Testing interface:
    void        test() const;
+   // Handling interruption
+   void        interrupt();
 private:
    // member functions
    // read helpers

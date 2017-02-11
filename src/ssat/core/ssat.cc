@@ -35,11 +35,36 @@ static int SsatCommandTest         ( Abc_Frame_t * pAbc , int argc , char ** arg
 // static helpers
 static bool Ssat_NtkReadQuan     ( char * );
 // global variables
+SsatSolver * gloSsat;
 map<string,double> quanMap; // Pi name -> quan prob , -1 means exist
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
+
+/**Function*************************************************************
+
+  Synopsis    [Signal handling functions]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+sig_handler( int sig )
+{
+   if ( gloSsat ) {
+      gloSsat->interrupt();
+      delete gloSsat;
+      gloSsat = NULL;
+   }
+   Abc_Stop();
+   exit(1);
+}
 
 /**Function*************************************************************
 
@@ -56,6 +81,9 @@ map<string,double> quanMap; // Pi name -> quan prob , -1 means exist
 void 
 Ssat_Init( Abc_Frame_t * pAbc )
 {
+   gloSsat = NULL;
+   signal( SIGINT  , sig_handler );
+   signal( SIGTERM , sig_handler );
    Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"        , SsatCommandSSAT        , 0 );
    Cmd_CommandAdd( pAbc , "z SSAT" , "branchbound" , SsatCommandBranchBound , 1 );
    Cmd_CommandAdd( pAbc , "z SSAT" , "cktbddsp"    , SsatCommandCktBddsp    , 1 );
@@ -66,6 +94,7 @@ void
 Ssat_End( Abc_Frame_t * pAbc )
 {
    if ( !quanMap.empty() ) quanMap.clear();
+   if ( gloSsat ) delete gloSsat;
 }
 
 /**Function*************************************************************
@@ -152,7 +181,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
       Abc_Print( -1 , "There is no ssat file %s\n" , argv[globalUtilOptind] );
       return 1;
    }
-   pSsat = new SsatSolver;
+   gloSsat = pSsat = new SsatSolver;
    pSsat->readSSAT(in);
    gzclose(in);
    clk  = Abc_Clock();
@@ -165,6 +194,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
    printf("\n");
    delete pSsat;
+   gloSsat = NULL;
    return 0;
 
 usage:
