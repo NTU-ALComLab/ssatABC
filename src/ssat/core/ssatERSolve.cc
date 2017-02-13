@@ -57,7 +57,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    if ( fBdd ) initClauseNetwork();
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
-   int dropIndex;
+   int dropIndex, dropHead, dropTail;
    int nCachet = 0;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = Abc_Clock();
@@ -72,9 +72,9 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(eLits) ) { // UNSAT case
          sBkCla.clear();
-         miniUnsatCore( _s1->conflict , sBkCla );
-         _s2->addClause( sBkCla );
-         //_s2->addClause( _s1->conflict );
+         // miniUnsatCore( _s1->conflict , sBkCla );
+         // _s2->addClause( sBkCla );
+         _s2->addClause( _s1->conflict );
       }
       else { // SAT case
          // printf( "  > current assignment:\t" );
@@ -86,9 +86,14 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
          }
          subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
-         if(subvalue == 1 ) break;
          ++nCachet;
-         //subvalue = 0.0;
+         if ( subvalue == 1 ) {
+            printf( "\n  > optimizing assignment to exist vars:\n" );
+            dumpCla( eLits );
+            printf( "  > number of calls to Cachet:%10d\n" , nCachet );
+            _satPb = 1;
+            return 1;
+         }
          if ( subvalue >= _satPb ) {
             // printf( "  > find a better solution , value = %f\n" , subvalue );
             // Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
@@ -96,8 +101,22 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             _satPb = subvalue;
             eLits.copyTo( _erModel );
          }
-// #if 0
          else { // partial assignment pruning
+            dropHead = 1; dropTail = eLits.size() + 1;
+            while ( dropHead != dropTail && dropHead != dropTail - 1 ) {
+               dropIndex = ( dropHead + dropTail ) / 2;
+               subvalue = countModels( eLits , dropIndex );
+               ++nCachet;
+               if ( subvalue <= _satPb ) {
+                  dropTail = dropIndex;
+               }
+               else if ( subvalue > _satPb ) {
+                  dropHead = dropIndex;
+               }
+            }
+            dropIndex = dropTail;
+         }
+#if 0
             // TODO
             printf( "  > Try to drop some assignments!\n" );
             while ( countModels( eLits , --dropIndex ) < _satPb ) {
@@ -108,12 +127,12 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             }
             ++dropIndex; // drop [dropIndex,end]
          }
-// #endif
+#endif
          sBkCla.clear();
          collectBkClaER( sBkCla , dropIndex );
          // collectBkClaER( sBkCla );
-         printf( "  > blocking clause:\n" );
-         dumpCla( sBkCla );
+         // printf( "  > blocking clause:\n" );
+         // dumpCla( sBkCla );
          _s2->addClause( sBkCla );
       }
    }
@@ -144,11 +163,11 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla , int dropIndex )
       }
       if ( block ) {
          for ( int j = 0 ; j < c.size() ; ++j ) {
-            cout << ( sign(c[j]) ? "-": "" ) << var(c[j])+1 << " ";
+            // cout << ( sign(c[j]) ? "-": "" ) << var(c[j])+1 << " ";
             if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
                sBkCla.push (c[j]);
          }
-         cout << "\n";
+         // cout << "\n";
       }
    }
 }
@@ -316,11 +335,10 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
       if ( select == true ) {
          cnt++;
          Clause& c = S->ca[S->clauses[i]];
-         for ( int j = 0 ; j < c.size(); ++j )
-            if ( S->value(c[j]) != l_False ) {
+         for ( int j = 0 ; j < c.size(); ++j ) {
                tmpVar = mapVar( var(c[j]) , map , max );
                mapWeight( tmpVar, weights, ( isRVar(var(c[j])) ? _quan[var(c[j])] : -1 ) );
-            }
+         }
       }
       select = true;
    }
