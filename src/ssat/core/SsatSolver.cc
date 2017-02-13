@@ -512,9 +512,15 @@ SsatSolver::test() const
 void
 SsatSolver::interrupt()
 {
-   printf( "[Warning] interruption occurs, before exit ...\n" );
-   printf( "\n  > Upper bound = %e\n" , 1-cubeToNetwork(false) );
-   //printf( "  > Lower bound = %e\n"   , cubeToNetwork(true)  );
+   abctime clk = Abc_Clock();
+   printf( "\n[Warning] interruption occurs, compute bounds before exit ...\n" );
+   fflush(stdout);
+   printf( "  > Final Upper bound = %e\n" , 1-cubeToNetwork(false) );
+   Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
+   fflush(stdout);
+   printf( "  > Final Lower bound = %e\n" , cubeToNetwork(true)  );
+   Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
+   fflush(stdout);
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,14 @@
+  > On file c499.sdimacs
+ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c499.sdimacs".
+
+
+==== SSAT solving process ====
+  > current Upper bound = 1.525879e-05
+  > Time elapsed =     0.01 sec
+  > current Upper bound = 0.000000e+00
+  > Time elapsed =     0.01 sec
+
+  > Upper bound = 0.000000e+00
+  > Lower bound = 0.000000e+00
+  > Time   =     0.01 sec
+

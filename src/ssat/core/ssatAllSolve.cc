@@ -120,8 +120,8 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
-         //return (_satPb = cubeToNetwork(true));
-         return _satPb;
+         return (_satPb = cubeToNetwork(true));
+         //return _satPb;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
@@ -143,10 +143,10 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
             _s2->addClause( _s1->conflict );
          }
          if ( unsatCubeListFull() ) {
-            printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
+            //printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
             _unsatPb = cubeToNetwork(false);
-            printf( "  > current unsat prob = %e\n" , _unsatPb );
-            Abc_PrintTime( 1 , "  > current unsat time" , Abc_Clock() - clk );
+            printf( "  > current Upper bound = %e\n" , 1-_unsatPb );
+            Abc_PrintTime( 1 , "  > Time elapsed" , Abc_Clock() - clk );
             fflush(stdout);
          }
       }
@@ -157,10 +157,10 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
          if ( satCubeListFull() ) {
-            printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
+            //printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
             _satPb = cubeToNetwork(true);
-            printf( "  > current sat prob = %e\n" , _satPb );
-            Abc_PrintTime( 1 , "  > current sat time" , Abc_Clock() - clk );
+            printf( "\t\t\t\t\t\t  > current Lower bound = %e\n" , _satPb );
+            Abc_PrintTime( 1 , "\t\t\t\t\t\t  > Time elasped" , Abc_Clock() - clk );
             fflush(stdout);
          }
       }

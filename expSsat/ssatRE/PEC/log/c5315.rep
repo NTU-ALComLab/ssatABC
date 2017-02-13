@@ -1,0 +1,23 @@
+  > On file c5315.sdimacs
+ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c5315.sdimacs".
+
+
+==== SSAT solving process ====
+  > current Upper bound = 8.649211e-01
+  > Time elapsed =     0.03 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =    22.36 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =    56.32 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =   103.24 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =   156.09 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =   221.99 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =   302.59 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =   392.63 sec
+						  > current Lower bound = 0.000000e+00
+						  > Time elasped =   492.77 sec

@@ -1,0 +1,23 @@
+  > On file c3540.sdimacs
+ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c3540.sdimacs".
+
+
+==== SSAT solving process ====
+						  > current Lower bound = 1.245975e-03
+						  > Time elasped =     8.26 sec
+						  > current Lower bound = 2.215862e-03
+						  > Time elasped =    25.79 sec
+						  > current Lower bound = 3.438115e-03
+						  > Time elasped =    53.50 sec
+						  > current Lower bound = 4.485250e-03
+						  > Time elasped =    91.30 sec
+						  > current Lower bound = 6.221175e-03
+						  > Time elasped =   141.79 sec
+						  > current Lower bound = 8.174121e-03
+						  > Time elasped =   203.47 sec
+						  > current Lower bound = 9.320498e-03
+						  > Time elasped =   275.93 sec
+						  > current Lower bound = 1.119506e-02
+						  > Time elasped =   363.57 sec
+						  > current Lower bound = 1.277864e-02
+						  > Time elasped =   467.26 sec
