@@ -84,8 +84,9 @@ private:
    double      aSolve2SSAT        ( double , int , int , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
-   void        collectBkClaER     ( vec<Lit>& , int );
+   void        collectBkClaER     ( vec<Lit>& , vec<int>& , int );
    void        collectBkClaER     ( vec<Lit>& );
+   void        collectParLits     ( vec<Lit>& , vec<int>& );
    void        miniHitSet         ( vec<Lit>& ) const;
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
@@ -93,6 +94,7 @@ private:
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& , int );
    double      countModels        ( const vec<Lit>& );
+   bool        dropLit            ( vec<Lit>& , vec<int>& , int , double& );
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& , int );
