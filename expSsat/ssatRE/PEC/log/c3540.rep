@@ -21,3 +21,26 @@ ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdima
 						  > Time elasped =   363.57 sec
 						  > current Lower bound = 1.277864e-02
 						  > Time elasped =   467.26 sec
+						  > current Lower bound = 1.426566e-02
+						  > Time elasped =   582.17 sec
+						  > current Lower bound = 1.594549e-02
+						  > Time elasped =   698.92 sec
+						  > current Lower bound = 1.722693e-02
+						  > Time elasped =   840.30 sec
+						  > current Lower bound = 1.887310e-02
+						  > Time elasped =   985.95 sec
+						  > current Lower bound = 2.041477e-02
+						  > Time elasped =  1153.21 sec
+						  > current Lower bound = 2.206880e-02
+						  > Time elasped =  1338.83 sec
+						  > current Lower bound = 2.378380e-02
+						  > Time elasped =  1539.80 sec
+						  > current Lower bound = 2.560520e-02
+						  > Time elasped =  1807.20 sec
+						  > current Lower bound = 2.734286e-02
+						  > Time elasped =  2257.38 sec
+
+  > Upper bound = 1.708984e-03
+  > Lower bound = 2.734286e-02
+  > Time   =  2265.17 sec
+

@@ -49,6 +49,11 @@ extern "C" {
 
 namespace Minisat {
 
+typedef struct SsatTimer_ {
+   abctime timeS1;
+   abctime timeS2;
+} SsatTimer;
+
 //=================================================================================================
 // SsatSolver -- the main class:
 

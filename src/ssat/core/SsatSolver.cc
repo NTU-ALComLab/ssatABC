@@ -515,11 +515,13 @@ SsatSolver::interrupt()
    abctime clk = Abc_Clock();
    printf( "\n[Warning] interruption occurs, compute bounds before exit ...\n" );
    fflush(stdout);
-   printf( "  > Final Upper bound = %e\n" , 1-cubeToNetwork(false) );
+   _unsatPb = cubeToNetwork( false );
    Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
    fflush(stdout);
-   printf( "  > Final Lower bound = %e\n" , cubeToNetwork(true)  );
+   _satPb   = cubeToNetwork( true );
    Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
+   printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
+   printf( "  > Final Lower bound = %e\n" , _satPb  );
    fflush(stdout);
 }
 

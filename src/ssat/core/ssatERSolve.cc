@@ -33,6 +33,8 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+extern SsatTimer timer;
+
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -58,26 +60,31 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
    int dropIndex;
-   int nCachet = 0;
+   int nCachet = 0 , nS2solve = 0;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = Abc_Clock();
    for(;;) {
+      clk = Abc_Clock();
       if ( !_s2->solve() ) {
+         Abc_PrintTime( 1 , "  > Time consumed to solve s2 UNSAT:" , Abc_Clock()-clk );
          printf( "\n  > optimizing assignment to exist vars:\n" );
          dumpCla( _erModel );
-         printf( "  > number of calls to Cachet:%5d\n" , nCachet );
+         printf( "  > number of calls to Cachet:%10d , total:%10d\n" , nCachet , nS2solve );
          return _satPb;
       }
+      ++nS2solve;
+      timer.timeS2 += Abc_Clock()-clk;
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
+      clk = Abc_Clock();
       if ( !_s1->solve(eLits) ) { // UNSAT case
          sBkCla.clear();
          miniUnsatCore( _s1->conflict , sBkCla );
          _s2->addClause( sBkCla );
       }
       else { // SAT case
-         // printf( "  > current assignment:\t" );
-         // dumpCla( eLits );
+         ++nCachet;
+#if 1
          dropIndex = eLits.size();
          // FIXME
          if ( _s1->nClauses() == 0 ) {
@@ -85,12 +92,11 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
          }
          subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
-         ++nCachet;
          //subvalue = 0.0;
          if ( subvalue > _satPb ) {
-            printf( "  > find a better solution , value = %f\n" , subvalue );
-            Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
-            fflush(stdout);
+            //printf( "  > find a better solution , value = %f\n" , subvalue );
+            //Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk );
+            //fflush(stdout);
             _satPb = subvalue;
             eLits.copyTo( _erModel );
          }
@@ -107,12 +113,12 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             ++dropIndex; // drop [dropIndex,end]
 #endif
          }
+#endif
          sBkCla.clear();
          collectBkClaER( sBkCla );
-         // printf( "  > blocking clause:\n" );
-         // dumpCla( sBkCla );
          _s2->addClause( sBkCla );
       }
+      timer.timeS1 += Abc_Clock()-clk;
    }
    return _satPb;
 }

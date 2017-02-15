@@ -33,6 +33,8 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+extern SsatTimer timer;
+
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -118,13 +120,16 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
    initCubeNetwork( upper , lower , true );
    sBkCla.capacity(_rootVars[0].size());
    while ( 1.0 - _unsatPb - _satPb > range ) {
+      clk = Abc_Clock();
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
-         return (_satPb = cubeToNetwork(true));
-         //return _satPb;
+         //return (_satPb = cubeToNetwork(true));
+         return _satPb;
       }
+      timer.timeS2 += Abc_Clock()-clk;
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
+      clk = Abc_Clock();
       if ( !_s1->solve(rLits) ) { // UNSAT case
          _unsatClause.push();
          if ( fMini ) {
@@ -142,6 +147,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
             _s1->conflict.copyTo( _unsatClause.last() );
             _s2->addClause( _s1->conflict );
          }
+#if 0
          if ( unsatCubeListFull() ) {
             //printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
             _unsatPb = cubeToNetwork(false);
@@ -149,6 +155,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
             Abc_PrintTime( 1 , "  > Time elapsed" , Abc_Clock() - clk );
             fflush(stdout);
          }
+#endif
       }
       else { // SAT case
          sBkCla.clear();
@@ -156,6 +163,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
+#if 0
          if ( satCubeListFull() ) {
             //printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
             _satPb = cubeToNetwork(true);
@@ -163,7 +171,9 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
             Abc_PrintTime( 1 , "\t\t\t\t\t\t  > Time elasped" , Abc_Clock() - clk );
             fflush(stdout);
          }
+#endif
       }
+      timer.timeS1 += Abc_Clock()-clk;
    }
    return _satPb; // lower bound
 }

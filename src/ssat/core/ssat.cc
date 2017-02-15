@@ -37,6 +37,7 @@ static bool Ssat_NtkReadQuan     ( char * );
 // global variables
 SsatSolver * gloSsat;
 map<string,double> quanMap; // Pi name -> quan prob , -1 means exist
+SsatTimer timer;
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -78,10 +79,25 @@ sig_handler( int sig )
 
 ***********************************************************************/
 
+void
+initTimer( SsatTimer * pTimer )
+{
+   pTimer->timeS1 = 0;
+   pTimer->timeS2 = 0;
+}
+
+void
+printTimer( SsatTimer * pTimer )
+{
+   Abc_PrintTime( 1 , "  > Time consumed on s1 solving:" , pTimer->timeS1 );
+   Abc_PrintTime( 1 , "  > Time consumed on s2 solving:" , pTimer->timeS2 );
+}
+
 void 
 Ssat_Init( Abc_Frame_t * pAbc )
 {
    gloSsat = NULL;
+   initTimer( &timer );
    signal( SIGINT  , sig_handler );
    signal( SIGTERM , sig_handler );
    Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"        , SsatCommandSSAT        , 0 );
@@ -189,12 +205,11 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
-   //Abc_Print( -2 , "  > #UNSAT cubes = %d\n" , pSsat->nUnsatCube() );
-   //Abc_Print( -2 , "  > #SAT   cubes = %d\n" , pSsat->nSatCube() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
    printf("\n");
    delete pSsat;
    gloSsat = NULL;
+   printTimer( &timer );
    return 0;
 
 usage:

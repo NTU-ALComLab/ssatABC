@@ -9,3 +9,15 @@ ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdima
 						  > Time elasped =   129.13 sec
 						  > current Lower bound = 8.469582e-03
 						  > Time elasped =   535.41 sec
+						  > current Lower bound = 8.469582e-03
+						  > Time elasped =  1396.35 sec
+						  > current Lower bound = 1.800203e-02
+						  > Time elasped =  2920.20 sec
+						  > current Lower bound = 2.965534e-02
+						  > Time elasped =  5153.04 sec
+
+[Warning] interruption occurs, compute bounds before exit ...
+  > Final Upper bound = 2.346491e-01
+Time elapsed for upper bound =    34.12 sec
+  > Final Lower bound = 2.965534e-02
+Time elapsed for lower bound =    34.12 sec
