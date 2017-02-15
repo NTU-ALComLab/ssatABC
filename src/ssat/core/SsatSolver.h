@@ -52,6 +52,8 @@ namespace Minisat {
 typedef struct SsatTimer_ {
    abctime timeS1;
    abctime timeS2;
+   int nCachet;
+   int nSubsume;
 } SsatTimer;
 
 //=================================================================================================
@@ -110,6 +112,9 @@ private:
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& , int );
    double      countModels        ( const vec<Lit>& );
+   bool        checkSubsumption   ( Solver& ) const;
+   bool        subsume            ( const Clause& , const Clause& ) const;
+   int         getLearntClaLen    ( Solver& , const vec<int>& , const vec<bool>& ) const;
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& );
@@ -149,6 +154,7 @@ private:
    // dump methods
    void        dumpCla            ( Solver& ) const;
    void        dumpCla            ( const vec<Lit>& ) const;
+   void        dumpCla            ( const Clause&   ) const;
    // data members
    vec< vec<Var> >   _rootVars;        // var used in root clauses, levelized
    vec<double>       _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall

@@ -33,6 +33,8 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+extern SsatTimer timer;
+
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -455,6 +457,14 @@ SsatSolver::dumpCla( const vec<Lit> & c ) const
    cout << "0\n";
 }
 
+void
+SsatSolver::dumpCla( const Clause & c ) const
+{
+   for ( int i = 0 ; i < c.size() ; ++i )
+      cout << ( sign(c[i]) ? "-": "" ) << var(c[i])+1 << " ";
+   cout << "0\n";
+}
+
 /**Function*************************************************************
 
   Synopsis    [SsatSolve testing interface]
@@ -513,7 +523,7 @@ void
 SsatSolver::interrupt()
 {
    abctime clk = Abc_Clock();
-   printf( "\n[Warning] interruption occurs, compute bounds before exit ...\n" );
+   printf( "\n[WARNING] interruption occurs, compute bounds before exit ...\n" );
    fflush(stdout);
    _unsatPb = cubeToNetwork( false );
    Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
@@ -523,6 +533,7 @@ SsatSolver::interrupt()
    printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
    printf( "  > Final Lower bound = %e\n" , _satPb  );
    fflush(stdout);
+   printf( "  > Number of subsumes %d , out of %d Cachet calls\n" , timer.nSubsume , timer.nCachet );
 }
 
 ////////////////////////////////////////////////////////////////////////

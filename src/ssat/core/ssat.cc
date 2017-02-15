@@ -84,6 +84,8 @@ initTimer( SsatTimer * pTimer )
 {
    pTimer->timeS1 = 0;
    pTimer->timeS2 = 0;
+   pTimer->nCachet = 0;
+   pTimer->nSubsume = 0;
 }
 
 void

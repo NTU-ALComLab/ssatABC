@@ -33,6 +33,7 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+static bool subsume( const vec<Lit>& , const vec<Lit>& );
 extern SsatTimer timer;
 
 ////////////////////////////////////////////////////////////////////////
@@ -60,7 +61,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    double subvalue;
    int dropIndex;
-   int nCachet = 0 , nS2solve = 0;
+   int nCachet = 0 , nS2solve = 0 , nSubsume = 0;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = Abc_Clock();
    for(;;) {
@@ -83,7 +84,10 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          _s2->addClause( sBkCla );
       }
       else { // SAT case
-         ++nCachet;
+         //++nCachet;
+         ++timer.nCachet;
+         //printf( "  > %d times cachet call:\n" , timer.nCachet );
+         if ( checkSubsumption( *_s1 ) ) ++timer.nSubsume;
 #if 1
          dropIndex = eLits.size();
          // FIXME
@@ -329,6 +333,106 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps )
       toDimacs( f , S->ca[S->clauses[i]] , map , max );
 
    toDimacsWeighted( f , weights , max );
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Helper functions for clause subsumption check.]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+bool
+SsatSolver::checkSubsumption( Solver & S ) const
+{
+   vec<int> selClaInd;
+   bool     select;
+   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
+      CRef     cr = S.clauses[i];
+      Clause & c  = S.ca[cr];
+      select      = true;
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && S.modelValue(c[j]) == l_True ) {
+            select = false;
+            break;
+         }
+      }
+      if ( select ) selClaInd.push(i);
+   }
+   vec<bool> sub( selClaInd.size() , false );
+   int lenOld = getLearntClaLen( S , selClaInd , sub );
+   for ( int i = 0 ; i < selClaInd.size() ; ++i ) {
+      CRef     cr  = S.clauses[selClaInd[i]];
+      Clause & c1  = S.ca[cr];
+      for ( int j = 0 ; j < selClaInd.size() ; ++j ) {
+         if ( j == i ) continue;
+         CRef     cr  = S.clauses[selClaInd[j]];
+         Clause & c2  = S.ca[cr];
+         if ( subsume( c1 , c2 ) ) {
+            sub[i] = true;
+            break;
+         }
+      }
+   }
+   int numSub = 0;
+   for ( int i = 0 ; i < sub.size() ; ++i ) if ( sub[i] ) ++numSub;
+   int lenSub = getLearntClaLen( S , selClaInd , sub );
+   //printf( "[INFO] number of subsume = %3d (out of %3d clauses)\n" , numSub , sub.size() );
+   if ( lenSub < lenOld ) {
+      printf( "[INFO] length of learnt  = %3d (original %3d lits)\n" , lenSub , lenOld );
+      fflush(stdout);
+      return true;
+   }
+   return false;
+}
+
+bool
+SsatSolver::subsume( const Clause & c1 , const Clause & c2 ) const
+{
+   // return true iff c2 subsumes c1
+   for ( int i = 0 ; i < c2.size() ; ++i ) {
+      if ( isEVar(var(c2[i])) ) continue;
+      bool find = false;
+      for ( int j = 0 ; j < c1.size() ; ++j ) {
+         if ( isEVar(var(c1[j])) ) continue;
+         if ( c1[j] == c2[i] ) {
+            find = true;
+            break;
+         }
+      }
+      if ( !find ) return false;
+   }
+   return true;
+}
+
+int
+SsatSolver::getLearntClaLen( Solver & S , const vec<int>& selClaInd , const vec<bool>& sub ) const
+{
+   vec<Lit> learnt;
+   for ( int i = 0 ; i < selClaInd.size() ; ++i ) {
+      if ( sub[i] ) continue;
+      CRef     cr = S.clauses[selClaInd[i]];
+      Clause & c  = S.ca[cr];
+      fflush(stdout);
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 ) {
+            bool unique = true;
+            for ( int k = 0 ; k < learnt.size() ; ++k ) {
+               if ( learnt[k] == c[j] ) {
+                  unique = false;
+                  break;
+               }
+            }
+            if ( unique ) learnt.push( c[j] );
+         }
+      }
+   }
+   return learnt.size();
 }
 
 ////////////////////////////////////////////////////////////////////////
