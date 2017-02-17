@@ -52,11 +52,11 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 double
-SsatSolver::aSolve( double range , int upper , int lower , bool fMini )
+SsatSolver::aSolve( double range , int upper , int lower , bool fMini , bool fBdd )
 {
    _s2 = buildAllSelector();
    if ( isAVar( _rootVars[0][0] ) ) return aSolve2QBF();
-   else                             return aSolve2SSAT( range , upper , lower , fMini );
+   else                             return aSolve2SSAT( range , upper , lower , fMini , fBdd );
 }
 
 /**Function*************************************************************
@@ -113,8 +113,9 @@ SsatSolver::aSolve2QBF()
 ***********************************************************************/
 
 double
-SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
+SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , bool fBdd )
 {
+   cout << "Get fBdd " << fBdd << endl;
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
    initCubeNetwork( upper , lower , true );
@@ -122,7 +123,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
    while ( 1.0 - _unsatPb - _satPb > range ) {
       clk = Abc_Clock();
       if ( !_s2->solve() ) {
-         _unsatPb = cubeToNetwork(false);
+         _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
          //return (_satPb = cubeToNetwork(true));
          return _satPb;
       }
@@ -176,6 +177,91 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini )
       timer.timeS1 += Abc_Clock()-clk;
    }
    return _satPb; // lower bound
+}
+
+double
+SsatSolver::cachetCount( bool sat )
+{
+   FILE * file;
+   int length = 256;
+   char prob_str[length] , cmdModelCount[length];
+
+   vec< vec<Lit> > & learntClause = sat ? _satClause : _unsatClause;
+   if ( !learntClause.size() ) return (sat ? _satPb : _unsatPb);
+
+   toDimacsWeighted( "temp.wcnf" , learntClause );
+   sprintf( cmdModelCount , "bin/cachet temp.wcnf > tmp.log");
+   if ( system( cmdModelCount ) ) {
+      fprintf( stderr , "Error! Problems with cachet execution...\n" );
+      exit(1);
+   }
+
+   sprintf( cmdModelCount , "cat tmp.log | grep \"Satisfying\" | awk '{print $3}' > satProb.log" );
+   system( cmdModelCount );
+   
+   file = fopen( "satProb.log" , "r" );
+   if ( file == NULL ) {
+      fprintf( stderr , "Error! Problems with reading probability from \"satProb.log\"\n" );
+      exit(1);
+   }
+   fgets( prob_str , length , file );
+   fclose( file );
+   return 1 - atof(prob_str); // Since it is the weight of cube list.
+}
+
+static Var
+mapVar( Var x , vec<Var> & map , Var & max )
+{
+   if ( map.size() <= x || map[x] == -1) {
+      map.growTo( x + 1 , -1 );
+      map[x] = max++;
+   }
+   return map[x];
+}
+
+static double
+mapWeight( Var x , vec<double> & weights , double weight )
+{
+   if ( weights.size() <= x || weights[x] != weight ) {
+      weights.growTo( x + 1 , -1 );
+      weights[x] = weight;
+   }
+   return weights[x];
+}
+
+void
+SsatSolver::toDimacsWeighted( const char * filename, vec< vec<Lit> > & lClas )
+{
+   FILE * f = fopen( filename , "wr" );
+   if ( f == NULL )
+      fprintf( stderr , "could not open file %s\n" , filename ), exit(1);
+
+   // Start to weighted dimacs
+   Var max = 0, tmpVar;
+   int clauses = lClas.size();
+   vec<Var> map;
+   vec<double> weights;
+
+   for ( int i = 0 ; i < lClas.size() ; ++i ) {
+      for ( int j = 0 ; j < lClas[i].size() ; ++j ) {
+         tmpVar = mapVar( var(lClas[i][j]) , map , max );
+         mapWeight( tmpVar, weights, _quan[var(lClas[i][j])] );
+      }
+   }
+
+   fprintf(f, "p cnf %d %d\n", max, clauses);
+
+   for ( int i = 0 ; i < lClas.size() ; ++i ) {
+      for ( int j = 0 ; j < lClas[i].size() ; ++j ) {
+         fprintf( f , "%s%d " , sign(lClas[i][j]) ? "-" : "" , mapVar( var(lClas[i][j]) , map , max ) + 1 );
+      }
+      fprintf( f , "0\n" );
+   }
+
+   for ( int i = 0 ; i < weights.size() ; ++i )
+      fprintf( f , "w %d %f\n" , i + 1 , weights[i] );
+
+   fclose(f);
 }
 
 /**Function*************************************************************
