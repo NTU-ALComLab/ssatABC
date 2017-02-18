@@ -49,7 +49,6 @@ core/minisat
 *.cnf
 *.wcnf
 *.tcl
-*.sh
 *.list
 *.dsp
 expProb/*
