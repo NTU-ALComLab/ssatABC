@@ -4,7 +4,8 @@ bch=${dir}/expSsat/ssatRE/random
 log=${dir}/expSsat/ssatRE/random/log
 tot=1000
 #k_arr=( 3 5 7 9 )
-k_arr=( 3 4 5 6 7 8 9 )
+#k_arr=( 3 4 5 6 7 8 9 )
+k_arr=( 9 )
 
 
 for k in "${k_arr[@]}"

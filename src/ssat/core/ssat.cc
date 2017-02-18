@@ -138,8 +138,8 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    bool fAll , fMini , fBdd;
 
    range  = 0.0;
-   upper  = 16;
-   lower  = 65536;
+   upper  = -1;
+   lower  = -1;
    fAll   = true;
    fMini  = true;
    fBdd   = false;
@@ -211,7 +211,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    printf("\n");
    delete pSsat;
    gloSsat = NULL;
-   printTimer( &timer );
+   //printTimer( &timer );
    return 0;
 
 usage:

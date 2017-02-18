@@ -115,19 +115,18 @@ SsatSolver::aSolve2QBF()
 double
 SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , bool fBdd )
 {
-   cout << "Get fBdd " << fBdd << endl;
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
    initCubeNetwork( upper , lower , true );
    sBkCla.capacity(_rootVars[0].size());
    while ( 1.0 - _unsatPb - _satPb > range ) {
-      clk = Abc_Clock();
+      //clk = Abc_Clock();
       if ( !_s2->solve() ) {
          _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
-         //return (_satPb = cubeToNetwork(true));
+         //return ( _satPb = fBdd ? cubeToNetwork(true) : cachetCount(true) );
          return _satPb;
       }
-      timer.timeS2 += Abc_Clock()-clk;
+      //timer.timeS2 += Abc_Clock()-clk;
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       clk = Abc_Clock();
@@ -148,15 +147,13 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
             _s1->conflict.copyTo( _unsatClause.last() );
             _s2->addClause( _s1->conflict );
          }
-#if 0
          if ( unsatCubeListFull() ) {
             //printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
-            _unsatPb = cubeToNetwork(false);
+            _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
             printf( "  > current Upper bound = %e\n" , 1-_unsatPb );
             Abc_PrintTime( 1 , "  > Time elapsed" , Abc_Clock() - clk );
             fflush(stdout);
          }
-#endif
       }
       else { // SAT case
          sBkCla.clear();
@@ -164,17 +161,15 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
-#if 0
          if ( satCubeListFull() ) {
             //printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
-            _satPb = cubeToNetwork(true);
+            _satPb = fBdd ? cubeToNetwork(true) : cachetCount(true);
             printf( "\t\t\t\t\t\t  > current Lower bound = %e\n" , _satPb );
             Abc_PrintTime( 1 , "\t\t\t\t\t\t  > Time elasped" , Abc_Clock() - clk );
             fflush(stdout);
          }
-#endif
       }
-      timer.timeS1 += Abc_Clock()-clk;
+      //timer.timeS1 += Abc_Clock()-clk;
    }
    return _satPb; // lower bound
 }
