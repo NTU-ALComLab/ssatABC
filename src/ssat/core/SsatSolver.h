@@ -86,7 +86,7 @@ private:
    void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
    // solve interface
    double      qSolve             ( double , int , int , bool ); // Qesto-like solve
-   double      aSolve             ( double , int , int , bool ); // All-SAT enumeration solve
+   double      aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
    double      erSolve2SSAT       ( bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
@@ -100,7 +100,7 @@ private:
    bool        qSolve2QBF         ();
    double      qSolve2SSAT        ( double , int , int , bool );
    bool        aSolve2QBF         ();
-   double      aSolve2SSAT        ( double , int , int , bool );
+   double      aSolve2SSAT        ( double , int , int , bool , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    void        collectBkClaER     ( vec<Lit>& , int );
@@ -120,6 +120,8 @@ private:
    void        toDimacsWeighted   ( const char* , const vec<Lit>& );
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
+   double      cachetCount        ( bool );
+   void        toDimacsWeighted   ( const char* , vec< vec<Lit> >& );
    // construct circuits from cubes for Model Counting
    void        initCubeNetwork    ( int , int , bool );
    bool        unsatCubeListFull  () const { return (_unsatClause.size() == _upperLimit); };

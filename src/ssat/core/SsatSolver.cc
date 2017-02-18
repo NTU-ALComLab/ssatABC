@@ -209,7 +209,7 @@ SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool f
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
       return erSolve2SSAT( fBdd );
    else
-      return ( fAll ? aSolve( range , upper , lower , fMini ) : 
+      return ( fAll ? aSolve( range , upper , lower , fMini , fBdd ) : 
                       qSolve( range , upper , lower , fMini ) );
 }
    
