@@ -87,7 +87,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          //++nCachet;
          ++timer.nCachet;
          //printf( "  > %d times cachet call:\n" , timer.nCachet );
-         if ( checkSubsumption( *_s1 ) ) ++timer.nSubsume;
+         //if ( checkSubsumption( *_s1 ) ) ++timer.nSubsume;
 #if 1
          dropIndex = eLits.size();
          // FIXME

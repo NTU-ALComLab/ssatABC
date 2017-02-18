@@ -1,0 +1,11 @@
+  > On file c7552_re.sdimacs
+ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c7552_re.sdimacs".
+
+
+==== SSAT solving process ====
+
+[WARNING] interruption occurs, compute bounds before exit ...
+Time elapsed for upper bound =     0.09 sec
+  > Final Upper bound = 2.363052e-01
+  > Final Lower bound = 0.000000e+00
+  > Number of subsumes 0 , out of 0 Cachet calls

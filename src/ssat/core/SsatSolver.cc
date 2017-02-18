@@ -528,8 +528,8 @@ SsatSolver::interrupt()
    _unsatPb = cubeToNetwork( false );
    Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
    fflush(stdout);
-   _satPb   = cubeToNetwork( true );
-   Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
+   //_satPb   = cubeToNetwork( true );
+   //Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
    printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
    printf( "  > Final Lower bound = %e\n" , _satPb  );
    fflush(stdout);

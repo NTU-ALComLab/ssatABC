@@ -1,0 +1,9 @@
+  > On file c499_re.ssat
+
+
+solve time:              = 0.00401807
+rebuild/print time:      = 2.90871e-05
+   total time:           = 0.00404716
+
+Pr[SAT]                  = 3.41061e-12
+

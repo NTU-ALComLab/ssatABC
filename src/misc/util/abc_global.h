@@ -268,7 +268,8 @@ static inline abctime Abc_Clock()
 {
 #if (defined(LIN) || defined(LIN64)) && !(__APPLE__ & __MACH__) && !defined(__MINGW32__)
     struct timespec ts;
-    if ( clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) < 0 ) 
+    //if ( clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) < 0 ) 
+    if ( clock_gettime(CLOCK_REALTIME, &ts) < 0 ) 
         return (abctime)-1;
     abctime res = ((abctime) ts.tv_sec) * CLOCKS_PER_SEC;
     res += (((abctime) ts.tv_nsec) * CLOCKS_PER_SEC) / 1000000000;

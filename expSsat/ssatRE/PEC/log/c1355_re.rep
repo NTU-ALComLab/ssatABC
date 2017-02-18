@@ -1,0 +1,8 @@
+  > On file c1355_re.sdimacs
+ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c1355_re.sdimacs".
+
+
+==== SSAT solving process ====
+
+[WARNING] interruption occurs, compute bounds before exit ...
+timeout: the monitored command dumped core
