@@ -35,9 +35,9 @@ static int SsatCommandTest         ( Abc_Frame_t * pAbc , int argc , char ** arg
 // static helpers
 static bool Ssat_NtkReadQuan     ( char * );
 // global variables
-SsatSolver * gloSsat;
-map<string,double> quanMap; // Pi name -> quan prob , -1 means exist
-SsatTimer timer;
+SsatSolver         * gloSsat;
+map<string,double>   quanMap; // Pi name -> quan prob , -1 means exist
+SsatTimer            timer;
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -82,17 +82,19 @@ sig_handler( int sig )
 void
 initTimer( SsatTimer * pTimer )
 {
-   pTimer->timeS1 = 0;
-   pTimer->timeS2 = 0;
-   pTimer->nCachet = 0;
+   pTimer->timeS1   = 0;
+   pTimer->timeS2   = 0;
+   pTimer->nCachet  = 0;
    pTimer->nSubsume = 0;
 }
 
 void
 printTimer( SsatTimer * pTimer )
 {
-   Abc_PrintTime( 1 , "  > Time consumed on s1 solving:" , pTimer->timeS1 );
-   Abc_PrintTime( 1 , "  > Time consumed on s2 solving:" , pTimer->timeS2 );
+   Abc_Print( -2 , "\n==== Runtime profiling ====\n\n" );
+   Abc_PrintTime( 1 , "  > Time consumed on s1 solving" , pTimer->timeS1 );
+   Abc_PrintTime( 1 , "  > Time consumed on s2 solving" , pTimer->timeS2 );
+   Abc_Print( -2 , "  > Number of model counting    = %d\n\n" , pTimer->nCachet );
 }
 
 void 
@@ -135,16 +137,18 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    abctime clk;
    double range;
    int upper , lower , c;
-   bool fAll , fMini , fBdd;
+   bool fAll , fMini , fBdd , fVerbose , fTimer;
 
-   range  = 0.0;
-   upper  = -1;
-   lower  = -1;
-   fAll   = true;
-   fMini  = true;
-   fBdd   = false;
+   range    = 0.0;
+   upper    = 16;
+   lower    = 65536;
+   fAll     = true;
+   fMini    = true;
+   fBdd     = false;
+   fVerbose = true;
+   fTimer   = true;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambh" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambvth" ) ) != EOF )
    {
       switch ( c )
       {
@@ -184,6 +188,12 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
          case 'b':
             fBdd ^= 1;
             break;
+         case 'v':
+            fVerbose ^= 1;
+            break;
+         case 't':
+            fTimer ^= 1;
+            break;
          case 'h':
             goto usage;
          default:
@@ -199,30 +209,32 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
       Abc_Print( -1 , "There is no ssat file %s\n" , argv[globalUtilOptind] );
       return 1;
    }
-   gloSsat = pSsat = new SsatSolver;
+   gloSsat = pSsat = new SsatSolver( fVerbose , fTimer );
    pSsat->readSSAT(in);
    gzclose(in);
-   clk  = Abc_Clock();
+   clk = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
    pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd );
+   Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
-   printf("\n");
    delete pSsat;
    gloSsat = NULL;
-   //printTimer( &timer );
+   if ( fTimer ) printTimer( &timer );
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-ambh] <file>\n" );
+   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-ambvh] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
-   Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , 0.01 );
+   Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , range );
    Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , upper );
    Abc_Print( -2 , "\t-L <num>  : number of SAT   cubes for lower bound, default=%d (-1: construct only once)\n" , lower );
-   Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=true\n" );
-   Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=true\n" );
-   Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=Cachet\n" );
+   Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=%d\n" , fAll );
+   Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=%d\n" , fMini );
+   Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=%s\n" , fBdd ? "bdd" : "cachet" );
+   Abc_Print( -2 , "\t-v        : toggles verbose information, default=%d\n" , fVerbose );
+   Abc_Print( -2 , "\t-t        : toggles runtime information, default=%d\n" , fTimer );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );
    Abc_Print( -2 , "\tfile      : the sdimacs file\n" );
    return 1;

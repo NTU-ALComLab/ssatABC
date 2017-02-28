@@ -63,12 +63,12 @@ class SsatSolver {
 
 public:
    // Constructor/Destructor:
-   SsatSolver() : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) {}
+   SsatSolver( bool fVerbose = false , bool fTimer = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) { _fVerbose = fVerbose; _fTimer = fTimer;}
    ~SsatSolver();
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   double      solveSsat( double , int , int , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        solveSsat( double , int , int , bool , bool , bool ); // Solve 2SSAT/2QBF
    // ER-2-Ssat solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
    double      upperBound() const { return 1.0 - _unsatPb; }
@@ -85,9 +85,9 @@ private:
    Solver *    parse_SDIMACS      ( gzFile& );
    void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
    // solve interface
-   double      qSolve             ( double , int , int , bool ); // Qesto-like solve
-   double      aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
-   double      erSolve2SSAT       ( bool ); // Solve ER/ERE-2SSAT
+   void        qSolve             ( double , int , int , bool ); // Qesto-like solve
+   void        aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
+   void        erSolve2SSAT       ( bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -97,10 +97,10 @@ private:
    Solver *    buildERSelector    ();
    Solver *    buildAllSelector   ();
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
-   bool        qSolve2QBF         ();
-   double      qSolve2SSAT        ( double , int , int , bool );
-   bool        aSolve2QBF         ();
-   double      aSolve2SSAT        ( double , int , int , bool , bool );
+   void        qSolve2QBF         ();
+   void        qSolve2SSAT        ( double , int , int , bool );
+   void        aSolve2QBF         ();
+   void        aSolve2SSAT        ( double , int , int , bool , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    void        collectBkClaER     ( vec<Lit>& , int );
@@ -123,9 +123,9 @@ private:
    double      cachetCount        ( bool );
    void        toDimacsWeighted   ( const char* , vec< vec<Lit> >& );
    // construct circuits from cubes for Model Counting
-   void        initCubeNetwork    ( int , int , bool );
-   bool        unsatCubeListFull  () const { return (_unsatClause.size() == _upperLimit); };
-   bool        satCubeListFull    () const { return (_satClause.size() == _lowerLimit); };
+   void        initCubeNetwork    ( bool );
+   bool        unsatCubeListFull  () const { return (_upperLimit!=-1) && (_unsatClause.size()>0) && (_unsatClause.size()% _upperLimit==0); };
+   bool        satCubeListFull    () const { return (_lowerLimit!=-1) && (_satClause.size()>0) && (_satClause.size()% _lowerLimit==0); };
    double      cubeToNetwork      ( bool );
    void        ntkCreatePi        ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        ntkCreatePo        ( Abc_Ntk_t * );
@@ -158,6 +158,8 @@ private:
    void        dumpCla            ( const vec<Lit>& ) const;
    void        dumpCla            ( const Clause&   ) const;
    // data members
+   bool              _fVerbose;        // toggles verbose information
+   bool              _fTimer;          // toggles runtime information
    vec< vec<Var> >   _rootVars;        // var used in root clauses, levelized
    vec<double>       _quan;            // quantification structure, var to prob, "-1" denotes exist, "-2" denotes forall
    vec<int>          _level;           // var to level

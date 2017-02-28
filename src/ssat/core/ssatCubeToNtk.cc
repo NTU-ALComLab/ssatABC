@@ -52,7 +52,7 @@ static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 ***********************************************************************/
 
 void
-SsatSolver::initCubeNetwork( int upper , int lower , bool fAll )
+SsatSolver::initCubeNetwork( bool fAll )
 {
    char name[32];
    _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
@@ -62,13 +62,6 @@ SsatSolver::initCubeNetwork( int upper , int lower , bool fAll )
    ntkCreatePi( _pNtkCube , _vMapVars ); 
    ntkCreatePo( _pNtkCube ); 
    if ( !fAll ) ntkCreateSelDef ( _pNtkCube , _vMapVars );
-   _upperLimit = upper;
-   _lowerLimit = lower;
-   (_upperLimit > 0) ? _unsatClause.capacity( _upperLimit ) : _unsatClause.capacity( 1000000 );
-   (_lowerLimit > 0) ?   _satClause.capacity( _lowerLimit ) :   _satClause.capacity( 1000000 );
-   _unsatClause.clear();
-   _satClause.clear();
-   _nSatCube = _nUnsatCube = 0;
 }
 
 double
@@ -78,9 +71,7 @@ SsatSolver::cubeToNetwork( bool sat )
    if ( !learntClause.size() ) return (sat ? _satPb : _unsatPb);
    
    Abc_Obj_t * pObjCube = ntkCreateNode( _pNtkCube , _vMapVars , sat );
-   int & nCube = sat ? _nSatCube : _nUnsatCube;
    ntkPatchPoCheck( _pNtkCube ,  pObjCube , sat );
-   nCube += learntClause.size();
    learntClause.clear();
    return ntkBddComputeSp( _pNtkCube , sat );
 }

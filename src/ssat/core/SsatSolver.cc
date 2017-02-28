@@ -199,28 +199,27 @@ SsatSolver::readPrefix( StreamBuffer & in , Solver & S , double prob ,
 
 ***********************************************************************/
 
-double
+void
 SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , bool fBdd )
 {
-   if ( _numLv > 3 || _numLv == 1 ) {
+   if ( _numLv > 3 || _numLv == 1 )
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
-      return false;
-   }
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
-      return erSolve2SSAT( fBdd );
+      erSolve2SSAT( fBdd );
+   else if ( fAll )
+      aSolve( range , upper , lower , fMini , fBdd ); 
    else
-      return ( fAll ? aSolve( range , upper , lower , fMini , fBdd ) : 
-                      qSolve( range , upper , lower , fMini ) );
+      qSolve( range , upper , lower , fMini );
 }
    
-double
+void
 SsatSolver::qSolve( double range , int upper , int lower , bool fMini )
 {
    _s1->simplify(); // avoid clause deletion after solving
    _s2 = buildQestoSelector();
    initSelLitMark(); // avoid repeat selection vars in blocking clause
-   if ( isAVar( _rootVars[0][0] ) ) return qSolve2QBF();
-   else                             return qSolve2SSAT( range , upper , lower , fMini );
+   if ( isAVar( _rootVars[0][0] ) ) qSolve2QBF();
+   else                             qSolve2SSAT( range , upper , lower , fMini );
 }
 
 /**Function*************************************************************
@@ -283,15 +282,15 @@ SsatSolver::addSelectCla( Solver & S , const Lit & x , const vec<Lit> & uLits )
 
 ***********************************************************************/
 
-bool
+void
 SsatSolver::qSolve2QBF()
 {
    vec<Lit> uLits( _rootVars[0].size() ) , sBkCla;
    for (;;) {
-      if ( !_s2->solve() ) return true;
+      if ( !_s2->solve() ) _satPb = 1.0;
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          uLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-      if ( !_s1->solve(uLits) ) return false;
+      if ( !_s1->solve(uLits) ) _satPb = 0.0;
       sBkCla.clear();
       collectBkCla(sBkCla);
       _s2->addClause(sBkCla);
@@ -310,16 +309,21 @@ SsatSolver::qSolve2QBF()
 
 ***********************************************************************/
 
-double
+void
 SsatSolver::qSolve2SSAT( double range , int upper , int lower , bool fMini )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
-   initCubeNetwork( upper , lower , false );
+   _upperLimit = upper;
+   _lowerLimit = lower;
+   (_upperLimit > 0) ? _unsatClause.capacity( _upperLimit ) : _unsatClause.capacity( 1000000 );
+   (_lowerLimit > 0) ? _satClause.capacity( _lowerLimit ) : _satClause.capacity( 1000000 );
+   initCubeNetwork( false );
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
-         return (_satPb = cubeToNetwork(true));
+         _satPb = cubeToNetwork(true);
+         return;
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
@@ -359,7 +363,6 @@ SsatSolver::qSolve2SSAT( double range , int upper , int lower , bool fMini )
          }
       }
    }
-   return _satPb; // lower bound
 }
 
 void
@@ -522,23 +525,19 @@ SsatSolver::test() const
 void
 SsatSolver::interrupt()
 {
-#if 1
-   abctime clk = Abc_Clock();
-   printf( "\n[WARNING] interruption occurs, compute bounds before exit ...\n" );
-   fflush(stdout);
-   //_unsatPb = cubeToNetwork( false );
-   _unsatPb = cachetCount( false );
-   Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
-   fflush(stdout);
-   //_satPb   = cubeToNetwork( true );
-   _satPb   = cachetCount( true );
-   fflush(stdout);
-   Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
-   printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
-   printf( "  > Final Lower bound = %e\n" , _satPb  );
-   fflush(stdout);
-   //printf( "  > Number of subsumes %d , out of %d Cachet calls\n" , timer.nSubsume , timer.nCachet );
-#endif
+   if ( _fVerbose ) {
+      abctime clk = Abc_Clock();
+      printf( "\n[WARNING] interruption occurs, compute bounds before exiting\n" );
+      _unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );
+      Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
+      fflush(stdout);
+      _satPb = _pNtkCube ? cubeToNetwork( true ) : cachetCount( true );
+      Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
+      fflush(stdout);
+      printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
+      printf( "  > Final Lower bound = %e\n" , _satPb  );
+      if ( _fTimer ) printf( "  > Number of subsumes %d , out of %d Cachet calls\n" , timer.nSubsume , timer.nCachet );
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////

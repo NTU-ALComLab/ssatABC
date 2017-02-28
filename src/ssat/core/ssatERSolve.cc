@@ -52,7 +52,7 @@ extern SsatTimer timer;
 
 ***********************************************************************/
 
-double
+void
 SsatSolver::erSolve2SSAT( bool fBdd )
 {
    _s1->simplify();
@@ -71,7 +71,6 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          printf( "\n  > optimizing assignment to exist vars:\n" );
          dumpCla( _erModel );
          printf( "  > number of calls to Cachet:%10d , total:%10d\n" , nCachet , nS2solve );
-         return _satPb;
       }
       ++nS2solve;
       timer.timeS2 += Abc_Clock()-clk;
@@ -124,7 +123,6 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       }
       timer.timeS1 += Abc_Clock()-clk;
    }
-   return _satPb;
 }
 
 Solver*

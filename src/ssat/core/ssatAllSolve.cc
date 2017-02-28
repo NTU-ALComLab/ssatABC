@@ -51,12 +51,12 @@ extern SsatTimer timer;
 
 ***********************************************************************/
 
-double
+void
 SsatSolver::aSolve( double range , int upper , int lower , bool fMini , bool fBdd )
 {
    _s2 = buildAllSelector();
-   if ( isAVar( _rootVars[0][0] ) ) return aSolve2QBF();
-   else                             return aSolve2SSAT( range , upper , lower , fMini , fBdd );
+   if ( isAVar( _rootVars[0][0] ) ) aSolve2QBF();
+   else                             aSolve2SSAT( range , upper , lower , fMini , fBdd );
 }
 
 /**Function*************************************************************
@@ -92,12 +92,11 @@ SsatSolver::buildAllSelector()
 
 ***********************************************************************/
 
-bool
+void
 SsatSolver::aSolve2QBF()
 {
    // TODO
    printf( "  > Under construction...\n" );
-   return false;
 }
 
 /**Function*************************************************************
@@ -112,24 +111,32 @@ SsatSolver::aSolve2QBF()
 
 ***********************************************************************/
 
-double
+void
 SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , bool fBdd )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
-   abctime clk = Abc_Clock();
-   initCubeNetwork( upper , lower , true );
+   abctime clk = 0;
+   if ( upper > 0 && lower > 0 ) _fVerbose = true;
+   if ( _fVerbose ) printf( "\n  > Setting (_upperLimit,_lowerLimit) to (%5d,%5d)\n" , upper , lower );
+   _upperLimit = upper;
+   _lowerLimit = lower;
+   (_upperLimit > 0) ? _unsatClause.capacity( _upperLimit ) : _unsatClause.capacity( 1000000 );
+   (_lowerLimit > 0) ? _satClause.capacity( _lowerLimit ) : _satClause.capacity( 1000000 );
+   if ( _fVerbose ) printf( "  > Use %s as model counting engine\n" , fBdd ? "bdd" : "cachet" );
+   if ( fBdd ) initCubeNetwork( true );
    sBkCla.capacity(_rootVars[0].size());
+   if ( _fVerbose ) printf( "  > Start sat/unsat cube collection\n\n" );
    while ( 1.0 - _unsatPb - _satPb > range ) {
-      //clk = Abc_Clock();
+      if ( _fTimer ) clk = Abc_Clock();
       if ( !_s2->solve() ) {
          _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
-         //return ( _satPb = fBdd ? cubeToNetwork(true) : cachetCount(true) );
-         return _satPb;
+         _satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
+         return;
       }
-      //timer.timeS2 += Abc_Clock()-clk;
+      if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nCachet;}
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-      //clk = Abc_Clock();
+      if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(rLits) ) { // UNSAT case
          _unsatClause.push();
          if ( fMini ) {
@@ -139,7 +146,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
             if ( !sBkCla.size() ) { // FIXME: temp sol for UNSAT matrix
                _unsatPb = 1.0;
                _satPb   = 0.0;
-               return _satPb;
+               return;
             }
             _s2->addClause( sBkCla );
          }
@@ -148,11 +155,11 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
             _s2->addClause( _s1->conflict );
          }
          if ( unsatCubeListFull() ) {
-            //printf( "  > Collect %d UNSAT cubes, convert to network\n" , _upperLimit );
             _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
-            printf( "  > current Upper bound = %e\n" , 1-_unsatPb );
-            Abc_PrintTime( 1 , "  > Time elapsed" , Abc_Clock() - clk );
-            fflush(stdout);
+            if ( _fVerbose ) {
+               printf( "  > current Upper bound = %e\n" , 1-_unsatPb );
+               fflush(stdout);
+            }
          }
       }
       else { // SAT case
@@ -162,16 +169,15 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
          if ( satCubeListFull() ) {
-            //printf( "  > Collect %d SAT cubes, convert to network\n" , _lowerLimit );
             _satPb = fBdd ? cubeToNetwork(true) : cachetCount(true);
-            printf( "\t\t\t\t\t\t  > current Lower bound = %e\n" , _satPb );
-            Abc_PrintTime( 1 , "\t\t\t\t\t\t  > Time elasped" , Abc_Clock() - clk );
-            fflush(stdout);
+            if ( _fVerbose ) {
+               printf( "\t\t\t\t\t\t  > current Lower bound = %e\n" , _satPb );
+               fflush(stdout);
+            }
          }
       }
-      //timer.timeS1 += Abc_Clock()-clk;
+      if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
    }
-   return _satPb; // lower bound
 }
 
 double
