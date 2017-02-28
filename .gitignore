@@ -43,7 +43,9 @@ core/minisat
 *.txt
 *readme*
 *.log
+*.rep
 *.out
+*.csv
 *.result
 *.trace
 *.cnf

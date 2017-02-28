@@ -522,22 +522,22 @@ SsatSolver::test() const
 void
 SsatSolver::interrupt()
 {
-#if 0
-   //abctime clk = Abc_Clock();
+#if 1
+   abctime clk = Abc_Clock();
    printf( "\n[WARNING] interruption occurs, compute bounds before exit ...\n" );
    fflush(stdout);
    //_unsatPb = cubeToNetwork( false );
    _unsatPb = cachetCount( false );
-   //Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
+   Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
    fflush(stdout);
    //_satPb   = cubeToNetwork( true );
    _satPb   = cachetCount( true );
    fflush(stdout);
-   //Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
+   Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
    printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
    printf( "  > Final Lower bound = %e\n" , _satPb  );
    fflush(stdout);
-   printf( "  > Number of subsumes %d , out of %d Cachet calls\n" , timer.nSubsume , timer.nCachet );
+   //printf( "  > Number of subsumes %d , out of %d Cachet calls\n" , timer.nSubsume , timer.nCachet );
 #endif
 }
 

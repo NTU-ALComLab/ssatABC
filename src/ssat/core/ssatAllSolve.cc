@@ -129,7 +129,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
       //timer.timeS2 += Abc_Clock()-clk;
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-      clk = Abc_Clock();
+      //clk = Abc_Clock();
       if ( !_s1->solve(rLits) ) { // UNSAT case
          _unsatClause.push();
          if ( fMini ) {
