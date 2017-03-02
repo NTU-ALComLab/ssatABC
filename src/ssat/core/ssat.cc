@@ -102,14 +102,15 @@ Ssat_End( Abc_Frame_t * pAbc )
 void
 initTimer( SsatTimer * pTimer )
 {
-   pTimer->timeS1    = 0;
-   pTimer->timeS2    = 0;
-   pTimer->timeCa    = 0;
-   pTimer->nS1solve  = 0;
-   pTimer->nS2solve  = 0;
-   pTimer->nCachet   = 0;
-   pTimer->nSubsume  = 0;
-   pTimer->lenLearnt = 0.0;
+   pTimer->timeS1     = 0;
+   pTimer->timeS2     = 0;
+   pTimer->timeCa     = 0;
+   pTimer->nS1solve   = 0;
+   pTimer->nS2solve   = 0;
+   pTimer->nCachet    = 0;
+   pTimer->lenBase    = 0.0;
+   pTimer->lenPartial = 0.0;
+   pTimer->lenSubsume = 0.0;
 }
 
 void
@@ -121,11 +122,12 @@ printTimer( SsatTimer * pTimer )
    Abc_PrintTime( 1 , "  > Time consumed on Cachet    " , pTimer->timeCa );
    Abc_PrintTime( 1 , "  > Total elapsed time         " , Abc_Clock()-gloClk );
    Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
-   Abc_Print( -2 , "  > Number of s1 solving counting  = %10d\n" , pTimer->nS1solve  );
-   Abc_Print( -2 , "  > Number of s2 solving counting  = %10d\n" , pTimer->nS2solve  );
-   Abc_Print( -2 , "  > Number of calls to Cachet      = %10d\n" , pTimer->nCachet   );
-   Abc_Print( -2 , "  > Number of subsumption          = %10d\n" , pTimer->nSubsume  );
-   Abc_Print( -2 , "  > Average length of learnt       = %10f\n" , pTimer->lenLearnt / pTimer->nS2solve );
+   Abc_Print( -2 , "  > Number of s1 solving counting       = %10d\n" , pTimer->nS1solve  );
+   Abc_Print( -2 , "  > Number of s2 solving counting       = %10d\n" , pTimer->nS2solve  );
+   Abc_Print( -2 , "  > Number of calls to Cachet           = %10d\n" , pTimer->nCachet   );
+   Abc_Print( -2 , "  > Average length of learnt (base)     = %10f\n" , pTimer->lenBase    / pTimer->nS2solve );
+   Abc_Print( -2 , "  > Average length of learnt (partial)  = %10f\n" , pTimer->lenPartial / pTimer->nS2solve );
+   Abc_Print( -2 , "  > Average length of learnt (subsume)  = %10f\n" , pTimer->lenSubsume / pTimer->nS2solve );
 }
 
 /**Function*************************************************************
@@ -171,7 +173,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzFile in;
    double range;
    int upper , lower , c;
-   bool fAll , fMini , fBdd , fPart , fVerbose , fTimer;
+   bool fAll , fMini , fBdd , fPart , fSub , fVerbose , fTimer;
 
    range    = 0.0;
    upper    = 16;
@@ -180,10 +182,11 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    fMini    = true;
    fBdd     = false;
    fPart    = true;
+   fSub     = false;
    fVerbose = true;
    fTimer   = true;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambpvth" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambpsvth" ) ) != EOF )
    {
       switch ( c )
       {
@@ -226,6 +229,9 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
          case 'p':
             fPart ^= 1;
             break;
+         case 's':
+            fSub ^= 1;
+            break;
          case 'v':
             fVerbose ^= 1;
             break;
@@ -252,7 +258,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzclose(in);
    gloClk = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
-   pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd , fPart );
+   pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd , fPart , fSub );
    Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );

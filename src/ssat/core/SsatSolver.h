@@ -23,6 +23,7 @@
 #include <string.h>
 #include <signal.h>
 #include <map>
+#include <set>
 #include <fstream>
 #include <iostream>
 #include <zlib.h>
@@ -49,6 +50,8 @@ extern "C" {
 
 namespace Minisat {
 
+typedef vec< std::set<int> > SubTbl;
+
 // runtime profilier
 typedef struct SsatTimer_ {
    abctime timeS1; // s1 solving time
@@ -57,8 +60,9 @@ typedef struct SsatTimer_ {
    int nS2solve;   // # of s2 solving
    int nS1solve;   // # of s1 solving
    int nCachet;    // # of Cachet calls
-   int nSubsume;   // # of subsumption
-   double lenLearnt;  // total length of learnt clause
+   double lenBase;     // total length of base learnt clause
+   double lenPartial;  // total length of partial learnt clause
+   double lenSubsume;  // total length of subsume learnt clause
 } SsatTimer;
 
 //=================================================================================================
@@ -73,7 +77,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat( double , int , int , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        solveSsat( double , int , int , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
    // ER-2-Ssat solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
    double      upperBound() const { return 1.0 - _unsatPb; }
@@ -92,7 +96,7 @@ private:
    // solve interface
    void        qSolve             ( double , int , int , bool ); // Qesto-like solve
    void        aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
-   void        erSolve2SSAT       ( bool , bool , bool ); // Solve ER/ERE-2SSAT
+   void        erSolve2SSAT       ( bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -118,7 +122,6 @@ private:
    double      cachetCount        ( bool );
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& , int );
-   //double      countModels        ( const vec<Lit>& );
    bool        checkSubsumption   ( Solver& ) const;
    bool        subsume            ( const Clause& , const Clause& ) const;
    int         getLearntClaLen    ( Solver& , const vec<int>& , const vec<bool>& ) const;
@@ -151,6 +154,8 @@ private:
    double      erNtkBddComputeSp  ( Abc_Ntk_t * );
    // All-Sat enumeration-based model counting
    double      allSatModelCount   ( Solver * , const vec<Lit>& , double );
+   // build the subsumption table
+   void        buildSubsumeTable  ( Solver& );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;
@@ -179,6 +184,7 @@ private:
    vec<int>          _markSelLit;      // mark selection lits to avoid repeat
    vec< vec<Lit> >   _unsatClause;     // added clauses during solving, used in model counting
    vec< vec<Lit> >   _satClause;       // added clauses during solving, used in model counting
+   SubTbl            _subsumeTable;    // clause subsumption table
    Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
    Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
    Abc_Obj_t       * _pConst0;         // network Const0 node

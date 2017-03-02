@@ -55,11 +55,16 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub )
 {
    _s1->simplify();
    _s2 = buildERSelector();
+   if ( _fVerbose ) printf( "  > Using %s for counting , partial = %s , subsume = %s\n" , 
+                            fBdd ? "bdd" : "cachet" , fPart ? "yes" : "no" , fSub ? "yes" : "no" );
    if ( fBdd ) initClauseNetwork();
+   // TODO: initialize subsumption table
+   if ( fSub ) buildSubsumeTable( *_s1 );
+
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla , parLits;
    vec<int> ClasInd;
    double subvalue;
@@ -90,7 +95,10 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart )
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
             _s2->addClause( sBkCla );
-            if ( _fTimer ) timer.lenLearnt += sBkCla.size();
+            if ( _fTimer ) {
+               timer.lenBase += sBkCla.size();
+               timer.lenPartial += sBkCla.size();
+            }
          }
          else 
             _s2->addClause( _s1->conflict );
@@ -103,6 +111,8 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart )
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
          }
          if ( _fTimer ) clk = Abc_Clock();
+         // TODO: update countModels to handle subsumption
+         // subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex , fSub );
          subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
          if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
@@ -126,7 +136,10 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart )
          sBkCla.clear();
          ClasInd.clear();
          parLits.clear();
+         // TODO: update collectBkClaER to handle subsumption
+         // collectBkClaER( sBkCla , ClasInd , dropIndex , fSub );
          collectBkClaER( sBkCla , ClasInd , dropIndex );
+         if ( _fTimer ) fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
          sBkCla.copyTo( parLits );
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
@@ -147,7 +160,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart )
          sBkCla.clear();
          for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
          _s2->addClause( sBkCla );
-         if ( _fTimer ) timer.lenLearnt += sBkCla.size();
+         if ( _fTimer ) timer.lenPartial += sBkCla.size();
       }
       if ( _fTimer ) ++timer.nS1solve;
    }
@@ -489,7 +502,7 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
 
 /**Function*************************************************************
 
-  Synopsis    [Helper functions for clause subsumption check.]
+  Synopsis    [Helper functions for clause subsumption.]
 
   Description []
                
@@ -498,6 +511,12 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
   SeeAlso     []
 
 ***********************************************************************/
+
+void
+SsatSolver::buildSubsumeTable( Solver & S )
+{
+   // TODO
+}
 
 bool
 SsatSolver::checkSubsumption( Solver & S ) const
