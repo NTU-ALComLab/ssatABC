@@ -206,7 +206,7 @@ SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool f
    if ( _numLv > 3 || _numLv == 1 )
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
-      erSolve2SSAT( fBdd );
+      erSolve2SSAT( fMini , fBdd );
    else if ( fAll )
       aSolve( range , upper , lower , fMini , fBdd ); 
    else
@@ -526,20 +526,24 @@ SsatSolver::test() const
 void
 SsatSolver::interrupt()
 {
-   if ( _fVerbose ) {
-      abctime clk = Abc_Clock();
-      printf( "\n[WARNING] interruption occurs, compute bounds before exiting\n" );
+   printf( "\n[WARNING] interruption occurs, compute results before exiting\n" );
+   abctime clk = 0;
+   if ( _unsatClause.size() ) {
+      clk = Abc_Clock();
       _unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );
       Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
       fflush(stdout);
+   }
+   if ( _satClause.size() ) {
+      clk = Abc_Clock();
       _satPb = _pNtkCube ? cubeToNetwork( true ) : cachetCount( true );
       Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
       fflush(stdout);
-      printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
-      printf( "  > Final Lower bound = %e\n" , _satPb  );
-      if ( _fTimer ) printTimer( &timer );
-      printf( "\n" );
    }
+   printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
+   printf( "  > Final Lower bound = %e\n" , _satPb  );
+   if ( _fTimer ) printTimer( &timer );
+   printf( "\n" );
 }
 
 ////////////////////////////////////////////////////////////////////////

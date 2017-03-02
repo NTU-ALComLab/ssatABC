@@ -55,7 +55,7 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fBdd )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd )
 {
    _s1->simplify();
    _s2 = buildERSelector();
@@ -69,7 +69,11 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    for(;;) {
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s2->solve() ) {
-         printf( "\n  > optimizing assignment to exist vars:\n" );
+         if ( _fTimer ) {
+            timer.timeS2 += Abc_Clock()-clk;
+            ++timer.nS2solve;
+         }
+         printf( "\n  > optimizing assignment to exist vars:\n\t" );
          dumpCla( _erModel );
          return;
       }
@@ -82,9 +86,13 @@ SsatSolver::erSolve2SSAT( bool fBdd )
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(eLits) ) { // UNSAT case
          if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
-         sBkCla.clear();
-         miniUnsatCore( _s1->conflict , sBkCla );
-         _s2->addClause( sBkCla );
+         if ( fMini ) {
+            sBkCla.clear();
+            miniUnsatCore( _s1->conflict , sBkCla );
+            _s2->addClause( sBkCla );
+         }
+         else 
+            _s2->addClause( _s1->conflict );
       }
       else { // SAT case
          if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
@@ -100,7 +108,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
             ++timer.nCachet;
          }
          if ( subvalue == 1 ) {
-            printf( "\n  > optimizing assignment to exist vars:\n" );
+            printf( "\n  > optimizing assignment to exist vars:\n\t" );
             dumpCla( eLits );
             _satPb = subvalue;
             return;

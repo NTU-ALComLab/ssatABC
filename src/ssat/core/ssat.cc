@@ -21,23 +21,32 @@ using namespace Minisat;
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////
-///                        DECLARATIONS                              ///
+///                        FUNCTION DECLARATIONS                     ///
 ////////////////////////////////////////////////////////////////////////
 
 extern "C" void Ssat_Init ( Abc_Frame_t * );
 extern "C" void Ssat_End  ( Abc_Frame_t * );
 
+// commands
 static int SsatCommandSSAT         ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int SsatCommandBranchBound  ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int SsatCommandCktBddsp     ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int SsatCommandTest         ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static bool Ssat_NtkReadQuan       ( char * );
 
-// static helpers
-static bool Ssat_NtkReadQuan     ( char * );
-// global variables
+// other helpers
+static void sig_handler  ( int );
+static void initTimer    ( SsatTimer* );
+void        printTimer   ( SsatTimer* );
+
+////////////////////////////////////////////////////////////////////////
+///                        VARIABLES DECLARATIONS                    ///
+////////////////////////////////////////////////////////////////////////
+
 SsatSolver         * gloSsat;
-map<string,double>   quanMap; // Pi name -> quan prob , -1 means exist
 SsatTimer            timer;
+abctime              gloClk;
+map<string,double>   quanMap; // Pi name -> quan prob , -1 means exist
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -45,7 +54,7 @@ SsatTimer            timer;
 
 /**Function*************************************************************
 
-  Synopsis    [Signal handling functions]
+  Synopsis    [Start / Stop the ssat package]
 
   Description []
                
@@ -55,21 +64,32 @@ SsatTimer            timer;
 
 ***********************************************************************/
 
-void
-sig_handler( int sig )
+void 
+Ssat_Init( Abc_Frame_t * pAbc )
 {
+   gloSsat = NULL;
+   initTimer( &timer );
+   signal( SIGINT  , sig_handler );
+   signal( SIGTERM , sig_handler );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"        , SsatCommandSSAT        , 0 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "branchbound" , SsatCommandBranchBound , 1 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "cktbddsp"    , SsatCommandCktBddsp    , 1 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat_test"   , SsatCommandTest        , 0 );
+}
+
+void 
+Ssat_End( Abc_Frame_t * pAbc )
+{
+   if ( !quanMap.empty() ) quanMap.clear();
    if ( gloSsat ) {
-      gloSsat->interrupt();
       delete gloSsat;
       gloSsat = NULL;
    }
-   Abc_Stop();
-   exit(1);
 }
 
 /**Function*************************************************************
 
-  Synopsis    [Start / Stop the ssat package]
+  Synopsis    [Runtime profiling functions]
 
   Description []
                
@@ -98,6 +118,7 @@ printTimer( SsatTimer * pTimer )
    Abc_PrintTime( 1 , "  > Time consumed on s1 solving" , pTimer->timeS1 );
    Abc_PrintTime( 1 , "  > Time consumed on s2 solving" , pTimer->timeS2 );
    Abc_PrintTime( 1 , "  > Time consumed on Cachet    " , pTimer->timeCa );
+   Abc_PrintTime( 1 , "  > Total elapsed time         " , Abc_Clock()-gloClk );
    Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
    Abc_Print( -2 , "  > Number of s1 solving counting  = %10d\n" , pTimer->nS1solve );
    Abc_Print( -2 , "  > Number of s2 solving counting  = %10d\n" , pTimer->nS2solve );
@@ -105,24 +126,28 @@ printTimer( SsatTimer * pTimer )
    Abc_Print( -2 , "  > Number of subsumption          = %10d\n" , pTimer->nSubsume );
 }
 
-void 
-Ssat_Init( Abc_Frame_t * pAbc )
-{
-   gloSsat = NULL;
-   initTimer( &timer );
-   signal( SIGINT  , sig_handler );
-   signal( SIGTERM , sig_handler );
-   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"        , SsatCommandSSAT        , 0 );
-   Cmd_CommandAdd( pAbc , "z SSAT" , "branchbound" , SsatCommandBranchBound , 1 );
-   Cmd_CommandAdd( pAbc , "z SSAT" , "cktbddsp"    , SsatCommandCktBddsp    , 1 );
-   Cmd_CommandAdd( pAbc , "z SSAT" , "ssat_test"   , SsatCommandTest        , 0 );
-}
+/**Function*************************************************************
 
-void 
-Ssat_End( Abc_Frame_t * pAbc )
+  Synopsis    [Signal handling functions]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+sig_handler( int sig )
 {
-   if ( !quanMap.empty() ) quanMap.clear();
-   if ( gloSsat ) delete gloSsat;
+   if ( gloSsat ) {
+      gloSsat->interrupt();
+      delete gloSsat;
+      gloSsat = NULL;
+   }
+   Abc_Stop();
+   exit(1);
 }
 
 /**Function*************************************************************
@@ -142,7 +167,6 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
 {
    SsatSolver * pSsat;
    gzFile in;
-   abctime clk;
    double range;
    int upper , lower , c;
    bool fAll , fMini , fBdd , fVerbose , fTimer;
@@ -220,13 +244,13 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gloSsat = pSsat = new SsatSolver( fVerbose , fTimer );
    pSsat->readSSAT(in);
    gzclose(in);
-   clk = Abc_Clock();
+   gloClk = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
    pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd );
    Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
-   Abc_PrintTime( 1 , "  > Time       " , Abc_Clock() - clk );
+   Abc_PrintTime( 1 , "  > Time       " , Abc_Clock() - gloClk );
    delete pSsat;
    gloSsat = NULL;
    if ( fTimer ) printTimer( &timer );
@@ -269,7 +293,7 @@ SsatCommandCktBddsp( Abc_Frame_t * pAbc , int argc , char ** argv )
    char * pFileName;
    char sCmd[1000];
    int fResyn , numExist = 0 , i , c;
-   abctime clk = Abc_Clock();
+   gloClk = Abc_Clock();
 
    fResyn = 1;
    Extra_UtilGetoptReset();
@@ -329,7 +353,7 @@ SsatCommandCktBddsp( Abc_Frame_t * pAbc , int argc , char ** argv )
       Abc_ObjPatchFanin( pObj , Abc_NtkPi(pNtk,0), Abc_AigConst1(pNtk) );
    
    Cmd_CommandExecute( pAbc , sCmd );*/
-   Abc_PrintTime( 1 , "  > Time consumed" , Abc_Clock() - clk );
+   Abc_PrintTime( 1 , "  > Time consumed" , Abc_Clock() - gloClk );
    return 0;
 
 usage:
@@ -413,7 +437,7 @@ SsatCommandBranchBound( Abc_Frame_t * pAbc , int argc , char ** argv )
    SsatSolver * pSsat;
    char * pFileName;
    int fResyn , c;
-   abctime clk = Abc_Clock();
+   gloClk = Abc_Clock();
 
    fResyn = 1;
    Extra_UtilGetoptReset();
@@ -457,7 +481,7 @@ SsatCommandBranchBound( Abc_Frame_t * pAbc , int argc , char ** argv )
    pSsat = new SsatSolver;
    pSsat->solveBranchBound( pNtk );
    delete pSsat;
-   Abc_PrintTime( 1 , "  > Time consumed" , Abc_Clock() - clk );
+   Abc_PrintTime( 1 , "  > Time consumed" , Abc_Clock() - gloClk );
    return 0;
 
 usage:

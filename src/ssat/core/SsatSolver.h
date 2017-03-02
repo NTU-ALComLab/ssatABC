@@ -49,14 +49,15 @@ extern "C" {
 
 namespace Minisat {
 
+// runtime profilier
 typedef struct SsatTimer_ {
-   abctime timeS1;
-   abctime timeS2;
-   abctime timeCa;
-   int nS2solve;
-   int nS1solve;
-   int nCachet;
-   int nSubsume;
+   abctime timeS1; // s1 solving time
+   abctime timeS2; // s2 solving time
+   abctime timeCa; // Cachet time
+   int nS2solve;   // # of s2 solving
+   int nS1solve;   // # of s1 solving
+   int nCachet;    // # of Cachet calls
+   int nSubsume;   // # of subsumption
 } SsatTimer;
 
 //=================================================================================================
@@ -90,7 +91,7 @@ private:
    // solve interface
    void        qSolve             ( double , int , int , bool ); // Qesto-like solve
    void        aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
-   void        erSolve2SSAT       ( bool ); // Solve ER/ERE-2SSAT
+   void        erSolve2SSAT       ( bool , bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
