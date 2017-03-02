@@ -55,7 +55,7 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart )
 {
    _s1->simplify();
    _s2 = buildERSelector();
@@ -90,6 +90,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd )
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
             _s2->addClause( sBkCla );
+            if ( _fTimer ) timer.lenLearnt += sBkCla.size();
          }
          else 
             _s2->addClause( _s1->conflict );
@@ -129,7 +130,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd )
          sBkCla.copyTo( parLits );
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
-         if ( dropIndex >= 1 ) {
+         if ( fPart && dropIndex >= 1 ) {
             for(;;) {
                while ( !dropLit( parLits , ClasInd , --dropIndex , subvalue ) );
                if ( _fTimer ) clk = Abc_Clock();
@@ -146,6 +147,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd )
          sBkCla.clear();
          for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
          _s2->addClause( sBkCla );
+         if ( _fTimer ) timer.lenLearnt += sBkCla.size();
       }
       if ( _fTimer ) ++timer.nS1solve;
    }
