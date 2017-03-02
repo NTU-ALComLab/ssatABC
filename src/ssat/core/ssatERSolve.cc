@@ -139,6 +139,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd )
                   ++timer.nCachet;
                }
                if ( subvalue > _satPb ) break;
+               //if ( subvalue >= _satPb ) break;
             }
             ++dropIndex;
          }
@@ -319,6 +320,7 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
 double
 SsatSolver::countModels( const vec<Lit> & sBkCla , int dropIndex )
 {
+   //return _satPb;
    FILE * file;
    int length = 1024;
    char prob_str[length] , cmdModelCount[length];
