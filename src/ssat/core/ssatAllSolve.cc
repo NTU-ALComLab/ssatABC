@@ -117,7 +117,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = 0;
    if ( upper > 0 && lower > 0 ) _fVerbose = true;
-   if ( _fVerbose ) printf( "\n  > Setting (_upperLimit,_lowerLimit) to (%5d,%5d)\n" , upper , lower );
+   if ( _fVerbose ) printf( "\n  > Setting (_upperLimit,_lowerLimit) to (%d,%d)\n" , upper , lower );
    _upperLimit = upper;
    _lowerLimit = lower;
    (_upperLimit > 0) ? _unsatClause.capacity( _upperLimit ) : _unsatClause.capacity( 1000000 );
@@ -129,15 +129,25 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
    while ( 1.0 - _unsatPb - _satPb > range ) {
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s2->solve() ) {
+         if ( _fTimer ) {
+            timer.timeS2 += Abc_Clock()-clk;
+            ++timer.nS2solve;
+            clk = Abc_Clock();
+         }
          _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
-         _satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
+         //_satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
+         if ( _fTimer && !fBdd ) {
+            timer.timeCa += Abc_Clock()-clk;
+            timer.nCachet += 1;
+         }
          return;
       }
-      if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nCachet;}
+      if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(rLits) ) { // UNSAT case
+         if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
          _unsatClause.push();
          if ( fMini ) {
             sBkCla.clear();
@@ -155,7 +165,12 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
             _s2->addClause( _s1->conflict );
          }
          if ( unsatCubeListFull() ) {
+            if ( _fTimer ) clk = Abc_Clock();
             _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
+            if ( _fTimer && !fBdd ) {
+               timer.timeCa += Abc_Clock()-clk;
+               ++timer.nCachet;
+            }
             if ( _fVerbose ) {
                printf( "  > current Upper bound = %e\n" , 1-_unsatPb );
                fflush(stdout);
@@ -163,20 +178,25 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
          }
       }
       else { // SAT case
+         if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
          sBkCla.clear();
          miniHitSet( sBkCla , 0 ); // random var at Lv.0
          _satClause.push();
          sBkCla.copyTo( _satClause.last() );
          _s2->addClause( sBkCla );
          if ( satCubeListFull() ) {
+            if ( _fTimer ) clk = Abc_Clock();
             _satPb = fBdd ? cubeToNetwork(true) : cachetCount(true);
+            if ( _fTimer && !fBdd ) {
+               timer.timeCa += Abc_Clock()-clk;
+               ++timer.nCachet;
+            }
             if ( _fVerbose ) {
                printf( "\t\t\t\t\t\t  > current Lower bound = %e\n" , _satPb );
                fflush(stdout);
             }
          }
       }
-      if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
    }
 }
 

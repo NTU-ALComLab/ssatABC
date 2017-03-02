@@ -534,12 +534,12 @@ SsatSolver::interrupt()
       Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
       fflush(stdout);
    }
-   if ( _satClause.size() ) {
+   /*if ( _satClause.size() ) {
       clk = Abc_Clock();
       _satPb = _pNtkCube ? cubeToNetwork( true ) : cachetCount( true );
       Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
       fflush(stdout);
-   }
+   }*/
    printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
    printf( "  > Final Lower bound = %e\n" , _satPb  );
    if ( _fTimer ) printTimer( &timer );
