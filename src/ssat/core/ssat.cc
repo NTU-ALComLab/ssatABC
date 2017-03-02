@@ -84,6 +84,8 @@ initTimer( SsatTimer * pTimer )
 {
    pTimer->timeS1   = 0;
    pTimer->timeS2   = 0;
+   pTimer->nS1solve = 0;
+   pTimer->nS2solve = 0;
    pTimer->nCachet  = 0;
    pTimer->nSubsume = 0;
 }
@@ -94,6 +96,10 @@ printTimer( SsatTimer * pTimer )
    Abc_Print( -2 , "\n==== Runtime profiling ====\n\n" );
    Abc_PrintTime( 1 , "  > Time consumed on s1 solving" , pTimer->timeS1 );
    Abc_PrintTime( 1 , "  > Time consumed on s2 solving" , pTimer->timeS2 );
+   Abc_Print( -2 , "  > Number of s1 solving counting  = %d\n\n" , pTimer->nS1solve );
+   Abc_Print( -2 , "  > Number of s2 solving counting  = %d\n\n" , pTimer->nS2solve );
+   Abc_Print( -2 , "  > Number of calls to Cachet     = %d\n\n" , pTimer->nCachet );
+   Abc_Print( -2 , "  > Number of subsumption         = %d\n\n" , pTimer->nSubsume );
    Abc_Print( -2 , "  > Number of model counting    = %d\n\n" , pTimer->nCachet );
 }
 

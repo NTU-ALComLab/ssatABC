@@ -52,6 +52,8 @@ namespace Minisat {
 typedef struct SsatTimer_ {
    abctime timeS1;
    abctime timeS2;
+   int nS2solve;
+   int nS1solve;
    int nCachet;
    int nSubsume;
 } SsatTimer;
@@ -103,9 +105,10 @@ private:
    void        aSolve2SSAT        ( double , int , int , bool , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
-   void        collectBkClaER     ( vec<Lit>& , int );
+   void        collectBkClaER     ( vec<Lit>& , vec<int>& , int );
    void        collectBkClaER     ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& , int ) const;
+   void        collectParLits     ( vec<Lit>& , vec<int>& );
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
@@ -115,13 +118,12 @@ private:
    bool        checkSubsumption   ( Solver& ) const;
    bool        subsume            ( const Clause& , const Clause& ) const;
    int         getLearntClaLen    ( Solver& , const vec<int>& , const vec<bool>& ) const;
+   bool        dropLit            ( vec<Lit>& , vec<int>& , int , double& );
    // write file for Model Counting
-   void        toDimacsWeighted   ( FILE* , const vec<Lit>& );
-   void        toDimacsWeighted   ( const char* , const vec<Lit>& );
+   void        toDimacsWeighted   ( FILE* , const vec<Lit>& , int );
+   void        toDimacsWeighted   ( const char* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
-   void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& );
-   double      cachetCount        ( bool );
-   void        toDimacsWeighted   ( const char* , vec< vec<Lit> >& );
+   void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& , int );
    // construct circuits from cubes for Model Counting
    void        initCubeNetwork    ( bool );
    bool        unsatCubeListFull  () const { return (_upperLimit!=-1) && (_unsatClause.size()>0) && (_unsatClause.size()% _upperLimit==0); };
