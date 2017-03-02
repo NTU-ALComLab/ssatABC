@@ -84,6 +84,7 @@ initTimer( SsatTimer * pTimer )
 {
    pTimer->timeS1   = 0;
    pTimer->timeS2   = 0;
+   pTimer->timeCa   = 0;
    pTimer->nS1solve = 0;
    pTimer->nS2solve = 0;
    pTimer->nCachet  = 0;
@@ -96,11 +97,12 @@ printTimer( SsatTimer * pTimer )
    Abc_Print( -2 , "\n==== Runtime profiling ====\n\n" );
    Abc_PrintTime( 1 , "  > Time consumed on s1 solving" , pTimer->timeS1 );
    Abc_PrintTime( 1 , "  > Time consumed on s2 solving" , pTimer->timeS2 );
-   Abc_Print( -2 , "  > Number of s1 solving counting  = %d\n\n" , pTimer->nS1solve );
-   Abc_Print( -2 , "  > Number of s2 solving counting  = %d\n\n" , pTimer->nS2solve );
-   Abc_Print( -2 , "  > Number of calls to Cachet     = %d\n\n" , pTimer->nCachet );
-   Abc_Print( -2 , "  > Number of subsumption         = %d\n\n" , pTimer->nSubsume );
-   Abc_Print( -2 , "  > Number of model counting    = %d\n\n" , pTimer->nCachet );
+   Abc_PrintTime( 1 , "  > Time consumed on Cachet    " , pTimer->timeCa );
+   Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
+   Abc_Print( -2 , "  > Number of s1 solving counting  = %10d\n" , pTimer->nS1solve );
+   Abc_Print( -2 , "  > Number of s2 solving counting  = %10d\n" , pTimer->nS2solve );
+   Abc_Print( -2 , "  > Number of calls to Cachet      = %10d\n" , pTimer->nCachet );
+   Abc_Print( -2 , "  > Number of subsumption          = %10d\n" , pTimer->nSubsume );
 }
 
 void 
@@ -224,10 +226,11 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
-   Abc_PrintTime( 1 , "  > Time  " , Abc_Clock() - clk );
+   Abc_PrintTime( 1 , "  > Time       " , Abc_Clock() - clk );
    delete pSsat;
    gloSsat = NULL;
    if ( fTimer ) printTimer( &timer );
+   printf( "\n" );
    return 0;
 
 usage:

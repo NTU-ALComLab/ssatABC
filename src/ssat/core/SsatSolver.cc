@@ -34,6 +34,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////
 
 extern SsatTimer timer;
+extern void printTimer( SsatTimer* );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -536,7 +537,8 @@ SsatSolver::interrupt()
       fflush(stdout);
       printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
       printf( "  > Final Lower bound = %e\n" , _satPb  );
-      if ( _fTimer ) printf( "  > Number of subsumes %d , out of %d Cachet calls\n" , timer.nSubsume , timer.nCachet );
+      if ( _fTimer ) printTimer( &timer );
+      printf( "\n" );
    }
 }
 

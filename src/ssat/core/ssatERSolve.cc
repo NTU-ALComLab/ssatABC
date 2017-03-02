@@ -65,32 +65,40 @@ SsatSolver::erSolve2SSAT( bool fBdd )
    double subvalue;
    int dropIndex;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
-   abctime clk , clk1 = Abc_Clock();
+   abctime clk = 0 , clk1 = Abc_Clock();
    for(;;) {
-      clk = Abc_Clock();
+      if ( _fTimer ) clk = Abc_Clock();
       if ( !_s2->solve() ) {
          printf( "\n  > optimizing assignment to exist vars:\n" );
          dumpCla( _erModel );
          return;
       }
-      timer.timeS2 += Abc_Clock()-clk;
-      ++timer.nS2solve;
+      if ( _fTimer ) {
+         timer.timeS2 += Abc_Clock()-clk;
+         ++timer.nS2solve;
+      }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-      clk = Abc_Clock();
+      if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(eLits) ) { // UNSAT case
+         if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
          sBkCla.clear();
          miniUnsatCore( _s1->conflict , sBkCla );
          _s2->addClause( sBkCla );
       }
       else { // SAT case
+         if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
          dropIndex = eLits.size();
          if ( _s1->nClauses() == 0 ) {
             Abc_Print( -1 , "  > There is no clause left ...\n" );
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
          }
+         if ( _fTimer ) clk = Abc_Clock();
          subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
-         ++timer.nCachet;
+         if ( _fTimer ) {
+            timer.timeCa += Abc_Clock()-clk;
+            ++timer.nCachet;
+         }
          if ( subvalue == 1 ) {
             printf( "\n  > optimizing assignment to exist vars:\n" );
             dumpCla( eLits );
@@ -113,12 +121,15 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          sBkCla.copyTo( parLits );
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
-         int countdrop = 0, countCachet = 0;
          if ( dropIndex >= 1 ) {
             for(;;) {
                while ( !dropLit( parLits , ClasInd , --dropIndex , subvalue ) );
+               if ( _fTimer ) clk = Abc_Clock();
                subvalue = countModels( parLits , dropIndex );
-               ++timer.nCachet;
+               if ( _fTimer ) {
+                  timer.timeCa += Abc_Clock()-clk;
+                  ++timer.nCachet;
+               }
                if ( subvalue > _satPb ) break;
             }
             ++dropIndex;
@@ -127,6 +138,7 @@ SsatSolver::erSolve2SSAT( bool fBdd )
          for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
          _s2->addClause( sBkCla );
       }
+      if ( _fTimer ) ++timer.nS1solve;
    }
 }
 
@@ -201,7 +213,7 @@ SsatSolver::collectParLits( vec<Lit> & parLits, vec<int> & ClasInd )
 
    sort(tmpLits);
    Lit p; int i, j;
-   int num[500] = {0}, max = -1, maxIndex;
+   int num[500] = {0}, max = -1, maxIndex = -1;
    for (i = j = 0, p = lit_Undef; i < tmpLits.size(); i++)
       if (tmpLits[i] != p) {
          tmpLits[j++] = p = tmpLits[i];
@@ -365,8 +377,8 @@ mapWeight( Var x , vec<double> & weights , double weight )
 void
 SsatSolver::toDimacs( FILE * f , Clause & c , vec<Var> & map , Var & max , int dropIndex )
 {
-   Solver * S = _s1;
-   // if ( S->satisfied(c) ) return;
+   //Solver * S = _s1;
+   //if ( S->satisfied(c) ) return;
 
    for ( int i = 0 ; i < c.size() ; ++i )
       fprintf( f , "%s%d " , sign(c[i]) ? "-" : "" , mapVar( var(c[i]) , map , max ) + 1 );

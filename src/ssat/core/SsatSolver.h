@@ -52,6 +52,7 @@ namespace Minisat {
 typedef struct SsatTimer_ {
    abctime timeS1;
    abctime timeS2;
+   abctime timeCa;
    int nS2solve;
    int nS1solve;
    int nCachet;
@@ -112,9 +113,10 @@ private:
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
+   double      cachetCount        ( bool );
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& , int );
-   double      countModels        ( const vec<Lit>& );
+   //double      countModels        ( const vec<Lit>& );
    bool        checkSubsumption   ( Solver& ) const;
    bool        subsume            ( const Clause& , const Clause& ) const;
    int         getLearntClaLen    ( Solver& , const vec<int>& , const vec<bool>& ) const;
@@ -122,6 +124,7 @@ private:
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& , int );
+   void        toDimacsWeighted   ( const char* , vec< vec<Lit> >& );
    void        toDimacsWeighted   ( FILE* , vec<double>& , Var& );
    void        toDimacs           ( FILE* , Clause& , vec<Var>& , Var& , int );
    // construct circuits from cubes for Model Counting
