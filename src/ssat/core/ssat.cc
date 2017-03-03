@@ -104,8 +104,10 @@ initTimer( SsatTimer * pTimer )
 {
    pTimer->timeS1     = 0;
    pTimer->timeS2     = 0;
+   pTimer->timeGd     = 0;
    pTimer->timeCa     = 0;
    pTimer->nS1solve   = 0;
+   pTimer->nGdsolve   = 0;
    pTimer->nS2solve   = 0;
    pTimer->nCachet    = 0;
    pTimer->lenBase    = 0.0;
@@ -119,11 +121,13 @@ printTimer( SsatTimer * pTimer )
    Abc_Print( -2 , "\n==== Runtime profiling ====\n\n" );
    Abc_PrintTime( 1 , "  > Time consumed on s1 solving" , pTimer->timeS1 );
    Abc_PrintTime( 1 , "  > Time consumed on s2 solving" , pTimer->timeS2 );
+   Abc_PrintTime( 1 , "  > Time consumed on s2 greedy " , pTimer->timeGd );
    Abc_PrintTime( 1 , "  > Time consumed on Cachet    " , pTimer->timeCa );
    Abc_PrintTime( 1 , "  > Total elapsed time         " , Abc_Clock()-gloClk );
    Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
-   Abc_Print( -2 , "  > Number of s1 solving counting       = %10d\n" , pTimer->nS1solve  );
-   Abc_Print( -2 , "  > Number of s2 solving counting       = %10d\n" , pTimer->nS2solve  );
+   Abc_Print( -2 , "  > Number of s1 solving                = %10d\n" , pTimer->nS1solve  );
+   Abc_Print( -2 , "  > Number of s2 solving                = %10d\n" , pTimer->nS2solve  );
+   Abc_Print( -2 , "  > Number of s2 greedy                 = %10d\n" , pTimer->nGdsolve  );
    Abc_Print( -2 , "  > Number of calls to Cachet           = %10d\n" , pTimer->nCachet   );
    Abc_Print( -2 , "  > Average length of learnt (base)     = %10f\n" , pTimer->lenBase    / pTimer->nS2solve );
    Abc_Print( -2 , "  > Average length of learnt (partial)  = %10f\n" , pTimer->lenPartial / pTimer->nS2solve );

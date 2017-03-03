@@ -88,6 +88,8 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          timer.timeS2 += Abc_Clock()-clk;
          ++timer.nS2solve;
       }
+      for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
+         eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( fGreedy ) {
          vec<Lit> block , assump;
          block.capacity( _claLits.size() );
@@ -102,14 +104,14 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             _s2->addClause( block );
             if ( _fTimer ) clk = Abc_Clock();
             if ( !_s2->solve(assump) ) { 
-               if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
+               if ( _fTimer ) { timer.timeGd += Abc_Clock()-clk; ++timer.nGdsolve; }
                break;
             }
-            if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
+            if ( _fTimer ) { timer.timeGd += Abc_Clock()-clk; ++timer.nGdsolve; }
+            for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
+               eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
          }
       }
-      for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
-         eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(eLits) ) { // UNSAT case
          if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
