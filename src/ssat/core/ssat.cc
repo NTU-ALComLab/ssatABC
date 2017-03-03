@@ -173,7 +173,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzFile in;
    double range;
    int upper , lower , c;
-   bool fAll , fMini , fBdd , fPart , fSub , fVerbose , fTimer;
+   bool fAll , fMini , fBdd , fPart , fSub , fGreedy , fVerbose , fTimer;
 
    range    = 0.0;
    upper    = 16;
@@ -183,10 +183,11 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    fBdd     = false;
    fPart    = true;
    fSub     = false;
+   fGreedy  = false;
    fVerbose = true;
    fTimer   = true;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambpsvth" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambpsgvth" ) ) != EOF )
    {
       switch ( c )
       {
@@ -232,6 +233,9 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
          case 's':
             fSub ^= 1;
             break;
+         case 'g':
+            fGreedy ^= 1;
+            break;
          case 'v':
             fVerbose ^= 1;
             break;
@@ -258,7 +262,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzclose(in);
    gloClk = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
-   pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd , fPart , fSub );
+   pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd , fPart , fSub , fGreedy );
    Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
@@ -270,7 +274,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-ambdvth] <file>\n" );
+   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-ambpsgvth] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
    Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , range );
    Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , upper );
@@ -278,7 +282,9 @@ usage:
    Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=%s\n" , fAll ? "yes" : "no" );
    Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=%s\n" , fMini ? "yes" : "no" );
    Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=%s\n" , fBdd ? "bdd" : "cachet" );
-   Abc_Print( -2 , "\t-d        : toggles using partial assignment technique, default=%s\n" , fPart ? "yes" : "no" );
+   Abc_Print( -2 , "\t-p        : toggles using partial assignment technique, default=%s\n" , fPart ? "yes" : "no" );
+   Abc_Print( -2 , "\t-s        : toggles using subsumption simplify technique, default=%s\n" , fSub ? "yes" : "no" );
+   Abc_Print( -2 , "\t-g        : toggles using greedy heuristic, default=%s\n" , fGreedy ? "yes" : "no" );
    Abc_Print( -2 , "\t-v        : toggles verbose information, default=%s\n" , fVerbose ? "yes" : "no" );
    Abc_Print( -2 , "\t-t        : toggles runtime information, default=%s\n" , fTimer ? "yes" : "no" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );

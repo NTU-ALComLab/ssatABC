@@ -202,12 +202,12 @@ SsatSolver::readPrefix( StreamBuffer & in , Solver & S , double prob ,
 
 void
 SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , 
-                       bool fMini , bool fBdd , bool fPart , bool fSub )
+                       bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy )
 {
    if ( _numLv > 3 || _numLv == 1 )
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
-      erSolve2SSAT( fMini , fBdd , fPart , fSub );
+      erSolve2SSAT( fMini , fBdd , fPart , fSub , fGreedy );
    else if ( fAll )
       aSolve( range , upper , lower , fMini , fBdd ); 
    else
@@ -228,9 +228,9 @@ SsatSolver::qSolve( double range , int upper , int lower , bool fMini )
 
   Synopsis    [Build _s2 (Qesto clause selector)]
 
-  Description [Initialize forall vars and build selection clauses]
+  Description [Initialize forall (lv.0) vars and build selection clauses]
                
-  SideEffects [forall vars have exactly the same IDs as _s1]
+  SideEffects [forall (lv.0) vars have exactly the same IDs as _s1]
 
   SeeAlso     []
 
@@ -240,22 +240,22 @@ Solver*
 SsatSolver::buildQestoSelector()
 {
    Solver * S = new Solver;
-   vec<Lit> uLits;
+   vec<Lit> sLits;
    
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
       while ( _rootVars[0][i] >= S->nVars() ) S->newVar();
    _claLits.growTo( _s1->nClauses() , lit_Undef );
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       Clause & c  = _s1->ca[_s1->clauses[i]];
-      uLits.clear();
+      sLits.clear();
       for ( int j = 0 ; j < c.size() ; ++j )
-         if ( isAVar(var(c[j])) || isRVar(var(c[j])) ) uLits.push(c[j]);
-      if ( uLits.size() > 1 ) { // allocate new selection var
+         if ( _level[var(c[j])] == 0 ) sLits.push(c[j]);
+      if ( sLits.size() > 1 ) { // allocate new selection var
          _claLits[i] = mkLit( S->newVar() );
-         addSelectCla( *S , _claLits[i] , uLits );
+         addSelectCla( *S , _claLits[i] , sLits );
       }
-      else if ( uLits.size() == 1 ) // reuse the forall var as selection var
-         _claLits[i] = ~uLits[0];
+      else if ( sLits.size() == 1 ) // reuse the lv.0 var as selection var
+         _claLits[i] = ~sLits[0];
    }
    return S;
 }

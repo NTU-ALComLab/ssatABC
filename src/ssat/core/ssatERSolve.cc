@@ -55,12 +55,14 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy )
 {
+   if ( _fVerbose ) {
+      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s\n" , 
+              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" );
+   }
    _s1->simplify();
-   _s2 = buildERSelector();
-   if ( _fVerbose ) printf( "  > Using %s for counting , partial = %s , subsume = %s\n" , 
-                            fBdd ? "bdd" : "cachet" , fPart ? "yes" : "no" , fSub ? "yes" : "no" );
+   _s2 = fGreedy ? buildQestoSelector() : buildERSelector();
    if ( fBdd ) initClauseNetwork();
    // TODO: initialize subsumption table
    if ( fSub ) buildSubsumeTable( *_s1 );
