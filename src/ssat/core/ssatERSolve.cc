@@ -88,6 +88,26 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          timer.timeS2 += Abc_Clock()-clk;
          ++timer.nS2solve;
       }
+      if ( fGreedy ) {
+         vec<Lit> block , assump;
+         block.capacity( _claLits.size() );
+         assump.capacity( _claLits.size() );
+         for (;;) {
+            block.clear();
+            assump.clear();
+            for ( int i = 0 ; i < _claLits.size() ; ++i ) {
+               if ( _claLits[i] == lit_Undef ) continue;
+               (_s2->modelValue(_claLits[i]) == l_True) ? block.push(~_claLits[i]) : assump.push(~_claLits[i]);
+            }
+            _s2->addClause( block );
+            if ( _fTimer ) clk = Abc_Clock();
+            if ( !_s2->solve(assump) ) { 
+               if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
+               break;
+            }
+            if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
+         }
+      }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( _fTimer ) clk = Abc_Clock();
