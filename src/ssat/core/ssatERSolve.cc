@@ -142,7 +142,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          // subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex , fSub );
          // update eLits from subsumeTable !
          // if ( fSub ) { updateBkBySubsume( eLits ); }
-         subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , totalSize );
+         subvalue  = fBdd ? clauseToNetwork( eLits , totalSize ) : countModels( eLits , totalSize );
          if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
             ++timer.nCachet;
@@ -176,7 +176,8 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             for(;;) {
                while ( !dropLit( parLits , ClasInd , --dropIndex , subvalue ) );
                if ( _fTimer ) clk = Abc_Clock();
-               subvalue = countModels( parLits , dropIndex );
+               //subvalue = countModels( parLits , dropIndex );
+               subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
                if ( _fTimer ) {
                   timer.timeCa += Abc_Clock()-clk;
                   ++timer.nCachet;
@@ -493,7 +494,8 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
    Solver * S = _s1;
 
    vec<bool> drop( _s1->nVars() , false );
-   for ( int i = dropIndex ; i < _rootVars[0].size() ; ++i ) drop[_rootVars[0][i]] = true;
+   //for ( int i = dropIndex ; i < _rootVars[0].size() ; ++i ) drop[_rootVars[0][i]] = true;
+   for ( int i = dropIndex ; i < assumps.size() ; ++i ) drop[var(assumps[i])] = true;
    
    // Handle case when solver is in contradictory state:
    if ( !S->ok ) {

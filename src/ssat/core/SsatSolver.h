@@ -150,8 +150,8 @@ private:
    void        initClauseNetwork  ();
    void        erNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkCreatePo      ( Abc_Ntk_t * );
-   double      clauseToNetwork    ();
-   Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * );
+   double      clauseToNetwork    ( const vec<Lit>& , int );
+   Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , const vec<Lit>& , int );
    void        erNtkPatchPoCheck  ( Abc_Ntk_t * , Abc_Obj_t * );
    double      erNtkBddComputeSp  ( Abc_Ntk_t * );
    // All-Sat enumeration-based model counting

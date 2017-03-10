@@ -427,12 +427,12 @@ SsatSolver::erNtkCreatePo( Abc_Ntk_t * pNtkClause )
 }
 
 double
-SsatSolver::clauseToNetwork()
+SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex )
 {
    Abc_Obj_t * pObj , * pObjCla;
    int i;
    Abc_NtkForEachNode( _pNtkCube , pObj , i ) Abc_NtkDeleteObj( pObj );
-   pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars );
+   pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars , eLits , dropIndex );
    if ( pObjCla ) {
       erNtkPatchPoCheck( _pNtkCube , pObjCla );
       return erNtkBddComputeSp( _pNtkCube );
@@ -441,17 +441,20 @@ SsatSolver::clauseToNetwork()
 }
 
 Abc_Obj_t*
-SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars )
+SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , int dropIndex )
 {
+   vec<bool> drop( _s1->nVars() , false );
    Abc_Obj_t * pObj , * pObjCla = NULL;
    int * pfCompl = new int[_s1->nVars()];
    char name[1024];
    bool select;
+
+   for ( int i = dropIndex ; i < eLits.size() ; ++i ) drop[var(eLits[i])] = true;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       select = true;
       Clause & c = _s1->ca[_s1->clauses[i]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+         if ( drop[var(c[j])] || isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
             select = false;
             break;
          }
