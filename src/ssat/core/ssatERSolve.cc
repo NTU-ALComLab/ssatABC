@@ -67,10 +67,12 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
    // TODO: initialize subsumption table
    if ( fSub ) buildSubsumeTable( *_s1 );
 
+   cout << "--------------------------------------\n";
+
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla , parLits;
    vec<int> ClasInd;
    double subvalue;
-   int dropIndex;
+   int dropIndex, totalSize;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = 0 , clk1 = Abc_Clock();
    for(;;) {
@@ -130,6 +132,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
       else { // SAT case
          if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
          dropIndex = eLits.size();
+         totalSize = eLits.size();
          if ( _s1->nClauses() == 0 ) {
             Abc_Print( -1 , "  > There is no clause left ...\n" );
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
@@ -137,7 +140,9 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          if ( _fTimer ) clk = Abc_Clock();
          // TODO: update countModels to handle subsumption
          // subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex , fSub );
-         subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , dropIndex );
+         // update eLits from subsumeTable !
+         // if ( fSub ) { updateBkBySubsume( eLits ); }
+         subvalue  = fBdd ? clauseToNetwork() : countModels( eLits , totalSize );
          if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
             ++timer.nCachet;
@@ -162,7 +167,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          parLits.clear();
          // TODO: update collectBkClaER to handle subsumption
          // collectBkClaER( sBkCla , ClasInd , dropIndex , fSub );
-         collectBkClaER( sBkCla , ClasInd , dropIndex );
+         collectBkClaER( sBkCla , ClasInd , dropIndex , fSub );
          if ( _fTimer ) fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
          sBkCla.copyTo( parLits );
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
@@ -194,6 +199,12 @@ Solver*
 SsatSolver::buildERSelector()
 {
    return buildAllSelector();
+}
+
+void
+SsatSolver::updateBkBySubsume( vec<Lit>& Lits )
+{
+  
 }
 
 bool
@@ -285,7 +296,7 @@ SsatSolver::collectParLits( vec<Lit> & parLits, vec<int> & ClasInd )
 }
 
 void
-SsatSolver::collectBkClaER( vec<Lit> & sBkCla , vec<int> & ClasInd , int dropIndex )
+SsatSolver::collectBkClaER( vec<Lit> & sBkCla , vec<int> & ClasInd , int dropIndex , bool fSub )
 {
    vec<bool> drop( _s1->nVars() , false );
    for ( int i = dropIndex ; i < _rootVars[0].size() ; ++i ) drop[_rootVars[0][i]] = true;
@@ -302,12 +313,37 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla , vec<int> & ClasInd , int dropInd
       }
       if ( block ) {
          ClasInd.push(i);
+         /*
          for ( int j = 0 ; j < c.size() ; ++j ) {
             // cout << ( sign(c[j]) ? "-": "" ) << var(c[j])+1 << " ";
             if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
                sBkCla.push (c[j]);
          }
+         */
          // cout << "\n";
+      }
+   }
+   bool subsume = false;
+   // dumpCla(*_s1);
+   for ( int i = 0 ; i < ClasInd.size() ; ++i ) {
+      Clause & c = _s1->ca[_s1->clauses[ClasInd[i]]];
+      if ( fSub ) {
+         subsume = false;
+         for ( set<int>::iterator it = _subsumeTable[ClasInd[i]].begin() ; it != _subsumeTable[ClasInd[i]].end() ; ++it ) {
+            for ( int j = 0 ; j < ClasInd.size(); ++j ) {
+               if ( ClasInd[j] == *it ) {
+                  subsume = true;
+                  // cout << " " << ClasInd[j] << " subsume " << i << '\n';
+                  break;
+               }
+            }
+            if ( subsume ) break;
+         }
+         if ( subsume ) continue;
+      }
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
+            sBkCla.push (c[j]);
       }
    }
    
@@ -539,7 +575,32 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
 void
 SsatSolver::buildSubsumeTable( Solver & S )
 {
+   // SubTbl            _subsumeTable;    // clause subsumption table
+   // typedef vec< std::set<int> > SubTbl;
    // TODO
+
+   int numOfClas = S.nClauses();
+   assert( numOfClas > 1 );
+   _subsumeTable.growTo( numOfClas );
+
+   for ( int i = 0 ; i < S.nClauses()-1 ; ++i ) {
+      Clause &c = S.ca[S.clauses[i]];
+      for ( int j = i + 1 ; j < S.nClauses() ; ++j ) {
+         if ( subsume ( c , S.ca[S.clauses[j]] ) ) {
+           _subsumeTable[i].insert(j);
+         }
+      }
+   }
+   /*
+   dumpCla( S );
+   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
+      cout << "  > Clause " << i << " is subsumed by : " << endl;
+      for ( set<int>::iterator it = _subsumeTable[i].begin() ; it != _subsumeTable[i].end() ; ++it ) {
+         cout << *it << ' ';
+      }
+      cout << "\n";
+   }
+   */
 }
 
 bool
@@ -590,8 +651,10 @@ bool
 SsatSolver::subsume( const Clause & c1 , const Clause & c2 ) const
 {
    // return true iff c2 subsumes c1
+   bool noRVar = true;
    for ( int i = 0 ; i < c2.size() ; ++i ) {
       if ( isEVar(var(c2[i])) ) continue;
+      noRVar = false;
       bool find = false;
       for ( int j = 0 ; j < c1.size() ; ++j ) {
          if ( isEVar(var(c1[j])) ) continue;
@@ -602,7 +665,7 @@ SsatSolver::subsume( const Clause & c1 , const Clause & c2 ) const
       }
       if ( !find ) return false;
    }
-   return true;
+   return !noRVar;
 }
 
 int

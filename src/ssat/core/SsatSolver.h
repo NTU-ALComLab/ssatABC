@@ -114,7 +114,7 @@ private:
    void        aSolve2SSAT        ( double , int , int , bool , bool );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
-   void        collectBkClaER     ( vec<Lit>& , vec<int>& , int );
+   void        collectBkClaER     ( vec<Lit>& , vec<int>& , int , bool );
    void        collectBkClaER     ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& , int ) const;
    void        collectParLits     ( vec<Lit>& , vec<int>& );
@@ -158,6 +158,7 @@ private:
    double      allSatModelCount   ( Solver * , const vec<Lit>& , double );
    // build the subsumption table
    void        buildSubsumeTable  ( Solver& );
+   void        updateBkBySubsume  ( vec<Lit>& );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;
