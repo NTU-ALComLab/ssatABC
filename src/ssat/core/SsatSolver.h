@@ -131,7 +131,7 @@ private:
    bool        checkSubsumption   ( Solver& ) const;
    bool        subsume            ( const Clause& , const Clause& ) const;
    int         getLearntClaLen    ( Solver& , const vec<int>& , const vec<bool>& ) const;
-   bool        dropLit            ( vec<Lit>& , vec<int>& , int , double& );
+   bool        dropLit            ( const vec<Lit>& , vec<int>& , int , double& );
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& , int );

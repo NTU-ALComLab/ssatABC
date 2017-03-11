@@ -168,10 +168,9 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
          if ( fPart && dropIndex >= 1 ) {
-#if 0
-            // set initial drop length
             if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
             else                             dropIndex -= 1;
+            while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
             if ( _fTimer ) clk = Abc_Clock();
             subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
             if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
@@ -185,8 +184,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
                }
                ++dropIndex;
             }
-            else { // fail, undo dropping 1 by 1
-               //dropIndex = sBkCla.size();
+            else { // fail, undo dropping 1 by 1 
                for (;;) {
                   ++dropIndex;
                   if ( _fTimer ) clk = Abc_Clock();
@@ -195,20 +193,6 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
                   if ( subvalue <= _satPb ) break;
                }
             }
-#else
-            for(;;) {
-               if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
-               while ( !dropLit( parLits , ClasInd , --dropIndex , subvalue ) );
-               if ( _fTimer ) clk = Abc_Clock();
-               subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
-               if ( _fTimer ) {
-                  timer.timeCa += Abc_Clock()-clk;
-                  ++timer.nCachet;
-               }
-               if ( subvalue > _satPb ) break;
-            }
-            ++dropIndex; // FIXME: bug!!! could be over dropped!!!
-#endif
          }
          sBkCla.clear();
          for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
@@ -217,8 +201,8 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             timer.lenPartial += sBkCla.size();
             if ( fDynamic ) {
                timer.lenDrop += beforeDrop - sBkCla.size();
-               if ( !timer.avgDone ) printf( "  > %d-th s2 solving, current avg drop = %f\n" , timer.nS2solve , timer.lenDrop / timer.nS2solve );
-               if ( !timer.avgDone && timer.nS2solve > 500 ) { // 500 is a magic number: tune it!
+               //if ( !timer.avgDone ) printf( "  > %d-th s2 solving, current avg drop = %f\n" , timer.nS2solve , timer.lenDrop / timer.nS2solve );
+               if ( !timer.avgDone && timer.nS2solve >= 500 ) { // 500 is a magic number: tune it!
                   timer.avgDone = true;
                   timer.avgDrop = (int)(timer.lenDrop / timer.nS2solve);
                   printf( "  > average done, avg drop = %d\n" , timer.avgDrop );
@@ -243,7 +227,7 @@ SsatSolver::updateBkBySubsume( vec<Lit>& Lits )
 }
 
 bool
-SsatSolver::dropLit( vec<Lit>& parLits, vec<int>& ClasInd, int dropIndex, double& subvalue )
+SsatSolver::dropLit( const vec<Lit>& parLits, vec<int>& ClasInd, int dropIndex, double& subvalue )
 {
    bool dropCla;
    double claValue;

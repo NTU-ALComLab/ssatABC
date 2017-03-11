@@ -192,7 +192,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    fPart    = true;
    fSub     = false;
    fGreedy  = true;
-   fDynamic = false;
+   fDynamic = true;
    fVerbose = true;
    fTimer   = true;
    Extra_UtilGetoptReset();
