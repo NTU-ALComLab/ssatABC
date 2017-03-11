@@ -168,8 +168,37 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
          if ( fPart && dropIndex >= 1 ) {
+#if 1
+            // set initial drop length
+            if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
+            else                             dropIndex -= 1;
+            if ( _fTimer ) clk = Abc_Clock();
+            subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
+            if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+            if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
+               for (;;) {
+                  --dropIndex;
+                  if ( _fTimer ) clk = Abc_Clock();
+                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
+                  if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+                  if ( subvalue > _satPb ) break;
+               }
+               ++dropIndex;
+            }
+            else { // fail, undo dropping 1 by 1
+               //dropIndex = sBkCla.size();
+               for (;;) {
+                  ++dropIndex;
+                  if ( _fTimer ) clk = Abc_Clock();
+                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
+                  if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+                  if ( subvalue <= _satPb ) break;
+               }
+            }
+#else
             for(;;) {
-               if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
+               if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop-1;
+               //else                             dropIndex -= 1;
                while ( !dropLit( parLits , ClasInd , --dropIndex , subvalue ) );
                if ( _fTimer ) clk = Abc_Clock();
                subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
@@ -180,6 +209,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
                if ( subvalue > _satPb ) break;
             }
             ++dropIndex; // FIXME: bug!!! could be over dropped!!!
+#endif
          }
          sBkCla.clear();
          for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
