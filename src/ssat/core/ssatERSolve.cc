@@ -70,7 +70,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla , parLits;
    vec<int> ClasInd;
    double subvalue;
-   int dropIndex, totalSize;
+   int dropIndex , totalSize , beforeDrop = 0;
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    abctime clk = 0 , clk1 = Abc_Clock();
    for(;;) {
@@ -160,12 +160,16 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          ClasInd.clear();
          parLits.clear();
          collectBkClaER( sBkCla , ClasInd , dropIndex , fSub );
-         if ( _fTimer ) fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
+         if ( _fTimer ) {
+            fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
+            if ( fDynamic ) beforeDrop = sBkCla.size();
+         }
          sBkCla.copyTo( parLits );
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
          if ( fPart && dropIndex >= 1 ) {
             for(;;) {
+               if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
                while ( !dropLit( parLits , ClasInd , --dropIndex , subvalue ) );
                if ( _fTimer ) clk = Abc_Clock();
                subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
@@ -175,12 +179,23 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
                }
                if ( subvalue > _satPb ) break;
             }
-            ++dropIndex;
+            ++dropIndex; // FIXME: bug!!! could be over dropped!!!
          }
          sBkCla.clear();
          for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
          _s2->addClause( sBkCla );
-         if ( _fTimer ) timer.lenPartial += sBkCla.size();
+         if ( _fTimer ) {
+            timer.lenPartial += sBkCla.size();
+            if ( fDynamic ) {
+               timer.lenDrop += beforeDrop - sBkCla.size();
+               if ( !timer.avgDone ) printf( "  > %d-th s2 solving, current avg drop = %f\n" , timer.nS2solve , timer.lenDrop / timer.nS2solve );
+               if ( !timer.avgDone && timer.nS2solve > 500 ) { // 500 is a magic number: tune it!
+                  timer.avgDone = true;
+                  timer.avgDrop = (int)(timer.lenDrop / timer.nS2solve);
+                  printf( "  > average done, avg drop = %d\n" , timer.avgDrop );
+               }
+            }
+         }
       }
       if ( _fTimer ) ++timer.nS1solve;
    }

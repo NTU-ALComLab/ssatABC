@@ -65,6 +65,10 @@ typedef struct SsatTimer_ {
    double lenBase;     // total length of base learnt clause
    double lenPartial;  // total length of partial learnt clause
    double lenSubsume;  // total length of subsume learnt clause
+   double lenDrop;     // total length of dropped literals
+   // for dynamic dropping
+   bool avgDone; // indicates average done
+   int  avgDrop; // average dropped literals
 } SsatTimer;
 
 //=================================================================================================

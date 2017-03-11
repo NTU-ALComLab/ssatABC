@@ -113,6 +113,9 @@ initTimer( SsatTimer * pTimer )
    pTimer->lenBase    = 0.0;
    pTimer->lenPartial = 0.0;
    pTimer->lenSubsume = 0.0;
+   pTimer->lenDrop    = 0.0;
+   pTimer->avgDone    = false;
+   pTimer->avgDrop    = 0;
 }
 
 void
@@ -132,6 +135,7 @@ printTimer( SsatTimer * pTimer )
    Abc_Print( -2 , "  > Average length of learnt (base)     = %10f\n" , pTimer->lenBase    / pTimer->nS2solve );
    Abc_Print( -2 , "  > Average length of learnt (partial)  = %10f\n" , pTimer->lenPartial / pTimer->nS2solve );
    Abc_Print( -2 , "  > Average length of learnt (subsume)  = %10f\n" , pTimer->lenSubsume / pTimer->nS2solve );
+   Abc_Print( -2 , "  > Average number of dropped literals  = %10f\n" , pTimer->lenDrop / pTimer->nS2solve );
 }
 
 /**Function*************************************************************
