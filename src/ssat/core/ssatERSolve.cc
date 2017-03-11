@@ -168,7 +168,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
          if ( fPart && dropIndex >= 1 ) {
-#if 1
+#if 0
             // set initial drop length
             if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
             else                             dropIndex -= 1;
@@ -197,8 +197,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             }
 #else
             for(;;) {
-               if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop-1;
-               //else                             dropIndex -= 1;
+               if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
                while ( !dropLit( parLits , ClasInd , --dropIndex , subvalue ) );
                if ( _fTimer ) clk = Abc_Clock();
                subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
