@@ -55,11 +55,11 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic )
 {
    if ( _fVerbose ) {
-      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s\n" , 
-              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" );
+      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s , dynamic = %s\n" , 
+              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" , fDynamic ? "yes":"no" );
    }
    _s1->simplify();
    _s2 = fGreedy ? buildQestoSelector() : buildERSelector();

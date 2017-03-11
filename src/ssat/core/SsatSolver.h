@@ -79,7 +79,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat( double , int , int , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        solveSsat( double , int , int , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
    // ER-2-Ssat solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
    double      upperBound() const { return 1.0 - _unsatPb; }
@@ -98,7 +98,7 @@ private:
    // solve interface
    void        qSolve             ( double , int , int , bool ); // Qesto-like solve
    void        aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
-   void        erSolve2SSAT       ( bool , bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
+   void        erSolve2SSAT       ( bool , bool , bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
