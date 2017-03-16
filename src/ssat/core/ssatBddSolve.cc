@@ -214,6 +214,7 @@ SsatSolver::buildBddFromNtk( bool fGroup , bool fReorder )
 void
 SsatSolver::computeSsatBdd()
 {
+   if ( _fVerbose ) printf( "  > Compute SSAT value on Bdd:\n" );
    Abc_Obj_t * pObj;
    int i;
    DdNode * bFunc;
@@ -225,11 +226,11 @@ SsatSolver::computeSsatBdd()
       printf( "  > %d-th Pi, name = %s , quan = %f\n" , i , Abc_ObjName(pObj) , pObj->dTemp );
    bFunc = (DdNode*)Abc_ObjGlobalBdd( Abc_NtkPo( _pNtkCnf , 0 ) );
 	Pb_BddResetProb( _dd , bFunc );
-   //Ssat_BddComputeProb_rec( _pNtkCnf , bFunc , _rootVars[0].size() , Cudd_IsComplement(bFunc) );
-   BddComputeSsat_rec( _pNtkCnf , bFunc , Cudd_IsComplement( bFunc ) );
+   Ssat_BddComputeProb_rec( _pNtkCnf , bFunc , _rootVars[0].size() , Cudd_IsComplement(bFunc) );
+   //BddComputeSsat_rec( _pNtkCnf , bFunc , Cudd_IsComplement( bFunc ) );
    _satPb = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
-   for ( int i = 0 ; i < Abc_NtkPiNum(_pNtkCnf) ; ++i )
-      printf( "  > %d-th var --> %d pi\n" , i , Cudd_ReadInvPerm( _dd , i ) );
+   //for ( int i = 0 ; i < Abc_NtkPiNum(_pNtkCnf) ; ++i )
+     // printf( "  > %d-th var --> %d pi\n" , i , Cudd_ReadInvPerm( _dd , i ) );
 }
 
 ////////////////////////////////////////////////////////////////////////

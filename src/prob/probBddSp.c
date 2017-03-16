@@ -805,7 +805,7 @@ BddComputeSsat_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int fNot )
 
 	if ( Cudd_IsConstant( bFunc ) ) return Cudd_IsComplement( bFunc ) ? 0.0 : 1.0;
 	if ( Cudd_Regular( bFunc )->pMax == -1.0 ) { // unvisited node
-		printf( "  > %d-th Pi , quan = %f\n" , numPi , Abc_NtkPi(pNtk,numPi)->dTemp );
+		//printf( "  > %d-th Pi , quan = %f\n" , numPi , Abc_NtkPi(pNtk,numPi)->dTemp );
       if ( Abc_NtkPi( pNtk , numPi )->dTemp == -1.0 ) {
          if ( fNot ) { // forall var -> min
 	         pThenMin = BddComputeSsat_rec( pNtk , Cudd_T( bFunc ) , fNot ); 
