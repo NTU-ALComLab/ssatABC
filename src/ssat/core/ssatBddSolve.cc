@@ -37,6 +37,9 @@ extern "C" {
    Abc_Ntk_t * Abc_NtkDC2( Abc_Ntk_t * , int , int , int , int , int );
    DdManager * Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
    int         Pb_BddShuffleGroup        ( DdManager * , int , int );
+   void        Pb_BddResetProb           ( DdManager * , DdNode * );
+   float       BddComputeSsat_rec        ( Abc_Ntk_t * , DdNode * , int );
+   float       Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int , int );
 }
 extern Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
 extern void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
@@ -64,6 +67,7 @@ SsatSolver::bddSolveSsat( bool fGroup , bool fReorder )
       printf( "  > grouping = %s , reordering = %s\n" , fGroup?"yes":"no", fReorder?"yes":"no" );
    initCnfNetwork();
    buildBddFromNtk( fGroup , fReorder );
+   computeSsatBdd();
 }
 
 /**Function*************************************************************
@@ -99,11 +103,11 @@ SsatSolver::initCnfNetwork()
       Abc_NtkDelete( pNtkSop );
       exit(1);
    }
-   //Ssat_DumpCubeNtk( pNtkSop );
+   Ssat_DumpCubeNtk( pNtkSop );
    //Abc_NtkForEachPi( pNtkSop , pObj , i  )
      // printf( "  > %d-th Pi , name = %s\n" , i , Abc_ObjName(pObj) );
    _pNtkCnf = Abc_NtkStrash( pNtkSop , 0 , 1 , 0 );
-   _pNtkCnf = Abc_NtkDC2( _pNtkCnf , 0 , 0 , 1 , 0 , 0 );
+   //_pNtkCnf = Abc_NtkDC2( _pNtkCnf , 0 , 0 , 1 , 0 , 0 );
    //Abc_NtkForEachPi( _pNtkCnf , pObj , i  )
      // printf( "  > %d-th Pi , name = %s\n" , i , Abc_ObjName(pObj) );
    Abc_NtkDelete( pNtkSop );
@@ -151,7 +155,7 @@ void
 SsatSolver::cnfNtkCreatePo( Abc_Ntk_t * pNtkCnf , Abc_Obj_t * pObjCla )
 {
    Abc_ObjAssignName( Abc_NtkCreatePo(pNtkCnf) , "clause_output" , "" );
-   Abc_ObjAddFanin( Abc_NtkPo( pNtkCnf , 0 ) , pObjCla );
+   Abc_ObjAddFanin( Abc_NtkPo( pNtkCnf , 0 ) , Abc_ObjRegular(pObjCla) );
 }
 
 /**Function*************************************************************
@@ -193,6 +197,39 @@ SsatSolver::buildBddFromNtk( bool fGroup , bool fReorder )
 	      exit(-1);
       }
    }
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Compute Ssat value by traversing bdd.]
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::computeSsatBdd()
+{
+   Abc_Obj_t * pObj;
+   int i;
+   DdNode * bFunc;
+
+   for ( int i = 0 ; i < _rootVars.size() ; ++i )
+      for ( int j = 0 ; j < _rootVars[i].size() ; ++j )
+         Abc_NtkPi( _pNtkCnf , _varToPi[_rootVars[i][j]] )->dTemp = (float)_quan[_rootVars[i][j]];
+	Abc_NtkForEachPi( _pNtkCnf , pObj , i )
+      printf( "  > %d-th Pi, name = %s , quan = %f\n" , i , Abc_ObjName(pObj) , pObj->dTemp );
+   bFunc = (DdNode*)Abc_ObjGlobalBdd( Abc_NtkPo( _pNtkCnf , 0 ) );
+	Pb_BddResetProb( _dd , bFunc );
+   //Ssat_BddComputeProb_rec( _pNtkCnf , bFunc , _rootVars[0].size() , Cudd_IsComplement(bFunc) );
+   BddComputeSsat_rec( _pNtkCnf , bFunc , Cudd_IsComplement( bFunc ) );
+   _satPb = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
+   for ( int i = 0 ; i < Abc_NtkPiNum(_pNtkCnf) ; ++i )
+      printf( "  > %d-th var --> %d pi\n" , i , Cudd_ReadInvPerm( _dd , i ) );
 }
 
 ////////////////////////////////////////////////////////////////////////

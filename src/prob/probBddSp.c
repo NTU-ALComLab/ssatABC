@@ -45,16 +45,15 @@ void  Pb_BddComputeAllSp                    ( Abc_Ntk_t * , int , int , int );
 // helpers
 DdManager* Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
 int        Pb_BddShuffleGroup        ( DdManager * , int , int );
+void       Pb_BddResetProb           ( DdManager * , DdNode * );
+float      BddComputeSsat_rec        ( Abc_Ntk_t * , DdNode * , int );
+float      Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int , int );
 static DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
 static DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
-static void       Pb_BddResetProb           ( DdManager * , DdNode * );
 static void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int , int );
 static float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int , int );
-static float      Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int , int );
 static void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
 static void       Pb_BddPrintExSol          ( Abc_Ntk_t * , DdNode * , int , int );
-
-   
 static void       Nz_DebugBdd( DdNode * bFunc );
 
 ////////////////////////////////////////////////////////////////////////
@@ -783,10 +782,63 @@ Ssat_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numRand , int f
 	   return fComp ? 1.0-Cudd_Regular( bFunc )->pMin : Cudd_Regular( bFunc )->pMax;
 }
 
+/**Function*************************************************************
+
+  Synopsis    [Compute SSAT value on BDD.]
+
+  Description [For general SSAT.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+float
+BddComputeSsat_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int fNot )
+{
+	float prob , pThenMax , pElseMax , pThenMin , pElseMin;
+	int numPi , fComp;
+	
+	numPi = Cudd_Regular( bFunc )->index;
+   fComp = Cudd_IsComplement( bFunc );
+
+	if ( Cudd_IsConstant( bFunc ) ) return Cudd_IsComplement( bFunc ) ? 0.0 : 1.0;
+	if ( Cudd_Regular( bFunc )->pMax == -1.0 ) { // unvisited node
+		printf( "  > %d-th Pi , quan = %f\n" , numPi , Abc_NtkPi(pNtk,numPi)->dTemp );
+      if ( Abc_NtkPi( pNtk , numPi )->dTemp == -1.0 ) {
+         if ( fNot ) { // forall var -> min
+	         pThenMin = BddComputeSsat_rec( pNtk , Cudd_T( bFunc ) , fNot ); 
+	         pElseMin = BddComputeSsat_rec( pNtk , Cudd_E( bFunc ) , fNot );
+			   pThenMax = Cudd_IsComplement(Cudd_T(bFunc)) ? 1.0-Cudd_Regular(Cudd_T(bFunc))->pMin : Cudd_Regular(Cudd_T(bFunc))->pMax;
+			   pElseMax = Cudd_IsComplement(Cudd_E(bFunc)) ? 1.0-Cudd_Regular(Cudd_E(bFunc))->pMin : Cudd_Regular(Cudd_E(bFunc))->pMax;
+         }
+         else { // exist var -> max
+	         pThenMax = BddComputeSsat_rec( pNtk , Cudd_T( bFunc ) , fNot ); 
+	         pElseMax = BddComputeSsat_rec( pNtk , Cudd_E( bFunc ) , fNot );
+			   pThenMin = Cudd_IsComplement(Cudd_T(bFunc)) ? 1.0-Cudd_Regular(Cudd_T(bFunc))->pMax : Cudd_Regular(Cudd_T(bFunc))->pMin;
+			   pElseMin = Cudd_IsComplement(Cudd_E(bFunc)) ? 1.0-Cudd_Regular(Cudd_E(bFunc))->pMax : Cudd_Regular(Cudd_E(bFunc))->pMin;
+         }
+		   Cudd_Regular( bFunc )->pMax = ( pThenMax >= pElseMax ) ? pThenMax : pElseMax;
+		   Cudd_Regular( bFunc )->pMin = ( pThenMin <= pElseMin ) ? pThenMin : pElseMin;
+		   Cudd_Regular( bFunc )->cMax = ( pThenMax >= pElseMax ) ? 1 : 0;
+		   Cudd_Regular( bFunc )->cMin = ( pThenMin <= pElseMin ) ? 1 : 0;
+		}
+		else { // random var -> avg
+	      prob  = Abc_NtkPi( pNtk , numPi )->dTemp;
+		   Cudd_Regular( bFunc )->pMax = Cudd_Regular( bFunc )->pMin = 
+				                           prob        * BddComputeSsat_rec( pNtk , Cudd_T( bFunc ) , fNot ) +
+		                                 (1.0-prob)  * BddComputeSsat_rec( pNtk , Cudd_E( bFunc ) , fNot );
+		}
+	}
+   if ( fNot ) // the negation of the cnf formula is built: exist --> forall quantified!
+	   return fComp ? 1.0-Cudd_Regular( bFunc )->pMax : Cudd_Regular( bFunc )->pMin;
+   else
+	   return fComp ? 1.0-Cudd_Regular( bFunc )->pMin : Cudd_Regular( bFunc )->pMax;
+}
+
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
 
-
 ABC_NAMESPACE_IMPL_END
-

@@ -328,7 +328,7 @@ SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    bool fGroup , fReorder;
 
    fGroup   = false;
-   fReorder = true;
+   fReorder = false;
    Extra_UtilGetoptReset();
    while ( ( c = Extra_UtilGetopt( argc, argv, "grh" ) ) != EOF )
    {

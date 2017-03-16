@@ -168,6 +168,7 @@ private:
    Abc_Obj_t * cnfNtkCreateNode   ( Abc_Ntk_t * , const vec<int>& );
    void        cnfNtkCreatePo     ( Abc_Ntk_t * , Abc_Obj_t * );
    void        buildBddFromNtk    ( bool , bool );
+   void        computeSsatBdd     ();
    // build the subsumption table
    void        buildSubsumeTable  ( Solver& );
    void        updateBkBySubsume  ( vec<Lit>& );
