@@ -30,7 +30,7 @@ extern "C" {
    int         Abc_NtkDSat     ( Abc_Ntk_t * , ABC_INT64_T , ABC_INT64_T , int , int , int , int , int , int , int );
 };
 // helper functions
-static Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
+Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
 static Abc_Obj_t * Ssat_SopOr2Obj    ( Abc_Obj_t * , Abc_Obj_t * );
 static void        Pb_WriteWMCCla    ( FILE * , Abc_Ntk_t * );
 static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );

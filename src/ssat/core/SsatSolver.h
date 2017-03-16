@@ -164,7 +164,10 @@ private:
    double      allSatModelCount   ( Solver * , const vec<Lit>& , double );
    // Bdd solving subroutines
    void        initCnfNetwork     ();
-   void        buildBddFromNtk    ();
+   void        cnfNtkCreatePi     ( Abc_Ntk_t * , vec<int>& );
+   Abc_Obj_t * cnfNtkCreateNode   ( Abc_Ntk_t * , const vec<int>& );
+   void        cnfNtkCreatePo     ( Abc_Ntk_t * , Abc_Obj_t * );
+   void        buildBddFromNtk    ( bool , bool );
    // build the subsumption table
    void        buildSubsumeTable  ( Solver& );
    void        updateBkBySubsume  ( vec<Lit>& );
@@ -212,7 +215,7 @@ private:
    // data members for bdd solving
    Abc_Ntk_t       * _pNtkCnf;         // ckt from cnf
    DdManager       * _dd;              // bdd from ckt
-   vec<int>          _varToPi;         // var -> Pi mapping
+   vec<int>          _varToPi;         // Var --> Pi id
 };
 
 // Implementation of inline methods:
