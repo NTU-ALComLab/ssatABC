@@ -29,6 +29,7 @@ extern "C" void Ssat_End  ( Abc_Frame_t * );
 
 // commands
 static int SsatCommandSSAT         ( Abc_Frame_t * pAbc , int argc , char ** argv );
+static int SsatCommandBddSSAT      ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int SsatCommandBranchBound  ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int SsatCommandCktBddsp     ( Abc_Frame_t * pAbc , int argc , char ** argv );
 static int SsatCommandTest         ( Abc_Frame_t * pAbc , int argc , char ** argv );
@@ -72,6 +73,7 @@ Ssat_Init( Abc_Frame_t * pAbc )
    signal( SIGINT  , sig_handler );
    signal( SIGTERM , sig_handler );
    Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"        , SsatCommandSSAT        , 0 );
+   Cmd_CommandAdd( pAbc , "z SSAT" , "bddssat"     , SsatCommandBddSSAT     , 0 );
    Cmd_CommandAdd( pAbc , "z SSAT" , "branchbound" , SsatCommandBranchBound , 1 );
    Cmd_CommandAdd( pAbc , "z SSAT" , "cktbddsp"    , SsatCommandCktBddsp    , 1 );
    Cmd_CommandAdd( pAbc , "z SSAT" , "ssat_test"   , SsatCommandTest        , 0 );
@@ -300,6 +302,78 @@ usage:
    Abc_Print( -2 , "\t-d        : toggles using dynamic dropping, default=%s\n" , fDynamic ? "yes" : "no" );
    Abc_Print( -2 , "\t-v        : toggles verbose information, default=%s\n" , fVerbose ? "yes" : "no" );
    Abc_Print( -2 , "\t-t        : toggles runtime information, default=%s\n" , fTimer ? "yes" : "no" );
+   Abc_Print( -2 , "\t-h        : prints the command summary\n" );
+   Abc_Print( -2 , "\tfile      : the sdimacs file\n" );
+   return 1;
+}
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+int 
+SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
+{
+   SsatSolver * pSsat;
+   gzFile in;
+   int c;
+   bool fGroup , fReorder;
+
+   fGroup   = false;
+   fReorder = false;
+   Extra_UtilGetoptReset();
+   while ( ( c = Extra_UtilGetopt( argc, argv, "grh" ) ) != EOF )
+   {
+      switch ( c )
+      {
+         case 'g':
+            fGroup ^= 1;
+            break;
+         case 'r':
+            fReorder ^= 1;
+            break;
+         case 'h':
+            goto usage;
+         default:
+            goto usage;
+      }
+   }
+   if ( argc != globalUtilOptind + 1 ) {
+      Abc_Print( -1 , "Missing ssat file!\n" );
+      goto usage;
+   }
+   in = gzopen( argv[globalUtilOptind] , "rb" );
+   if ( in == Z_NULL ) {
+      Abc_Print( -1 , "There is no ssat file %s\n" , argv[globalUtilOptind] );
+      return 1;
+   }
+   gloSsat = pSsat = new SsatSolver( true , false );
+   pSsat->readSSAT(in);
+   gzclose(in);
+   gloClk = Abc_Clock();
+   Abc_Print( -2 , "\n==== Bdd SSAT solving process ====\n" );
+   pSsat->bddSolveSsat( fGroup , fReorder );
+   Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
+   Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
+   Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
+   Abc_PrintTime( 1 , "  > Time       " , Abc_Clock() - gloClk );
+   delete pSsat;
+   gloSsat = NULL;
+   return 0;
+
+usage:
+   Abc_Print( -2 , "usage: bddssat [-grh] <file>\n" );
+   Abc_Print( -2 , "\t        Solve SSAT by BDD\n" );
+   Abc_Print( -2 , "\t-g        : toggles using grouping (only for 2SSAT), default=%s\n" , fGroup ? "yes" : "no" );
+   Abc_Print( -2 , "\t-r        : toggles using reordering, default=%s\n" , fReorder ? "yes" : "no" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );
    Abc_Print( -2 , "\tfile      : the sdimacs file\n" );
    return 1;

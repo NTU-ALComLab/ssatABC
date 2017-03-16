@@ -154,6 +154,7 @@ alias pmt "probmiter"
 
 # ssat alias
 alias ss "ssat"
+alias bs "bddssat"
 alias cb "cktbddsp"
 alias bb "branchbound"
 alias sst "ssat_test"

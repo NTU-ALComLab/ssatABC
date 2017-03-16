@@ -78,12 +78,14 @@ class SsatSolver {
 
 public:
    // Constructor/Destructor:
-   SsatSolver( bool fVerbose = false , bool fTimer = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) { _fVerbose = fVerbose; _fTimer = fTimer;}
+   SsatSolver( bool fVerbose = false , bool fTimer = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) 
+   { _fVerbose = fVerbose; _fTimer = fTimer; _pNtkCnf = NULL; _dd = NULL; }
    ~SsatSolver();
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat( double , int , int , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        solveSsat    ( double , int , int , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        bddSolveSsat ( bool , bool ); // Solve SSAT by bdd
    // ER-2-Ssat solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
    double      upperBound() const { return 1.0 - _unsatPb; }
@@ -160,6 +162,9 @@ private:
    double      erNtkBddComputeSp  ( Abc_Ntk_t * );
    // All-Sat enumeration-based model counting
    double      allSatModelCount   ( Solver * , const vec<Lit>& , double );
+   // Bdd solving subroutines
+   void        initCnfNetwork     ();
+   void        buildBddFromNtk    ();
    // build the subsumption table
    void        buildSubsumeTable  ( Solver& );
    void        updateBkBySubsume  ( vec<Lit>& );
@@ -204,6 +209,10 @@ private:
    int               _lowerLimit;      // number of SAT cubes to invoke network construction
    vec<Lit>          _erModel;         // optimizer for ER-2SSAT
    vec<Var>          _control;         // control variables for model counting
+   // data members for bdd solving
+   Abc_Ntk_t       * _pNtkCnf;         // ckt from cnf
+   DdManager       * _dd;              // bdd from ckt
+   vec<int>          _varToPi;         // var -> Pi mapping
 };
 
 // Implementation of inline methods:

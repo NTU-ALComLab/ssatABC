@@ -5,4 +5,5 @@ SRC +=  src/ssat/core/ssat.cc \
         src/ssat/core/ssatAllSolve.cc \
         src/ssat/core/ssatERSolve.cc \
         src/ssat/core/ssatModelCount.cc \
-        src/ssat/core/ssatBranchBound.cc
+        src/ssat/core/ssatBranchBound.cc \
+        src/ssat/core/ssatBddSolve.cc

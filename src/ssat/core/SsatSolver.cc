@@ -66,6 +66,14 @@ SsatSolver::~SsatSolver()
       Abc_NtkDelete( _pNtkCube );
       _pNtkCube = NULL;
    }
+   if ( _pNtkCnf ) {
+      if ( _dd ) {
+         Abc_NtkFreeGlobalBdds( _pNtkCnf , 1 );
+         _dd = NULL;
+      }
+      Abc_NtkDelete( _pNtkCnf );
+      _pNtkCnf = NULL;
+   }
    if ( _vMapVars ) {
       Vec_PtrFree( _vMapVars );
       _vMapVars = NULL;
