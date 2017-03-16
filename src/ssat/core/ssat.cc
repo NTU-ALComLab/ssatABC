@@ -328,7 +328,7 @@ SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    bool fGroup , fReorder;
 
    fGroup   = false;
-   fReorder = false;
+   fReorder = true;
    Extra_UtilGetoptReset();
    while ( ( c = Extra_UtilGetopt( argc, argv, "grh" ) ) != EOF )
    {
@@ -365,6 +365,7 @@ SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time       " , Abc_Clock() - gloClk );
+   printf( "\n" );
    delete pSsat;
    gloSsat = NULL;
    return 0;

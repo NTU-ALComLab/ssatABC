@@ -31,9 +31,9 @@ extern "C" {
 };
 // helper functions
 Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
+void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 static Abc_Obj_t * Ssat_SopOr2Obj    ( Abc_Obj_t * , Abc_Obj_t * );
 static void        Pb_WriteWMCCla    ( FILE * , Abc_Ntk_t * );
-static void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///

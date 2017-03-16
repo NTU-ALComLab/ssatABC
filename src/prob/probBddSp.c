@@ -43,16 +43,16 @@ float Pb_BddComputeSp                       ( Abc_Ntk_t * , int , int , int , in
 float Pb_BddComputeRESp                     ( Abc_Ntk_t * , int , int , int , int );
 void  Pb_BddComputeAllSp                    ( Abc_Ntk_t * , int , int , int );
 // helpers
+DdManager* Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
+int        Pb_BddShuffleGroup        ( DdManager * , int , int );
 static DdManager* Pb_NtkBuildGlobalBdds     ( Abc_Ntk_t * , int , int );
 static DdManager* Abc_NtkPoBuildGlobalBdd   ( Abc_Ntk_t * , int , int , int );
-static DdManager* Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
 static void       Pb_BddResetProb           ( DdManager * , DdNode * );
 static void       Pb_BddComputeProb         ( Abc_Ntk_t * , DdNode * , int , int );
 static float      Pb_BddComputeProb_rec     ( Abc_Ntk_t * , DdNode * , int , int );
 static float      Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int , int );
 static void       Pb_BddPrintProb           ( Abc_Ntk_t * , DdNode * , int );
 static void       Pb_BddPrintExSol          ( Abc_Ntk_t * , DdNode * , int , int );
-static int        Pb_BddShuffleGroup        ( DdManager * , int , int );
 
    
 static void       Nz_DebugBdd( DdNode * bFunc );
