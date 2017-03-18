@@ -740,6 +740,7 @@ Ssat_NtkPoBuildGlobalBdd( Abc_Ntk_t * pNtk , int numPo , int numRand , int fGrp 
 
 ***********************************************************************/
 
+// FIXME: this is buggy!!! See BddComputeSsat_rec
 float
 Ssat_BddComputeProb_rec( Abc_Ntk_t * pNtk , DdNode * bFunc , int numRand , int fNot )
 {

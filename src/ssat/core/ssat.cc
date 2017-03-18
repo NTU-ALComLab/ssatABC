@@ -325,12 +325,15 @@ SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    SsatSolver * pSsat;
    gzFile in;
    int c;
-   bool fGroup , fReorder;
+   bool fGroup , fReorder , fVerbose , fTimer;
 
    fGroup   = false;
    fReorder = false;
+   fVerbose = true;
+   fTimer   = true;
+   
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "grh" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "grvth" ) ) != EOF )
    {
       switch ( c )
       {
@@ -339,6 +342,12 @@ SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
             break;
          case 'r':
             fReorder ^= 1;
+            break;
+         case 'v':
+            fVerbose ^= 1;
+            break;
+         case 't':
+            fTimer ^= 1;
             break;
          case 'h':
             goto usage;
@@ -355,7 +364,7 @@ SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
       Abc_Print( -1 , "There is no ssat file %s\n" , argv[globalUtilOptind] );
       return 1;
    }
-   gloSsat = pSsat = new SsatSolver( true , false );
+   gloSsat = pSsat = new SsatSolver( fVerbose , fTimer );
    pSsat->readSSAT(in);
    gzclose(in);
    gloClk = Abc_Clock();
@@ -368,6 +377,8 @@ SsatCommandBddSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    printf( "\n" );
    delete pSsat;
    gloSsat = NULL;
+   if ( fTimer ) printTimer( &timer );
+   printf( "\n" );
    return 0;
 
 usage:
@@ -375,6 +386,8 @@ usage:
    Abc_Print( -2 , "\t        Solve SSAT by BDD\n" );
    Abc_Print( -2 , "\t-g        : toggles using grouping (only for 2SSAT), default=%s\n" , fGroup ? "yes" : "no" );
    Abc_Print( -2 , "\t-r        : toggles using reordering, default=%s\n" , fReorder ? "yes" : "no" );
+   Abc_Print( -2 , "\t-v        : toggles verbose information, default=%s\n" , fVerbose ? "yes" : "no" );
+   Abc_Print( -2 , "\t-t        : toggles runtime information, default=%s\n" , fTimer ? "yes" : "no" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );
    Abc_Print( -2 , "\tfile      : the sdimacs file\n" );
    return 1;
