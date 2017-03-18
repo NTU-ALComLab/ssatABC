@@ -35,11 +35,15 @@ using namespace std;
 
 extern "C" {
    Abc_Ntk_t * Abc_NtkDC2( Abc_Ntk_t * , int , int , int , int , int );
+   Abc_Ntk_t * Abc_NtkFromGlobalBdds( Abc_Ntk_t * );
+   void        Abc_NodeShowBdd( Abc_Obj_t * );
+   void        Abc_NtkShow( Abc_Ntk_t * , int , int , int );
    DdManager * Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
    int         Pb_BddShuffleGroup        ( DdManager * , int , int );
    void        Pb_BddResetProb           ( DdManager * , DdNode * );
-   float       BddComputeSsat_rec        ( Abc_Ntk_t * , DdNode * , int );
+   void        BddComputeSsat_rec        ( Abc_Ntk_t * , DdNode * );
    float       Ssat_BddComputeProb_rec   ( Abc_Ntk_t * , DdNode * , int , int );
+   void        Nz_DebugBdd               ( DdNode * );
 }
 extern Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
 extern void        Ssat_DumpCubeNtk  ( Abc_Ntk_t * );
@@ -64,10 +68,15 @@ void
 SsatSolver::bddSolveSsat( bool fGroup , bool fReorder )
 {
    if ( _fVerbose )
-      printf( "  > grouping = %s , reordering = %s\n" , fGroup?"yes":"no", fReorder?"yes":"no" );
+      printf( "  > grouping = %s , reordering = %s\n" , fGroup?"yes":"no" , fReorder?"yes":"no" );
    initCnfNetwork();
    buildBddFromNtk( fGroup , fReorder );
    computeSsatBdd();
+   
+   //Abc_Ntk_t * pNtkNew;
+   //pNtkNew = Abc_NtkFromGlobalBdds( _pNtkCnf );
+   //Abc_NodeShowBdd( Abc_ObjFanin0(Abc_NtkPo(pNtkNew,0)) );
+   //Abc_NtkDelete( pNtkNew );
 }
 
 /**Function*************************************************************
@@ -89,8 +98,6 @@ SsatSolver::initCnfNetwork()
    Abc_Ntk_t * pNtkSop;
    Abc_Obj_t * pObjCla;
    char name[32];
-   //Abc_Obj_t * pObj;
-   //int i;
    pNtkSop = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "root_clause_ntk" );
    pNtkSop->pName = Extra_UtilStrsav( name );
@@ -104,12 +111,7 @@ SsatSolver::initCnfNetwork()
       exit(1);
    }
    Ssat_DumpCubeNtk( pNtkSop );
-   //Abc_NtkForEachPi( pNtkSop , pObj , i  )
-     // printf( "  > %d-th Pi , name = %s\n" , i , Abc_ObjName(pObj) );
    _pNtkCnf = Abc_NtkStrash( pNtkSop , 0 , 1 , 0 );
-   //_pNtkCnf = Abc_NtkDC2( _pNtkCnf , 0 , 0 , 1 , 0 , 0 );
-   //Abc_NtkForEachPi( _pNtkCnf , pObj , i  )
-     // printf( "  > %d-th Pi , name = %s\n" , i , Abc_ObjName(pObj) );
    Abc_NtkDelete( pNtkSop );
 }
 
@@ -182,10 +184,9 @@ SsatSolver::buildBddFromNtk( bool fGroup , bool fReorder )
       if ( !fReorder ) Abc_Print( 0 , "Automatically enable reordering when grouping is specified!" );
       _dd = Ssat_NtkPoBuildGlobalBdd( _pNtkCnf , 0 , _rootVars[0].size() , 1 ); 
    }
-   else {
+   else
       _dd = fReorder ? Ssat_NtkPoBuildGlobalBdd( _pNtkCnf , 0 , Abc_NtkPiNum(_pNtkCnf) , 0 ) : 
                        Ssat_NtkPoBuildGlobalBdd( _pNtkCnf , 0 , 0 , 0 ); 
-   }
 	if ( !_dd ) {
 	   Abc_Print( -1 , "Bdd construction has failed.\n" );
 		exit(1);
@@ -215,22 +216,15 @@ void
 SsatSolver::computeSsatBdd()
 {
    if ( _fVerbose ) printf( "  > Compute SSAT value on Bdd:\n" );
-   Abc_Obj_t * pObj;
-   int i;
    DdNode * bFunc;
 
    for ( int i = 0 ; i < _rootVars.size() ; ++i )
       for ( int j = 0 ; j < _rootVars[i].size() ; ++j )
          Abc_NtkPi( _pNtkCnf , _varToPi[_rootVars[i][j]] )->dTemp = (float)_quan[_rootVars[i][j]];
-	Abc_NtkForEachPi( _pNtkCnf , pObj , i )
-      printf( "  > %d-th Pi, name = %s , quan = %f\n" , i , Abc_ObjName(pObj) , pObj->dTemp );
    bFunc = (DdNode*)Abc_ObjGlobalBdd( Abc_NtkPo( _pNtkCnf , 0 ) );
 	Pb_BddResetProb( _dd , bFunc );
-   Ssat_BddComputeProb_rec( _pNtkCnf , bFunc , _rootVars[0].size() , Cudd_IsComplement(bFunc) );
-   //BddComputeSsat_rec( _pNtkCnf , bFunc , Cudd_IsComplement( bFunc ) );
+   BddComputeSsat_rec( _pNtkCnf , bFunc );
    _satPb = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
-   //for ( int i = 0 ; i < Abc_NtkPiNum(_pNtkCnf) ; ++i )
-     // printf( "  > %d-th var --> %d pi\n" , i , Cudd_ReadInvPerm( _dd , i ) );
 }
 
 ////////////////////////////////////////////////////////////////////////
