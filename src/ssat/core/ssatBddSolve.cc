@@ -136,15 +136,22 @@ SsatSolver::cnfNtkCreateNode( Abc_Ntk_t * pNtkCnf , const vec<int> & varToPi )
    Abc_Obj_t * pObj , * pObjCla = NULL;
    int * pfCompl = new int[_s1->nVars()];
    char name[1024];
+   bool sat;
 
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       Clause & c = _s1->ca[_s1->clauses[i]];
+      sat = false;
+      for ( int j = 0 ; j < c.size() ; ++j )
+         if ( _s1->value(c[j]) == l_True ) { sat = true; break; }
+      if ( sat ) continue;
       pObj = Abc_NtkCreateNode( pNtkCnf );
       sprintf( name , "c%d" , i );
       Abc_ObjAssignName( pObj , name , "" );
       for ( int j = 0 ; j < c.size() ; ++j ) {
-         Abc_ObjAddFanin( pObj , Abc_NtkPi( pNtkCnf , varToPi[var(c[j])] ) );
-         pfCompl[j] = sign(c[j]) ? 1 : 0;
+         if ( _s1->value(c[j]) != l_False ) {
+            Abc_ObjAddFanin( pObj , Abc_NtkPi( pNtkCnf , varToPi[var(c[j])] ) );
+            pfCompl[Abc_ObjFaninNum(pObj)-1] = sign(c[j]) ? 1 : 0;
+         }
       }
       Abc_ObjSetData( pObj , Abc_SopCreateOr( (Mem_Flex_t*)pNtkCnf->pManFunc , Abc_ObjFaninNum(pObj) , pfCompl ) );
       pObjCla = Ssat_SopAnd2Obj( pObjCla , pObj );
