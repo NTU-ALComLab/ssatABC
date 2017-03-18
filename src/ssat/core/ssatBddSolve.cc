@@ -103,14 +103,17 @@ SsatSolver::initCnfNetwork()
    pNtkSop->pName = Extra_UtilStrsav( name );
    _varToPi.growTo( _s1->nVars() , -1 );
    cnfNtkCreatePi( pNtkSop , _varToPi ); 
-   pObjCla = cnfNtkCreateNode( pNtkSop , _varToPi ); 
+   pObjCla = cnfNtkCreateNode( pNtkSop , _varToPi );
+   if ( !pObjCla ) {
+      Abc_Print( -1 , "Known bug! After unit propagation, there is no clause left...\n" );
+      exit(1);
+   }
    cnfNtkCreatePo( pNtkSop , pObjCla ); 
    if ( !Abc_NtkCheck( pNtkSop ) ) {
       Abc_Print( -1 , "Something wrong with cnf to network ...\n" );
       Abc_NtkDelete( pNtkSop );
       exit(1);
    }
-   Ssat_DumpCubeNtk( pNtkSop );
    _pNtkCnf = Abc_NtkStrash( pNtkSop , 0 , 1 , 0 );
    Abc_NtkDelete( pNtkSop );
 }
