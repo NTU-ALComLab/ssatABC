@@ -813,17 +813,13 @@ BddComputeSsat_rec( Abc_Ntk_t * pNtk , DdNode * bFunc )
 	pElseMin = Cudd_IsComplement(Cudd_E(bFunc)) ? 1.0-Cudd_Regular(Cudd_E(bFunc))->pMax : Cudd_Regular(Cudd_E(bFunc))->pMin;
 	prob = Abc_NtkPi( pNtk , numPi )->dTemp;
    if ( prob == -1.0 ) { // exist var
-      // compute pMax
 		Cudd_Regular( bFunc )->pMax = ( pThenMax >= pElseMax ) ? pThenMax : pElseMax;
 		Cudd_Regular( bFunc )->cMax = ( pThenMax >= pElseMax ) ? 1 : 0;
-		// compute pMin
 		Cudd_Regular( bFunc )->pMin = ( pThenMin <= pElseMin ) ? pThenMin : pElseMin;
 		Cudd_Regular( bFunc )->cMin = ( pThenMin <= pElseMin ) ? 1 : 0; 
    }
    else { // random var
-      // compute pMax
 		Cudd_Regular( bFunc )->pMax = prob * pThenMax + (1.0 - prob) * pElseMax;
-      // compute pMin
 		Cudd_Regular( bFunc )->pMin = prob * pThenMin + (1.0 - prob) * pElseMin;
    }
 }

@@ -72,11 +72,6 @@ SsatSolver::bddSolveSsat( bool fGroup , bool fReorder )
    initCnfNetwork();
    buildBddFromNtk( fGroup , fReorder );
    computeSsatBdd();
-   
-   //Abc_Ntk_t * pNtkNew;
-   //pNtkNew = Abc_NtkFromGlobalBdds( _pNtkCnf );
-   //Abc_NodeShowBdd( Abc_ObjFanin0(Abc_NtkPo(pNtkNew,0)) );
-   //Abc_NtkDelete( pNtkNew );
 }
 
 /**Function*************************************************************
