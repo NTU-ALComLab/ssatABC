@@ -601,7 +601,7 @@ Pb_BddComputeRESp( Abc_Ntk_t * pNtk , int numPo , int numRand , int fGrp , int f
 	bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , numPo ) );
 	clk = Abc_Clock();
 	Pb_BddResetProb( dd , bFunc );
-   Ssat_BddComputeProb_rec( pNtk , bFunc , numRand , Cudd_IsComplement( bFunc ) );
+   BddComputeSsat_rec( pNtk , bFunc );
 	if ( fVerbose ) Abc_PrintTime( 1 , "  > Prob computation" , Abc_Clock() - clk );
    prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
    if ( fVerbose ) printf( "  > %d-th Po, sat prob = %f\n" , numPo , prob );

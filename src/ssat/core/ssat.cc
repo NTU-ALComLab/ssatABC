@@ -69,7 +69,6 @@ void
 Ssat_Init( Abc_Frame_t * pAbc )
 {
    gloSsat = NULL;
-   initTimer( &timer );
    signal( SIGINT  , sig_handler );
    signal( SIGTERM , sig_handler );
    Cmd_CommandAdd( pAbc , "z SSAT" , "ssat"        , SsatCommandSSAT        , 0 );
@@ -272,6 +271,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
       return 1;
    }
    gloSsat = pSsat = new SsatSolver( fVerbose , fTimer );
+   initTimer( &timer );
    pSsat->readSSAT(in);
    gzclose(in);
    gloClk = Abc_Clock();

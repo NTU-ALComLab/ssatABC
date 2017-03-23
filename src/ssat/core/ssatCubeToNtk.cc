@@ -515,6 +515,8 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause )
    {
       if ( i < _rootVars[1].size() )
 	      pObj->dTemp = (float)_quan[_rootVars[1][i]];
+      else
+         pObj->dTemp = -1;
    }
    prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
    Abc_NtkDelete( pNtkCopy );
