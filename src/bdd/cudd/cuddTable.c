@@ -330,6 +330,8 @@ cuddAllocNode(
     node = unique->nextFree;
     unique->nextFree = node->next;
     node->Id = (unique->allocated<<4);
+    // NZ: initialize pMax/pMin
+    //node->pMax = node->pMin = -1.0;
     return(node);
 
 } /* end of cuddAllocNode */

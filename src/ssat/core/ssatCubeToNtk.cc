@@ -23,7 +23,7 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-#define DEBUG
+//#define DEBUG
 // external functions from ABC
 extern "C" {
    void        Abc_NtkShow     ( Abc_Ntk_t * , int , int , int );
