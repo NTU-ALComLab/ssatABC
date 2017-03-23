@@ -23,6 +23,7 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+//#define DEBUG
 // external functions from ABC
 extern "C" {
    void        Abc_NtkShow     ( Abc_Ntk_t * , int , int , int );
@@ -383,20 +384,20 @@ Ssat_DumpCubeNtk( Abc_Ntk_t * pNtk )
 ***********************************************************************/
 
 void
-SsatSolver::initClauseNetwork()
+SsatSolver::initClauseNetwork( bool fIncre )
 {
-   Abc_Obj_t * pObj;
-   int i;
+   //Abc_Obj_t * pObj;
+   //int i;
    char name[32];
    _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "er_clauses_network" );
    _pNtkCube->pName = Extra_UtilStrsav( name );
    _vMapVars = Vec_PtrStart( _s1->nVars() );
    erNtkCreatePi( _pNtkCube , _vMapVars ); 
-   _pNtkAig = Abc_NtkStartFrom( _pNtkCube , ABC_NTK_STRASH , ABC_FUNC_AIG );
-   Abc_NtkForEachPi( _pNtkAig , pObj , i )
-	   pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
-   _dd = erInitCudd( _pNtkAig , _rootVars[1].size() , 1 );
+   if ( fIncre ) {
+      _pNtkAig = Abc_NtkStartFrom( _pNtkCube , ABC_NTK_STRASH , ABC_FUNC_AIG );
+      _dd = erInitCudd( _pNtkAig , _rootVars[1].size() , 1 );
+   }
    erNtkCreatePo( _pNtkCube ); 
 }
 
@@ -433,7 +434,7 @@ SsatSolver::erNtkCreatePo( Abc_Ntk_t * pNtkClause )
 }
 
 double
-SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex )
+SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncre )
 {
    Abc_Obj_t * pObj , * pObjCla;
    int i;
@@ -441,7 +442,7 @@ SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex )
    pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars , eLits , dropIndex );
    if ( pObjCla ) {
       erNtkPatchPoCheck( _pNtkCube , pObjCla );
-      return erNtkBddComputeSp( _pNtkCube );
+      return erNtkBddComputeSp( _pNtkCube , fIncre );
    }
    return 1.0;
 }
@@ -493,6 +494,8 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
       Abc_NtkDelete( pNtkClause );
       exit(1);
    }
+   //Ssat_DumpCubeNtk( pNtkClause );
+   //fflush(stdout);
 }
 
 /**Function*************************************************************
@@ -508,37 +511,81 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
 ***********************************************************************/
 
 double
-SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause )
+SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
 {
-   Abc_Ntk_t * pNtkCopy , * pNtkAig;
+   Abc_Ntk_t * pNtkCopy , * pNtkAig , * pNtk , * pNtkRes;
    Abc_Obj_t * pObj;
-   double prob;
+   DdNode * bFunc;
+   double prob=0.0;
    int i;
    
    pNtkCopy = Abc_NtkDup( pNtkClause );
    pNtkAig  = Abc_NtkStrash( pNtkCopy , 0 , 1 , 0 );
-   erNtkMergeIntoAig( pNtkAig );
-   
-   //prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
+   if ( fIncre ) {
+      erNtkMergeIntoAig( pNtkAig );
+
+#if 0
+      pNtk = Abc_NtkDup( _pNtkAig );
+      pNtkRes = Abc_NtkCollapse( pNtk, ABC_INFINITY, 0, 1, 0 );
+#else
+#ifdef DEBUG
+      printf( "  > Before RESp:\n" );
+#endif
+      Abc_NtkForEachPi( _pNtkAig , pObj , i ) 
+      {
+	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
+         bFunc = _dd->vars[i];
+         Abc_ObjSetGlobalBdd( pObj , bFunc ); 
+		   Cudd_Ref( bFunc );
+#ifdef DEBUG
+         printf( "  > %d-th pi, name %s, DdNode %p\n" , i , Abc_ObjName(pObj) , Abc_ObjGlobalBdd(pObj) );
+         fflush(stdout);
+#endif
+      }
+      prob = (double)Ssat_BddComputeRESp( _pNtkAig , _dd , Abc_NtkPoNum(_pNtkAig)-1 , _rootVars[1].size() , 1 );
+#ifdef DEBUG
+      printf( "  > After RESp:\n" );
+      Abc_NtkForEachObj( _pNtkAig , pObj , i ) 
+      {
+         printf( "  > %d-th obj, name %s, DdNode %p\n" , i , Abc_ObjName(pObj) , Abc_ObjGlobalBdd(pObj) );
+         fflush(stdout);
+      }
+#endif
+#endif
+   }
+   else {
+      Abc_NtkForEachPi( pNtkAig , pObj , i )
+	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
+      prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
+   }
    Abc_NtkDelete( pNtkCopy );
    Abc_NtkDelete( pNtkAig );
-   //return prob;
-   return 0.0;
+   return prob;
 }
 
 void
 SsatSolver::erNtkMergeIntoAig( Abc_Ntk_t * pNtkMerge )
 {
-   Abc_Obj_t * pObj;
+   Abc_Obj_t * pObj , * pPo;
+   char name[1024];
    int i;
    
    Abc_AigConst1( pNtkMerge )->pCopy = Abc_AigConst1( _pNtkAig );
    Abc_NtkForEachPi( pNtkMerge , pObj , i )
       pObj->pCopy = Abc_NtkPi( _pNtkAig , i );
-   Abc_NtkPo( pNtkMerge , 0 )->pCopy = Abc_NtkCreatePo( _pNtkAig );
+   Abc_NtkPo( pNtkMerge , 0 )->pCopy = pPo = Abc_NtkCreatePo( _pNtkAig );
+   sprintf( name , "o%d" , Abc_ObjId(pPo) );
+   Abc_ObjAssignName( pPo , name , "" );
    Abc_AigForEachAnd( pNtkMerge , pObj , i )
       pObj->pCopy = Abc_AigAnd( (Abc_Aig_t *)_pNtkAig->pManFunc , Abc_ObjChild0Copy(pObj) , Abc_ObjChild1Copy(pObj) );
    Abc_ObjAddFanin( Abc_NtkPo(pNtkMerge,0)->pCopy , Abc_ObjChild0Copy(Abc_NtkPo(pNtkMerge,0)) );
+   if ( !Abc_NtkCheck( _pNtkAig ) ) {
+      Abc_Print( -1 , "Merging AIG has failed!\n" );
+      exit(1);
+   }
+   //printf( "  > po num = %d\n" , Abc_NtkPoNum(_pNtkAig) );
+   //Abc_NtkShow( _pNtkAig , 0 , 0 , 1 );
+   //fflush(stdout);
 }
 
 DdManager*
@@ -573,19 +620,15 @@ SsatSolver::erInitCudd( Abc_Ntk_t * pNtk , int numRand , int fGrp )
     if ( fReorder ) Cudd_AutodynEnable( dd , CUDD_REORDER_SYMM_SIFT );
     // assign the constant node BDD
     pObj = Abc_AigConst1( pNtk );
-    if ( Abc_ObjFanoutNum(pObj) > 0 ) {
-       bFunc = dd->one;
-       Abc_ObjSetGlobalBdd( pObj , bFunc );   
-		 Cudd_Ref( bFunc );
-    }
+    bFunc = dd->one;
+    Abc_ObjSetGlobalBdd( pObj , bFunc );   
+	 Cudd_Ref( bFunc );
     // set the elementary variables (Pi`s)
     Abc_NtkForEachPi( pNtk , pObj , i )
 	 {
-       if ( Abc_ObjFanoutNum(pObj) > 0 ) {
-          bFunc = dd->vars[i];
-          Abc_ObjSetGlobalBdd( pObj , bFunc );  
-			 Cudd_Ref( bFunc );
-       }
+       bFunc = dd->vars[i];
+       Abc_ObjSetGlobalBdd( pObj , bFunc );  
+		 Cudd_Ref( bFunc );
 	 }
     return dd;
 }

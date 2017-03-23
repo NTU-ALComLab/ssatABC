@@ -84,7 +84,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat    ( double , int , int , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        solveSsat    ( double , int , int , bool , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
    void        bddSolveSsat ( bool , bool ); // Solve SSAT by bdd
    // ER-2-Ssat solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
@@ -104,7 +104,7 @@ private:
    // solve interface
    void        qSolve             ( double , int , int , bool ); // Qesto-like solve
    void        aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
-   void        erSolve2SSAT       ( bool , bool , bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
+   void        erSolve2SSAT       ( bool , bool , bool , bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -153,15 +153,15 @@ private:
    void        ntkWriteWcnf       ( Abc_Ntk_t * );
    double      ntkBddComputeSp    ( Abc_Ntk_t * , bool );
    // construct circuits from clauses for ER-2SSAT
-   void        initClauseNetwork  ();
+   void        initClauseNetwork  ( bool );
    void        erNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkCreatePo      ( Abc_Ntk_t * );
-   double      clauseToNetwork    ( const vec<Lit>& , int );
+   double      clauseToNetwork    ( const vec<Lit>& , int , bool );
    Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , const vec<Lit>& , int );
    void        erNtkPatchPoCheck  ( Abc_Ntk_t * , Abc_Obj_t * );
    void        erNtkMergeIntoAig  ( Abc_Ntk_t * );
    DdManager * erInitCudd         ( Abc_Ntk_t * , int , int );
-   double      erNtkBddComputeSp  ( Abc_Ntk_t * );
+   double      erNtkBddComputeSp  ( Abc_Ntk_t * , bool );
    // All-Sat enumeration-based model counting
    double      allSatModelCount   ( Solver * , const vec<Lit>& , double );
    // Bdd solving subroutines

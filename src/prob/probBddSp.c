@@ -41,6 +41,7 @@ extern MtrNode* Cudd_MakeTreeNode           ( DdManager * , unsigned int , unsig
 // main methods
 float Pb_BddComputeSp                       ( Abc_Ntk_t * , int , int , int , int );
 float Pb_BddComputeRESp                     ( Abc_Ntk_t * , int , int , int , int );
+float Ssat_BddComputeRESp                   ( Abc_Ntk_t * , DdManager * , int , int , int );
 void  Pb_BddComputeAllSp                    ( Abc_Ntk_t * , int , int , int );
 // helpers
 DdManager* Ssat_NtkPoBuildGlobalBdd  ( Abc_Ntk_t * , int , int , int );
@@ -822,6 +823,68 @@ BddComputeSsat_rec( Abc_Ntk_t * pNtk , DdNode * bFunc )
 		Cudd_Regular( bFunc )->pMax = prob * pThenMax + (1.0 - prob) * pElseMax;
 		Cudd_Regular( bFunc )->pMin = prob * pThenMin + (1.0 - prob) * pElseMin;
    }
+}
+
+/**Function*************************************************************
+
+  Synopsis    [compute signal prob by bdd incrementally]
+
+  Description [For RE-2SSAT.]
+               
+  SideEffects [Lots of codes are similar, FIXME later!]
+
+  SeeAlso     []
+
+***********************************************************************/
+
+float
+Ssat_BddComputeRESp( Abc_Ntk_t * pNtk , DdManager * dd , int numPo , int numRand , int fGrp )
+{
+   ProgressBar * pProgress;
+   Abc_Obj_t * pObj , * pFanin;
+	DdNode * bFunc;
+   float prob;
+   int Counter , i , k;
+
+   //int fReorder  = 1;
+   Counter   = 0;
+   pProgress = Extra_ProgressBarStart( stdout , Abc_NtkNodeNum( pNtk ) );
+   pObj      = Abc_NtkPo( pNtk , numPo );
+	extern DdNode* Abc_NodeGlobalBdds_rec( DdManager * , Abc_Obj_t * , int , int , ProgressBar * , int * , int );
+   bFunc = Abc_NodeGlobalBdds_rec( dd , Abc_ObjFanin0(pObj) , ABC_INFINITY , 1 , pProgress , &Counter , 0 );
+   if ( !bFunc ) {
+      printf( "Constructing global BDDs is aborted.\n" );
+      exit(1);
+   }
+   bFunc = Cudd_NotCond( bFunc , (int)Abc_ObjFaninC0(pObj) );
+	Cudd_Ref( bFunc ); 
+   Abc_ObjSetGlobalBdd( pObj , bFunc );
+   Extra_ProgressBarStop( pProgress );
+   // reset references
+#if 1
+   Abc_NtkForEachObj( pNtk, pObj, i )
+       if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBi(pObj) )
+           pObj->vFanouts.nSize = 0;
+   Abc_NtkForEachObj( pNtk, pObj, i )
+       if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBo(pObj) )
+           Abc_ObjForEachFanin( pObj, pFanin, k )
+               pFanin->vFanouts.nSize++;
+#endif
+   // NZ : check random/exist variables are correctly ordered
+   if ( numRand < Abc_NtkPiNum( pNtk ) ) {
+      if ( Cudd_ReadInvPerm( dd , 0 ) > numRand-1 ) {
+         if ( Pb_BddShuffleGroup( dd , numRand , Abc_NtkPiNum(pNtk)-numRand ) == 0 ) {
+            Abc_Print( -1 , "Bdd Shuffle has failed.\n" );
+	         Abc_NtkFreeGlobalBdds( pNtk , 1 );
+            return -1;
+         }
+      }
+   }
+	bFunc = Abc_ObjGlobalBdd( Abc_NtkPo( pNtk , numPo ) );
+	Pb_BddResetProb( dd , bFunc );
+   BddComputeSsat_rec( pNtk , bFunc );
+   prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
+   return prob;
 }
 
 ////////////////////////////////////////////////////////////////////////

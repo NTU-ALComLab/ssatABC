@@ -55,15 +55,15 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre )
 {
    if ( _fVerbose ) {
-      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s , dynamic = %s\n" , 
-              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" , fDynamic ? "yes":"no" );
+      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s , dynamic = %s , incremental = %s\n" , 
+              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" , fDynamic ? "yes":"no" , fIncre ? "yes":"no" );
    }
    _s1->simplify();
    _s2 = fGreedy ? buildQestoSelector() : buildERSelector();
-   if ( fBdd ) initClauseNetwork();
+   if ( fBdd ) initClauseNetwork( fIncre );
    if ( fSub ) buildSubsumeTable( *_s1 );
 
    cout << "--------------------------------------\n";
@@ -136,7 +136,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
          }
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = fBdd ? clauseToNetwork( eLits , totalSize ) : countModels( eLits , totalSize );
+         subvalue  = fBdd ? clauseToNetwork( eLits , totalSize , fIncre ) : countModels( eLits , totalSize );
          if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
             ++timer.nCachet;
@@ -172,13 +172,13 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             else                             dropIndex -= 1;
             while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
             if ( _fTimer ) clk = Abc_Clock();
-            subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
+            subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre ) : countModels( parLits , dropIndex );
             if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
             if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
                for (;;) {
                   --dropIndex;
                   if ( _fTimer ) clk = Abc_Clock();
-                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
+                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre ) : countModels( parLits , dropIndex );
                   if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
                   if ( subvalue > _satPb ) break;
                }
@@ -188,7 +188,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
                for (;;) {
                   ++dropIndex;
                   if ( _fTimer ) clk = Abc_Clock();
-                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex ) : countModels( parLits , dropIndex );
+                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre ) : countModels( parLits , dropIndex );
                   if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
                   if ( subvalue <= _satPb ) break;
                }
