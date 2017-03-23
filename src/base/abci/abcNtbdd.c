@@ -467,6 +467,7 @@ DdNode * Abc_NodeGlobalBdds_rec( DdManager * dd, Abc_Obj_t * pNode, int nBddSize
     // dereference BDD at the node
     if ( --pNode->vFanouts.nSize == 0 && fDropInternal )
     {
+        //printf( "  > NZ: deref node name %s\n" , Abc_ObjName(pNode) );
         Cudd_Deref( bFunc );
         Abc_ObjSetGlobalBdd( pNode, NULL );
     }

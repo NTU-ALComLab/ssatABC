@@ -23,7 +23,7 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-//#define DEBUG
+#define DEBUG
 // external functions from ABC
 extern "C" {
    void        Abc_NtkShow     ( Abc_Ntk_t * , int , int , int );
@@ -386,8 +386,6 @@ Ssat_DumpCubeNtk( Abc_Ntk_t * pNtk )
 void
 SsatSolver::initClauseNetwork( bool fIncre )
 {
-   //Abc_Obj_t * pObj;
-   //int i;
    char name[32];
    _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "er_clauses_network" );
@@ -513,9 +511,8 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
 double
 SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
 {
-   Abc_Ntk_t * pNtkCopy , * pNtkAig , * pNtk , * pNtkRes;
+   Abc_Ntk_t * pNtkCopy , * pNtkAig;
    Abc_Obj_t * pObj;
-   DdNode * bFunc;
    double prob=0.0;
    int i;
    
@@ -523,34 +520,19 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
    pNtkAig  = Abc_NtkStrash( pNtkCopy , 0 , 1 , 0 );
    if ( fIncre ) {
       erNtkMergeIntoAig( pNtkAig );
-
 #if 0
+      Abc_Ntk_t * pNtk , * pNtkRes;
       pNtk = Abc_NtkDup( _pNtkAig );
       pNtkRes = Abc_NtkCollapse( pNtk, ABC_INFINITY, 0, 1, 0 );
 #else
+      Abc_NtkForEachPi( _pNtkAig , pObj , i ) 
+	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
 #ifdef DEBUG
       printf( "  > Before RESp:\n" );
-#endif
-      Abc_NtkForEachPi( _pNtkAig , pObj , i ) 
-      {
-	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
-         bFunc = _dd->vars[i];
-         Abc_ObjSetGlobalBdd( pObj , bFunc ); 
-		   Cudd_Ref( bFunc );
-#ifdef DEBUG
-         printf( "  > %d-th pi, name %s, DdNode %p\n" , i , Abc_ObjName(pObj) , Abc_ObjGlobalBdd(pObj) );
-         fflush(stdout);
-#endif
-      }
-      prob = (double)Ssat_BddComputeRESp( _pNtkAig , _dd , Abc_NtkPoNum(_pNtkAig)-1 , _rootVars[1].size() , 1 );
-#ifdef DEBUG
-      printf( "  > After RESp:\n" );
       Abc_NtkForEachObj( _pNtkAig , pObj , i ) 
-      {
          printf( "  > %d-th obj, name %s, DdNode %p\n" , i , Abc_ObjName(pObj) , Abc_ObjGlobalBdd(pObj) );
-         fflush(stdout);
-      }
 #endif
+      prob = (double)Ssat_BddComputeRESp( _pNtkAig , _dd , Abc_NtkPoNum(_pNtkAig)-1 , _rootVars[1].size() , 1 );
 #endif
    }
    else {
@@ -595,12 +577,11 @@ SsatSolver::erInitCudd( Abc_Ntk_t * pNtk , int numRand , int fGrp )
     Vec_Att_t * pAttMan;
     DdManager * dd;
     DdNode * bFunc;
-    int nBddSizeMax , fReorder , fDropInternal , fVerbose , i;
+    int nBddSizeMax , fReorder , fVerbose , i;
 
     // set defaults
 	 nBddSizeMax   = ABC_INFINITY;
 	 fReorder      = ( numRand < Abc_NtkPiNum( pNtk ) ) ? 0 : 1;
-	 fDropInternal = 1;
 	 fVerbose      = 0;
     // remove dangling nodes
     Abc_AigCleanup( (Abc_Aig_t *)pNtk->pManFunc );

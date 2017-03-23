@@ -399,11 +399,11 @@ void
 Pb_BddComputeAllSp( Abc_Ntk_t * pNtk , int numExist , int fGrp , int fVerbose )
 {
    DdManager * dd;
-	DdNode * bFunc;
-	Abc_Obj_t * pObj;
+	//DdNode * bFunc;
+	//Abc_Obj_t * pObj;
 	abctime clk;
-	int fReorder , maxId , i;
-	float maxProb , temp;
+	int fReorder , maxId;// , i;
+	float maxProb;// , temp;
 
 	fReorder = ( numExist > 0 ) ? 0 : 1;
 	maxId    = -1;
@@ -844,14 +844,13 @@ Ssat_BddComputeRESp( Abc_Ntk_t * pNtk , DdManager * dd , int numPo , int numRand
    Abc_Obj_t * pObj , * pFanin;
 	DdNode * bFunc;
    float prob;
-   int Counter , i , k;
+   int fDropInternal , Counter , i , k;
 
-   //int fReorder  = 1;
-   Counter   = 0;
-   pProgress = Extra_ProgressBarStart( stdout , Abc_NtkNodeNum( pNtk ) );
-   pObj      = Abc_NtkPo( pNtk , numPo );
-	extern DdNode* Abc_NodeGlobalBdds_rec( DdManager * , Abc_Obj_t * , int , int , ProgressBar * , int * , int );
-   bFunc = Abc_NodeGlobalBdds_rec( dd , Abc_ObjFanin0(pObj) , ABC_INFINITY , 1 , pProgress , &Counter , 0 );
+   fDropInternal  = 0;
+   Counter        = 0;
+   pProgress      = Extra_ProgressBarStart( stdout , Abc_NtkNodeNum( pNtk ) );
+   pObj           = Abc_NtkPo( pNtk , numPo );
+   bFunc          = Abc_NodeGlobalBdds_rec( dd , Abc_ObjFanin0(pObj) , ABC_INFINITY , fDropInternal , pProgress , &Counter , 0 );
    if ( !bFunc ) {
       printf( "Constructing global BDDs is aborted.\n" );
       exit(1);
@@ -861,7 +860,6 @@ Ssat_BddComputeRESp( Abc_Ntk_t * pNtk , DdManager * dd , int numPo , int numRand
    Abc_ObjSetGlobalBdd( pObj , bFunc );
    Extra_ProgressBarStop( pProgress );
    // reset references
-#if 1
    Abc_NtkForEachObj( pNtk, pObj, i )
        if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBi(pObj) )
            pObj->vFanouts.nSize = 0;
@@ -869,7 +867,6 @@ Ssat_BddComputeRESp( Abc_Ntk_t * pNtk , DdManager * dd , int numPo , int numRand
        if ( !Abc_ObjIsBox(pObj) && !Abc_ObjIsBo(pObj) )
            Abc_ObjForEachFanin( pObj, pFanin, k )
                pFanin->vFanouts.nSize++;
-#endif
    // NZ : check random/exist variables are correctly ordered
    if ( numRand < Abc_NtkPiNum( pNtk ) ) {
       if ( Cudd_ReadInvPerm( dd , 0 ) > numRand-1 ) {
