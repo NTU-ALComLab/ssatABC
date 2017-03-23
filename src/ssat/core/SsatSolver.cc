@@ -66,6 +66,10 @@ SsatSolver::~SsatSolver()
       Abc_NtkDelete( _pNtkCube );
       _pNtkCube = NULL;
    }
+   if ( _pNtkAig ) {
+      Abc_NtkDelete( _pNtkAig );
+      _pNtkAig = NULL;
+   }
    if ( _pNtkCnf ) {
       if ( _dd ) {
          Abc_NtkFreeGlobalBdds( _pNtkCnf , 1 );

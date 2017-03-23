@@ -385,12 +385,18 @@ Ssat_DumpCubeNtk( Abc_Ntk_t * pNtk )
 void
 SsatSolver::initClauseNetwork()
 {
+   Abc_Obj_t * pObj;
+   int i;
    char name[32];
    _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
    sprintf( name , "er_clauses_network" );
    _pNtkCube->pName = Extra_UtilStrsav( name );
    _vMapVars = Vec_PtrStart( _s1->nVars() );
    erNtkCreatePi( _pNtkCube , _vMapVars ); 
+   _pNtkAig = Abc_NtkStartFrom( _pNtkCube , ABC_NTK_STRASH , ABC_FUNC_AIG );
+   Abc_NtkForEachPi( _pNtkAig , pObj , i )
+	   pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
+   _dd = erInitCudd( _pNtkAig , _rootVars[1].size() , 1 );
    erNtkCreatePo( _pNtkCube ); 
 }
 
@@ -511,17 +517,77 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause )
    
    pNtkCopy = Abc_NtkDup( pNtkClause );
    pNtkAig  = Abc_NtkStrash( pNtkCopy , 0 , 1 , 0 );
-   Abc_NtkForEachPi( pNtkAig , pObj , i )
-   {
-      if ( i < _rootVars[1].size() )
-	      pObj->dTemp = (float)_quan[_rootVars[1][i]];
-      else
-         pObj->dTemp = -1;
-   }
-   prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
+   erNtkMergeIntoAig( pNtkAig );
+   
+   //prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
    Abc_NtkDelete( pNtkCopy );
    Abc_NtkDelete( pNtkAig );
-   return prob;
+   //return prob;
+   return 0.0;
+}
+
+void
+SsatSolver::erNtkMergeIntoAig( Abc_Ntk_t * pNtkMerge )
+{
+   Abc_Obj_t * pObj;
+   int i;
+   
+   Abc_AigConst1( pNtkMerge )->pCopy = Abc_AigConst1( _pNtkAig );
+   Abc_NtkForEachPi( pNtkMerge , pObj , i )
+      pObj->pCopy = Abc_NtkPi( _pNtkAig , i );
+   Abc_NtkPo( pNtkMerge , 0 )->pCopy = Abc_NtkCreatePo( _pNtkAig );
+   Abc_AigForEachAnd( pNtkMerge , pObj , i )
+      pObj->pCopy = Abc_AigAnd( (Abc_Aig_t *)_pNtkAig->pManFunc , Abc_ObjChild0Copy(pObj) , Abc_ObjChild1Copy(pObj) );
+   Abc_ObjAddFanin( Abc_NtkPo(pNtkMerge,0)->pCopy , Abc_ObjChild0Copy(Abc_NtkPo(pNtkMerge,0)) );
+}
+
+DdManager*
+SsatSolver::erInitCudd( Abc_Ntk_t * pNtk , int numRand , int fGrp )
+{
+    Abc_Obj_t * pObj;
+    Vec_Att_t * pAttMan;
+    DdManager * dd;
+    DdNode * bFunc;
+    int nBddSizeMax , fReorder , fDropInternal , fVerbose , i;
+
+    // set defaults
+	 nBddSizeMax   = ABC_INFINITY;
+	 fReorder      = ( numRand < Abc_NtkPiNum( pNtk ) ) ? 0 : 1;
+	 fDropInternal = 1;
+	 fVerbose      = 0;
+    // remove dangling nodes
+    Abc_AigCleanup( (Abc_Aig_t *)pNtk->pManFunc );
+    // start the manager
+    assert( !Abc_NtkGlobalBdd( pNtk ) );
+    dd = Cudd_Init( Abc_NtkPiNum( pNtk ) , 0 , CUDD_UNIQUE_SLOTS , CUDD_CACHE_SLOTS , 0 );
+    // NZ : group variables
+    if ( numRand < Abc_NtkPiNum( pNtk ) && fGrp ) {
+       //printf( "  >  Start grouping random and exist variables\n" );
+       Cudd_MakeTreeNode( dd , 0 , numRand , MTR_DEFAULT );
+       Cudd_MakeTreeNode( dd , numRand , Abc_NtkPiNum(pNtk)-numRand , MTR_DEFAULT );
+       fReorder = 1;
+       //printf( "  >  Grouping done\n" );
+    }
+    pAttMan = Vec_AttAlloc( Abc_NtkObjNumMax( pNtk ) + 1, dd, (void (*)(void*))Extra_StopManager, NULL, (void (*)(void*,void*))Cudd_RecursiveDeref );
+    Vec_PtrWriteEntry( pNtk->vAttrs, VEC_ATTR_GLOBAL_BDD, pAttMan );
+    if ( fReorder ) Cudd_AutodynEnable( dd , CUDD_REORDER_SYMM_SIFT );
+    // assign the constant node BDD
+    pObj = Abc_AigConst1( pNtk );
+    if ( Abc_ObjFanoutNum(pObj) > 0 ) {
+       bFunc = dd->one;
+       Abc_ObjSetGlobalBdd( pObj , bFunc );   
+		 Cudd_Ref( bFunc );
+    }
+    // set the elementary variables (Pi`s)
+    Abc_NtkForEachPi( pNtk , pObj , i )
+	 {
+       if ( Abc_ObjFanoutNum(pObj) > 0 ) {
+          bFunc = dd->vars[i];
+          Abc_ObjSetGlobalBdd( pObj , bFunc );  
+			 Cudd_Ref( bFunc );
+       }
+	 }
+    return dd;
 }
 
 ////////////////////////////////////////////////////////////////////////
