@@ -515,21 +515,22 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
 {
    Abc_Ntk_t * pNtkCopy , * pNtkAig;
    Abc_Obj_t * pObj;
+   Vec_Att_t * pAttMan;
    DdNode * bFunc;
    abctime clk=0;
    double prob=0.0;
    int i;
-  
+ 
+   pAttMan = NULL;
    if ( _fTimer ) clk = Abc_Clock();
    pNtkCopy = Abc_NtkDup( pNtkClause );
    pNtkAig  = Abc_NtkStrash( pNtkCopy , 0 , 1 , 0 );
    if ( _fTimer ) timer.timeSt += Abc_Clock()-clk;
    if ( fIncre ) {
-      if ( _fTimer ) clk = Abc_Clock();
-      erNtkMergeIntoAig( pNtkAig );
-      if ( _fTimer ) timer.timeMg += Abc_Clock()-clk;
-      if ( _fTimer ) clk = Abc_Clock();
-      Abc_NtkForEachPi( _pNtkAig , pObj , i )
+      pAttMan = Vec_AttAlloc( Abc_NtkObjNumMax( pNtkAig ) + 1 , _dd , (void (*)(void*))Extra_StopManager , 
+                              NULL , (void (*)(void*,void*))Cudd_RecursiveDeref );
+      Vec_PtrWriteEntry( pNtkAig->vAttrs , VEC_ATTR_GLOBAL_BDD , pAttMan );
+      Abc_NtkForEachPi( pNtkAig , pObj , i )
       {
 	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
          if ( !Abc_ObjGlobalBdd(pObj) ) {
@@ -538,7 +539,8 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
 		      Cudd_Ref( bFunc );
          }
       }
-      prob = (double)Ssat_BddComputeRESp( _pNtkAig , _dd , Abc_NtkPoNum(_pNtkAig)-1 , _rootVars[1].size() , 1 );
+      if ( _fTimer ) clk = Abc_Clock();
+      prob = (double)Ssat_BddComputeRESp( pNtkAig , _dd , 0 , _rootVars[1].size() , 1 );
       if ( _fTimer ) timer.timeBd += Abc_Clock()-clk;
    }
    else {
@@ -550,6 +552,10 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
    }
    if ( _fTimer ) clk = Abc_Clock();
    Abc_NtkDelete( pNtkCopy );
+   if ( pAttMan ) {
+      Vec_PtrWriteEntry( pNtkAig->vAttrs , VEC_ATTR_GLOBAL_BDD , NULL );
+      Vec_AttFree( pAttMan , 0 );
+   }
    Abc_NtkDelete( pNtkAig );
    if ( _fTimer ) timer.timeSt += Abc_Clock()-clk;
    return prob;
