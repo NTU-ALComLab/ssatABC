@@ -61,7 +61,6 @@ typedef struct SsatTimer_ {
    abctime timeBd; // Bdd construction time
    abctime timeCk; // Cnf to sop ckt time
    abctime timeSt; // Sop ckt strash time
-   abctime timeMg; // Aig merging time
    int nS2solve;   // # of s2 solving
    int nGdsolve;   // # of s2 greedy
    int nS1solve;   // # of s1 solving
@@ -83,7 +82,7 @@ class SsatSolver {
 public:
    // Constructor/Destructor:
    SsatSolver( bool fVerbose = false , bool fTimer = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) 
-   { _fVerbose = fVerbose; _fTimer = fTimer; _pNtkCnf = NULL; _dd = NULL; _pNtkAig = NULL;}
+   { _fVerbose = fVerbose; _fTimer = fTimer; _pNtkCnf = NULL; _dd = NULL; }
    ~SsatSolver();
    // Problem specification:
    void        readSSAT( gzFile& );
@@ -163,8 +162,7 @@ private:
    double      clauseToNetwork    ( const vec<Lit>& , int , bool );
    Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , const vec<Lit>& , int );
    void        erNtkPatchPoCheck  ( Abc_Ntk_t * , Abc_Obj_t * );
-   void        erNtkMergeIntoAig  ( Abc_Ntk_t * );
-   DdManager * erInitCudd         ( Abc_Ntk_t * , int , int );
+   DdManager * erInitCudd         ( int , int , int );
    double      erNtkBddComputeSp  ( Abc_Ntk_t * , bool );
    // All-Sat enumeration-based model counting
    double      allSatModelCount   ( Solver * , const vec<Lit>& , double );
@@ -208,7 +206,6 @@ private:
    vec< vec<Lit> >   _satClause;       // added clauses during solving, used in model counting
    SubTbl            _subsumeTable;    // clause subsumption table
    Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
-   Abc_Ntk_t       * _pNtkAig;         // aig network for bdd
    Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
    Abc_Obj_t       * _pConst0;         // network Const0 node
    Abc_Obj_t       * _pConst1;         // network Const1 node

@@ -110,7 +110,6 @@ initTimer( SsatTimer * pTimer )
    pTimer->timeBd     = 0;
    pTimer->timeCk     = 0;
    pTimer->timeSt     = 0;
-   pTimer->timeMg     = 0;
    pTimer->nS1solve   = 0;
    pTimer->nGdsolve   = 0;
    pTimer->nS2solve   = 0;
@@ -131,10 +130,9 @@ printTimer( SsatTimer * pTimer )
    Abc_PrintTime( 1 , "  > Time consumed on s2 solving " , pTimer->timeS2 );
    Abc_PrintTime( 1 , "  > Time consumed on s2 greedy  " , pTimer->timeGd );
    Abc_PrintTime( 1 , "  > Time consumed on counting   " , pTimer->timeCa );
-   Abc_PrintTime( 1 , "  > Time consumed on build  bdd " , pTimer->timeBd );
    Abc_PrintTime( 1 , "  > Time consumed on build  sop " , pTimer->timeCk );
    Abc_PrintTime( 1 , "  > Time consumed on strash sop " , pTimer->timeSt );
-   Abc_PrintTime( 1 , "  > Time consumed on merge  aig " , pTimer->timeMg );
+   Abc_PrintTime( 1 , "  > Time consumed on build  bdd " , pTimer->timeBd );
    Abc_PrintTime( 1 , "  > Total elapsed time          " , Abc_Clock()-gloClk );
    Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
    Abc_Print( -2 , "  > Number of s1 solving                = %10d\n" , pTimer->nS1solve  );

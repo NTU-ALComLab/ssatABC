@@ -66,10 +66,6 @@ SsatSolver::~SsatSolver()
       Abc_NtkDelete( _pNtkCube );
       _pNtkCube = NULL;
    }
-   if ( _pNtkAig ) {
-      Abc_NtkDelete( _pNtkAig );
-      _pNtkAig = NULL;
-   }
    if ( _pNtkCnf ) {
       if ( _dd ) {
          Abc_NtkFreeGlobalBdds( _pNtkCnf , 1 );
@@ -77,6 +73,10 @@ SsatSolver::~SsatSolver()
       }
       Abc_NtkDelete( _pNtkCnf );
       _pNtkCnf = NULL;
+   }
+   if ( _dd ) {
+      Cudd_Quit( _dd );
+      _dd = NULL;
    }
    if ( _vMapVars ) {
       Vec_PtrFree( _vMapVars );
