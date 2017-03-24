@@ -197,7 +197,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    fMini    = true;
    fBdd     = false;
    fPart    = true;
-   fSub     = false;
+   fSub     = true;
    fGreedy  = true;
    fDynamic = true;
    fIncre   = false;
