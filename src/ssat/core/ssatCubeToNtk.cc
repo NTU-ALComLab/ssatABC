@@ -23,6 +23,7 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+extern SsatTimer timer;
 //#define DEBUG
 // external functions from ABC
 extern "C" {
@@ -435,9 +436,12 @@ double
 SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncre )
 {
    Abc_Obj_t * pObj , * pObjCla;
+   abctime clk=0;
    int i;
+   if ( _fTimer ) clk = Abc_Clock();
    Abc_NtkForEachNode( _pNtkCube , pObj , i ) Abc_NtkDeleteObj( pObj );
    pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars , eLits , dropIndex );
+   if ( _fTimer ) timer.timeCk += Abc_Clock()-clk;
    if ( pObjCla ) {
       erNtkPatchPoCheck( _pNtkCube , pObjCla );
       return erNtkBddComputeSp( _pNtkCube , fIncre );
@@ -513,13 +517,18 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
 {
    Abc_Ntk_t * pNtkCopy , * pNtkAig;
    Abc_Obj_t * pObj;
+   abctime clk=0;
    double prob=0.0;
    int i;
-   
+  
+   if ( _fTimer ) clk = Abc_Clock();
    pNtkCopy = Abc_NtkDup( pNtkClause );
    pNtkAig  = Abc_NtkStrash( pNtkCopy , 0 , 1 , 0 );
+   if ( _fTimer ) timer.timeSt += Abc_Clock()-clk;
    if ( fIncre ) {
+      if ( _fTimer ) clk = Abc_Clock();
       erNtkMergeIntoAig( pNtkAig );
+      if ( _fTimer ) timer.timeMg += Abc_Clock()-clk;
 #if 0
       Abc_Ntk_t * pNtk , * pNtkRes;
       pNtk = Abc_NtkDup( _pNtkAig );
@@ -532,16 +541,22 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
       Abc_NtkForEachObj( _pNtkAig , pObj , i ) 
          printf( "  > %d-th obj, name %s, DdNode %p\n" , i , Abc_ObjName(pObj) , Abc_ObjGlobalBdd(pObj) );
 #endif
+      if ( _fTimer ) clk = Abc_Clock();
       prob = (double)Ssat_BddComputeRESp( _pNtkAig , _dd , Abc_NtkPoNum(_pNtkAig)-1 , _rootVars[1].size() , 1 );
+      if ( _fTimer ) timer.timeBd += Abc_Clock()-clk;
 #endif
    }
    else {
       Abc_NtkForEachPi( pNtkAig , pObj , i )
 	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
+      if ( _fTimer ) clk = Abc_Clock();
       prob = (double)Pb_BddComputeRESp( pNtkAig , 0 , _rootVars[1].size() , 1 , 0 );
+      if ( _fTimer ) timer.timeBd += Abc_Clock()-clk;
    }
+   if ( _fTimer ) clk = Abc_Clock();
    Abc_NtkDelete( pNtkCopy );
    Abc_NtkDelete( pNtkAig );
+   if ( _fTimer ) timer.timeSt += Abc_Clock()-clk;
    return prob;
 }
 
@@ -565,9 +580,6 @@ SsatSolver::erNtkMergeIntoAig( Abc_Ntk_t * pNtkMerge )
       Abc_Print( -1 , "Merging AIG has failed!\n" );
       exit(1);
    }
-   //printf( "  > po num = %d\n" , Abc_NtkPoNum(_pNtkAig) );
-   //Abc_NtkShow( _pNtkAig , 0 , 0 , 1 );
-   //fflush(stdout);
 }
 
 DdManager*

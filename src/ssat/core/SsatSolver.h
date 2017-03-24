@@ -57,7 +57,11 @@ typedef struct SsatTimer_ {
    abctime timeS1; // s1 solving time
    abctime timeS2; // s2 solving time
    abctime timeGd; // s2 greedy time
-   abctime timeCa; // Cachet time
+   abctime timeCa; // Counting time
+   abctime timeBd; // Bdd construction time
+   abctime timeCk; // Cnf to sop ckt time
+   abctime timeSt; // Sop ckt strash time
+   abctime timeMg; // Aig merging time
    int nS2solve;   // # of s2 solving
    int nGdsolve;   // # of s2 greedy
    int nS1solve;   // # of s1 solving
