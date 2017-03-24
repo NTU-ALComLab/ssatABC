@@ -846,7 +846,7 @@ Ssat_BddComputeRESp( Abc_Ntk_t * pNtk , DdManager * dd , int numPo , int numRand
    float prob;
    int fDropInternal , Counter , i , k;
 
-   fDropInternal  = 0;
+   fDropInternal  = 1;
    Counter        = 0;
    pProgress      = Extra_ProgressBarStart( stdout , Abc_NtkNodeNum( pNtk ) );
    pObj           = Abc_NtkPo( pNtk , numPo );

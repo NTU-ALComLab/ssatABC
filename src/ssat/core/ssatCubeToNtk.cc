@@ -496,8 +496,6 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
       Abc_NtkDelete( pNtkClause );
       exit(1);
    }
-   //Ssat_DumpCubeNtk( pNtkClause );
-   //fflush(stdout);
 }
 
 /**Function*************************************************************
@@ -517,6 +515,7 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
 {
    Abc_Ntk_t * pNtkCopy , * pNtkAig;
    Abc_Obj_t * pObj;
+   DdNode * bFunc;
    abctime clk=0;
    double prob=0.0;
    int i;
@@ -529,22 +528,18 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
       if ( _fTimer ) clk = Abc_Clock();
       erNtkMergeIntoAig( pNtkAig );
       if ( _fTimer ) timer.timeMg += Abc_Clock()-clk;
-#if 0
-      Abc_Ntk_t * pNtk , * pNtkRes;
-      pNtk = Abc_NtkDup( _pNtkAig );
-      pNtkRes = Abc_NtkCollapse( pNtk, ABC_INFINITY, 0, 1, 0 );
-#else
-      Abc_NtkForEachPi( _pNtkAig , pObj , i ) 
-	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
-#ifdef DEBUG
-      printf( "  > Before RESp:\n" );
-      Abc_NtkForEachObj( _pNtkAig , pObj , i ) 
-         printf( "  > %d-th obj, name %s, DdNode %p\n" , i , Abc_ObjName(pObj) , Abc_ObjGlobalBdd(pObj) );
-#endif
       if ( _fTimer ) clk = Abc_Clock();
+      Abc_NtkForEachPi( _pNtkAig , pObj , i )
+      {
+	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
+         if ( !Abc_ObjGlobalBdd(pObj) ) {
+            bFunc = _dd->vars[i];
+            Abc_ObjSetGlobalBdd( pObj , bFunc );  
+		      Cudd_Ref( bFunc );
+         }
+      }
       prob = (double)Ssat_BddComputeRESp( _pNtkAig , _dd , Abc_NtkPoNum(_pNtkAig)-1 , _rootVars[1].size() , 1 );
       if ( _fTimer ) timer.timeBd += Abc_Clock()-clk;
-#endif
    }
    else {
       Abc_NtkForEachPi( pNtkAig , pObj , i )
@@ -589,12 +584,11 @@ SsatSolver::erInitCudd( Abc_Ntk_t * pNtk , int numRand , int fGrp )
     Vec_Att_t * pAttMan;
     DdManager * dd;
     DdNode * bFunc;
-    int nBddSizeMax , fReorder , fVerbose , i;
+    int fReorder , fVerbose , i;
 
     // set defaults
-	 nBddSizeMax   = ABC_INFINITY;
-	 fReorder      = ( numRand < Abc_NtkPiNum( pNtk ) ) ? 0 : 1;
-	 fVerbose      = 0;
+	 fReorder = ( numRand < Abc_NtkPiNum( pNtk ) ) ? 0 : 1;
+	 fVerbose = 0;
     // remove dangling nodes
     Abc_AigCleanup( (Abc_Aig_t *)pNtk->pManFunc );
     // start the manager
