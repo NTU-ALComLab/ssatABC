@@ -552,7 +552,7 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
    }
    if ( _fTimer ) clk = Abc_Clock();
    Abc_NtkDelete( pNtkCopy );
-   if ( pAttMan ) {
+   if ( fIncre ) {
       Vec_PtrWriteEntry( pNtkAig->vAttrs , VEC_ATTR_GLOBAL_BDD , NULL );
       Vec_AttFree( pAttMan , 0 );
    }
