@@ -87,7 +87,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat    ( double , int , int , bool , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        solveSsat    ( double , int , int , bool , bool , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
    void        bddSolveSsat ( bool , bool ); // Solve SSAT by bdd
    // ER-2-Ssat solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
@@ -107,7 +107,7 @@ private:
    // solve interface
    void        qSolve             ( double , int , int , bool ); // Qesto-like solve
    void        aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
-   void        erSolve2SSAT       ( bool , bool , bool , bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
+   void        erSolve2SSAT       ( bool , bool , bool , bool , bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -156,7 +156,7 @@ private:
    void        ntkWriteWcnf       ( Abc_Ntk_t * );
    double      ntkBddComputeSp    ( Abc_Ntk_t * , bool );
    // construct circuits from clauses for ER-2SSAT
-   void        initClauseNetwork  ( bool );
+   void        initClauseNetwork  ( bool , bool );
    void        erNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkCreatePo      ( Abc_Ntk_t * );
    double      clauseToNetwork    ( const vec<Lit>& , int , bool );

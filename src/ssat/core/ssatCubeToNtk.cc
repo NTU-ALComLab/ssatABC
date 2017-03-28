@@ -385,16 +385,33 @@ Ssat_DumpCubeNtk( Abc_Ntk_t * pNtk )
 ***********************************************************************/
 
 void
-SsatSolver::initClauseNetwork( bool fIncre )
+SsatSolver::initClauseNetwork( bool fIncre , bool fCkt )
 {
-   char name[32];
-   _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
-   sprintf( name , "er_clauses_network" );
-   _pNtkCube->pName = Extra_UtilStrsav( name );
-   _vMapVars = Vec_PtrStart( _s1->nVars() );
-   erNtkCreatePi( _pNtkCube , _vMapVars ); 
-   if ( fIncre ) _dd = erInitCudd( Abc_NtkPiNum(_pNtkCube) , _rootVars[1].size() , 1 );
-   erNtkCreatePo( _pNtkCube ); 
+   if ( fCkt ) {
+      char name[32];
+      _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
+      sprintf( name , "er_clauses_network" );
+      _pNtkCube->pName = Extra_UtilStrsav( name );
+      _vMapVars = Vec_PtrStart( _s1->nVars() );
+      erNtkCreatePi( _pNtkCube , _vMapVars ); 
+      if ( fIncre ) _dd = erInitCudd( Abc_NtkPiNum(_pNtkCube) , _rootVars[1].size() , 1 );
+      erNtkCreatePo( _pNtkCube );
+   }
+   else {
+      //printf( "[INFO] Under construction...\n" );
+      int numVars = 0;
+      for ( int i = 1 ; i < _rootVars.size() ; ++i ) numVars += _rootVars[i].size();
+      _dd = erInitCudd( numVars , _rootVars[1].size() , 1 );
+      _vMapVars = Vec_PtrStart( _s1->nVars() );
+      for ( int i = 1 , k = 0 ; i < _rootVars.size() ; ++i )
+         for ( int j = 0 ; j < _rootVars[i].size() ; ++j , ++k )
+            Vec_PtrWriteEntry( _vMapVars , _rootVars[i][j] , _dd->vars[k] );
+      /*DdNode * bFunc;
+      int i;
+      Vec_PtrForEachEntry( DdNode * , _vMapVars , bFunc , i  )
+         printf( "  > var %d ---> DdNode %p\n" , i , bFunc );
+      exit(1);*/
+   }
 }
 
 void

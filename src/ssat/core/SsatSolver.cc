@@ -213,13 +213,13 @@ SsatSolver::readPrefix( StreamBuffer & in , Solver & S , double prob ,
 ***********************************************************************/
 
 void
-SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , 
-                       bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre )
+SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , bool fBdd , 
+                       bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre , bool fCkt )
 {
    if ( _numLv > 3 || _numLv == 1 )
       fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
-      erSolve2SSAT( fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre );
+      erSolve2SSAT( fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre , fCkt );
    else if ( fAll )
       aSolve( range , upper , lower , fMini , fBdd ); 
    else

@@ -55,15 +55,16 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre , bool fCkt )
 {
    if ( _fVerbose ) {
-      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s , dynamic = %s , incremental = %s\n" , 
-              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" , fDynamic ? "yes":"no" , fIncre ? "yes":"no" );
+      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s , dynamic = %s , incremental = %s , circuit = %s\n" , 
+              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" , 
+              fDynamic ? "yes":"no" , fIncre ? "yes":"no" , fCkt ? "yes":"no" );
    }
    _s1->simplify();
    _s2 = fGreedy ? buildQestoSelector() : buildERSelector();
-   if ( fBdd ) initClauseNetwork( fIncre );
+   if ( fBdd ) initClauseNetwork( fIncre , fCkt );
    if ( fSub ) buildSubsumeTable( *_s1 );
 
    cout << "--------------------------------------\n";
