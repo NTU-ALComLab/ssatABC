@@ -137,7 +137,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
          }
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = fBdd ? clauseToNetwork( eLits , totalSize , fIncre ) : countModels( eLits , totalSize );
+         subvalue  = fBdd ? clauseToNetwork( eLits , totalSize , fIncre , fCkt ) : countModels( eLits , totalSize );
          if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
             ++timer.nCachet;
@@ -173,13 +173,13 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             else                             dropIndex -= 1;
             while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
             if ( _fTimer ) clk = Abc_Clock();
-            subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre ) : countModels( parLits , dropIndex );
+            subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre , fCkt ) : countModels( parLits , dropIndex );
             if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
             if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
                for (;;) {
                   --dropIndex;
                   if ( _fTimer ) clk = Abc_Clock();
-                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre ) : countModels( parLits , dropIndex );
+                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre , fCkt ) : countModels( parLits , dropIndex );
                   if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
                   if ( subvalue > _satPb ) break;
                }
@@ -189,7 +189,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
                for (;;) {
                   ++dropIndex;
                   if ( _fTimer ) clk = Abc_Clock();
-                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre ) : countModels( parLits , dropIndex );
+                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre , fCkt ) : countModels( parLits , dropIndex );
                   if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
                   if ( subvalue <= _satPb ) break;
                }

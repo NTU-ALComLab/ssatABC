@@ -27,9 +27,11 @@ extern SsatTimer timer;
 //#define DEBUG
 // external functions from ABC
 extern "C" {
-   void        Abc_NtkShow     ( Abc_Ntk_t * , int , int , int );
-   Abc_Ntk_t * Abc_NtkDarToCnf ( Abc_Ntk_t * , char * , int , int , int );
-   int         Abc_NtkDSat     ( Abc_Ntk_t * , ABC_INT64_T , ABC_INT64_T , int , int , int , int , int , int , int );
+   void        Abc_NtkShow        ( Abc_Ntk_t * , int , int , int );
+   Abc_Ntk_t * Abc_NtkDarToCnf    ( Abc_Ntk_t * , char * , int , int , int );
+   int         Abc_NtkDSat        ( Abc_Ntk_t * , ABC_INT64_T , ABC_INT64_T , int , int , int , int , int , int , int );
+   void        Pb_BddResetProb    ( DdManager * , DdNode * );
+   void        BddComputeSsat_rec ( Abc_Ntk_t * , DdNode * );
 };
 // helper functions
 Abc_Obj_t * Ssat_SopAnd2Obj   ( Abc_Obj_t * , Abc_Obj_t * );
@@ -387,22 +389,20 @@ Ssat_DumpCubeNtk( Abc_Ntk_t * pNtk )
 void
 SsatSolver::initClauseNetwork( bool fIncre , bool fCkt )
 {
+   char name[32];
+   _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
+   sprintf( name , "er_clauses_network" );
+   _pNtkCube->pName = Extra_UtilStrsav( name );
+   _vMapVars = Vec_PtrStart( _s1->nVars() );
+   erNtkCreatePi( _pNtkCube , _vMapVars ); 
    if ( fCkt ) {
-      char name[32];
-      _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
-      sprintf( name , "er_clauses_network" );
-      _pNtkCube->pName = Extra_UtilStrsav( name );
-      _vMapVars = Vec_PtrStart( _s1->nVars() );
-      erNtkCreatePi( _pNtkCube , _vMapVars ); 
       if ( fIncre ) _dd = erInitCudd( Abc_NtkPiNum(_pNtkCube) , _rootVars[1].size() , 1 );
       erNtkCreatePo( _pNtkCube );
    }
    else {
       //printf( "[INFO] Under construction...\n" );
-      int numVars = 0;
-      for ( int i = 1 ; i < _rootVars.size() ; ++i ) numVars += _rootVars[i].size();
-      _dd = erInitCudd( numVars , _rootVars[1].size() , 1 );
-      _vMapVars = Vec_PtrStart( _s1->nVars() );
+      _dd = erInitCudd( Abc_NtkPiNum(_pNtkCube) , _rootVars[1].size() , 1 );
+      Vec_PtrFill( _vMapVars , Vec_PtrSize(_vMapVars) , NULL );
       for ( int i = 1 , k = 0 ; i < _rootVars.size() ; ++i )
          for ( int j = 0 ; j < _rootVars[i].size() ; ++j , ++k )
             Vec_PtrWriteEntry( _vMapVars , _rootVars[i][j] , _dd->vars[k] );
@@ -447,22 +447,44 @@ SsatSolver::erNtkCreatePo( Abc_Ntk_t * pNtkClause )
 }
 
 double
-SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncre )
+SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncre , bool fCkt )
 {
-   Abc_Obj_t * pObj , * pObjCla;
-   abctime clk=0;
-   double prob;
-   int i;
-   if ( _fTimer ) clk = Abc_Clock();
-   Abc_NtkForEachNode( _pNtkCube , pObj , i ) Abc_NtkDeleteObj( pObj );
-   pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars , eLits , dropIndex );
-   if ( _fTimer ) timer.timeCk += Abc_Clock()-clk;
-   if ( pObjCla ) {
-      erNtkPatchPoCheck( _pNtkCube , pObjCla );
-      prob = erNtkBddComputeSp( _pNtkCube , fIncre );
-      return prob;
+   if ( fCkt ) {
+      Abc_Obj_t * pObj , * pObjCla;
+      abctime clk=0;
+      double prob;
+      int i;
+      if ( _fTimer ) clk = Abc_Clock();
+      Abc_NtkForEachNode( _pNtkCube , pObj , i ) Abc_NtkDeleteObj( pObj );
+      pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars , eLits , dropIndex );
+      if ( _fTimer ) timer.timeCk += Abc_Clock()-clk;
+      if ( pObjCla ) {
+         erNtkPatchPoCheck( _pNtkCube , pObjCla );
+         prob = erNtkBddComputeSp( _pNtkCube , fIncre );
+         return prob;
+      }
+      return 1.0;
    }
-   return 1.0;
+   else {
+      //printf( "[INFO] Under construction...\n" );
+      Abc_Obj_t * pObj;
+      DdNode * bFunc;
+      double prob;
+      int i;
+      Abc_NtkForEachPi( _pNtkCube , pObj , i )
+      {
+	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
+         Cudd_Ref( _dd->vars[i] );
+      }
+      bFunc = erNtkCreateBdd( _dd , _vMapVars , eLits , dropIndex );
+	   if ( bFunc ) {
+         Pb_BddResetProb( _dd , bFunc );
+         BddComputeSsat_rec( _pNtkCube , bFunc );
+         prob = Cudd_IsComplement( bFunc ) ? 1.0-Cudd_Regular(bFunc)->pMin : Cudd_Regular(bFunc)->pMax;
+         return prob;
+      }
+      return 1.0;
+   }
 }
 
 Abc_Obj_t*
@@ -513,6 +535,36 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
       Abc_NtkDelete( pNtkClause );
       exit(1);
    }*/
+}
+
+DdNode*
+SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , int dropIndex )
+{
+   vec<bool> drop( _s1->nVars() , false );
+   DdNode * bCla , * bCnf;
+   bool select;
+
+   bCnf = Cudd_ReadOne( dd );
+   for ( int i = dropIndex ; i < eLits.size() ; ++i ) drop[var(eLits[i])] = true;
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      select = true;
+      Clause & c = _s1->ca[_s1->clauses[i]];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( drop[var(c[j])] || isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+            select = false;
+            break;
+         }
+      }
+      if ( select ) {
+         bCla = Cudd_ReadLogicZero( dd );
+         for ( int j = 0 ; j < c.size() ; ++j ) {
+            if ( _level[var(c[j])] && _s1->value(c[j]) != l_False )
+               bCla = Cudd_bddOr( dd , bCla , Cudd_NotCond( (DdNode*)Vec_PtrEntry(vMapVars,var(c[j])) , sign(c[j]) ) );
+         }
+         bCnf = Cudd_bddAnd( dd , bCnf , bCla );
+      }
+   }
+   return bCnf;
 }
 
 /**Function*************************************************************
