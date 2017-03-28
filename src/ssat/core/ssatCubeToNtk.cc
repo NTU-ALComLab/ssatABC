@@ -541,10 +541,11 @@ DdNode*
 SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , int dropIndex )
 {
    vec<bool> drop( _s1->nVars() , false );
-   DdNode * bCla , * bCnf;
+   DdNode * bCla , * bCnf , * bFunc0 , * bFunc1;
    bool select;
 
    bCnf = Cudd_ReadOne( dd );
+   //Cudd_Ref( bCnf );
    for ( int i = dropIndex ; i < eLits.size() ; ++i ) drop[var(eLits[i])] = true;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       select = true;
@@ -557,11 +558,27 @@ SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Li
       }
       if ( select ) {
          bCla = Cudd_ReadLogicZero( dd );
+         //Cudd_Ref( bCla );
          for ( int j = 0 ; j < c.size() ; ++j ) {
-            if ( _level[var(c[j])] && _s1->value(c[j]) != l_False )
-               bCla = Cudd_bddOr( dd , bCla , Cudd_NotCond( (DdNode*)Vec_PtrEntry(vMapVars,var(c[j])) , sign(c[j]) ) );
+            if ( _level[var(c[j])] && _s1->value(c[j]) != l_False ) {
+               bFunc0 = bCla;
+               Cudd_Ref( bFunc0 );
+               bFunc1 = Cudd_NotCond( (DdNode*)Vec_PtrEntry(vMapVars,var(c[j])) , sign(c[j]) );
+               Cudd_Ref( bFunc1 );
+               bCla = Cudd_bddOr( dd , bFunc0 , bFunc1 );
+               Cudd_Ref( bCla );
+               Cudd_RecursiveDeref( dd , bFunc0 );
+               Cudd_RecursiveDeref( dd , bFunc1 );
+            }
          }
-         bCnf = Cudd_bddAnd( dd , bCnf , bCla );
+         bFunc0 = bCnf;
+         Cudd_Ref( bFunc0 );
+         bFunc1 = bCla;
+         Cudd_Ref( bFunc1 );
+         bCnf = Cudd_bddAnd( dd , bFunc0 , bFunc1 );
+         Cudd_Ref( bCnf );
+         Cudd_RecursiveDeref( dd , bFunc0 );
+         Cudd_RecursiveDeref( dd , bFunc1 );
       }
    }
    return bCnf;
