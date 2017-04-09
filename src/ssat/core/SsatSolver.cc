@@ -541,6 +541,8 @@ SsatSolver::interrupt()
 {
    printf( "\n[WARNING] interruption occurs, compute results before exiting\n" );
    abctime clk = 0;
+   printf( "[INFO] # of UNSAT cubes: %d\n" , _unsatClause.size() );
+   printf( "[INFO] # of   SAT cubes: %d\n" ,   _satClause.size() );
    if ( _unsatClause.size() ) {
       clk = Abc_Clock();
       _unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );

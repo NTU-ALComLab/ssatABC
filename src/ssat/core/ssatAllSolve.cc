@@ -134,9 +134,13 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
             ++timer.nS2solve;
             clk = Abc_Clock();
          }
-         _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
-         //_satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
-         if ( _fTimer && !fBdd ) {
+         printf( "[INFO] # of UNSAT cubes: %d\n" , _unsatClause.size() );
+         printf( "[INFO] # of   SAT cubes: %d\n" ,   _satClause.size() );
+         //if ( _unsatClause.size() < _satClause.size() )
+            _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
+         //else
+            _satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
+         if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
             timer.nCachet += 1;
          }
@@ -151,7 +155,9 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
          _unsatClause.push();
          if ( fMini ) {
             sBkCla.clear();
+            if ( _fTimer ) clk = Abc_Clock();
             miniUnsatCore( _s1->conflict , sBkCla );
+            if ( _fTimer ) timer.timeGd += Abc_Clock()-clk;
             sBkCla.copyTo( _unsatClause.last() );
             if ( !sBkCla.size() ) { // FIXME: temp sol for UNSAT matrix
                _unsatPb = 1.0;
@@ -167,7 +173,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
          if ( unsatCubeListFull() ) {
             if ( _fTimer ) clk = Abc_Clock();
             _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
-            if ( _fTimer && !fBdd ) {
+            if ( _fTimer ) {
                timer.timeCa += Abc_Clock()-clk;
                ++timer.nCachet;
             }
@@ -179,15 +185,25 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
       }
       else { // SAT case
          if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
-         sBkCla.clear();
-         miniHitSet( sBkCla , 0 ); // random var at Lv.0
          _satClause.push();
-         sBkCla.copyTo( _satClause.last() );
-         _s2->addClause( sBkCla );
+         if ( fMini ) {
+            sBkCla.clear();
+            if ( _fTimer ) clk = Abc_Clock();
+            miniHitSet( sBkCla , 0 ); // random var at Lv.0
+            if ( _fTimer ) timer.timeCk += Abc_Clock()-clk;
+            sBkCla.copyTo( _satClause.last() );
+            _s2->addClause( sBkCla );
+         }
+         else {
+            vec<Lit> rCla( _rootVars[0].size() );
+            for ( int i = 0 ; i < rLits.size() ; ++i ) rCla[i] = ~rLits[i];
+            rLits.copyTo( _satClause.last() );
+            _s2->addClause( rCla );
+         }
          if ( satCubeListFull() ) {
             if ( _fTimer ) clk = Abc_Clock();
             _satPb = fBdd ? cubeToNetwork(true) : cachetCount(true);
-            if ( _fTimer && !fBdd ) {
+            if ( _fTimer ) {
                timer.timeCa += Abc_Clock()-clk;
                ++timer.nCachet;
             }
