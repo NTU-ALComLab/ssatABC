@@ -531,6 +531,7 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
 DdNode*
 SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , int dropIndex , int numPi , int numRand )
 {
+   vec<DdNode*> claNodes;
    vec<bool> drop( _s1->nVars() , false );
    DdNode * bCla , * bCnf , * bFunc0 , * bFunc1;
    bool select;
@@ -559,14 +560,29 @@ SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Li
                Cudd_RecursiveDeref( dd , bFunc0 );
             }
          }
+// better practice with bdd: create all OR first
+#if 0
          bFunc0 = bCnf;
          bFunc1 = bCla;
          bCnf = Cudd_bddAnd( dd , bFunc0 , bFunc1 );
          Cudd_Ref( bCnf );
          Cudd_RecursiveDeref( dd , bFunc0 );
          Cudd_RecursiveDeref( dd , bFunc1 );
+#else
+         claNodes.push( bCla );
+#endif
       }
    }
+#if 1
+   for ( int i = 0 ; i < claNodes.size() ; ++i ) {
+      bFunc0 = bCnf;
+      bFunc1 = claNodes[i];
+      bCnf = Cudd_bddAnd( dd , bFunc0 , bFunc1 );
+      Cudd_Ref( bCnf );
+      Cudd_RecursiveDeref( dd , bFunc0 );
+      Cudd_RecursiveDeref( dd , bFunc1 );
+   }
+#endif
    // check random/exist variables are correctly ordered
    if ( numRand < numPi && Cudd_ReadInvPerm( dd , 0 ) > numRand-1 ) {
       if ( Pb_BddShuffleGroup( dd , numRand , numPi-numRand ) == 0 ) {

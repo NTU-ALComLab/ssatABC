@@ -191,10 +191,10 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    bool fAll , fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre , fCkt , fVerbose , fTimer;
 
    range    = 0.0;
-   //upper    = 16;
-   //lower    = 65536;
-   upper    = -1;
-   lower    = -1;
+   upper    = 16;
+   lower    = 65536;
+   //upper    = -1;
+   //lower    = -1;
    fAll     = true;
    fMini    = true;
    fBdd     = false;
@@ -202,8 +202,8 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    fSub     = true;
    fGreedy  = true;
    fDynamic = true;
-   fIncre   = false;
-   fCkt     = true;
+   fIncre   = true;
+   fCkt     = false;
    fVerbose = true;
    fTimer   = true;
    Extra_UtilGetoptReset();
