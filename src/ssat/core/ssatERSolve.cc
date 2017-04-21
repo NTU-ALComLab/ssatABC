@@ -730,7 +730,25 @@ SsatSolver::getLearntClaLen( Solver & S , const vec<int>& selClaInd , const vec<
 void
 SsatSolver::assertPureLit()
 {
-   Abc_Print( 0 , "  > pure literal under construction ...\n" );
+   vec<int> phase( _s1->nVars() , -1 ); // -1: default, 0:pos, 1:neg, 2: both
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      CRef     cr = _s1->clauses[i];
+      Clause & c  = _s1->ca[cr];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( _level[var(c[j])] == 0 && phase[var(c[j])] != 2 ) {
+            if ( phase[var(c[j])] == -1 ) 
+               phase[var(c[j])] = sign(c[j]) ? 1 : 0;
+            else if ( ((bool)phase[var(c[j])]) ^ sign(c[j]) )
+               phase[var(c[j])] = 2;
+         }
+      }
+   }
+   for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
+      if ( phase[_rootVars[0][i]] == 0 || phase[_rootVars[0][i]] == 1 ) {
+         printf( "  > [INFO] asserting pure literal %s%d\n" , phase[_rootVars[0][i]] ? "-":" " , _rootVars[0][i]+1 );
+         _s2->addClause( mkLit( _rootVars[0][i] , (bool)phase[_rootVars[0][i]] ) );
+      }
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////
