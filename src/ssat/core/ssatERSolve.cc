@@ -55,17 +55,19 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre , bool fCkt )
+SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , 
+                          bool fDynamic , bool fIncre , bool fCkt , bool fPure )
 {
    if ( _fVerbose ) {
-      printf( "  > Using %s for counting , partial = %s , subsume = %s , greedy = %s , dynamic = %s , incremental = %s , circuit = %s\n" , 
+      printf( "  > Using %s for counting, partial=%s, subsume=%s, greedy=%s, dynamic=%s, incremental=%s, circuit=%s, pure=%s\n" , 
               fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" , 
-              fDynamic ? "yes":"no" , fIncre ? "yes":"no" , fCkt ? "yes":"no" );
+              fDynamic ? "yes":"no" , fIncre ? "yes":"no" , fCkt ? "yes":"no" , fPure ? "yes":"no" );
    }
    _s1->simplify();
    _s2 = fGreedy ? buildQestoSelector() : buildERSelector();
-   if ( fBdd ) initClauseNetwork( fIncre , fCkt );
-   if ( fSub ) buildSubsumeTable( *_s1 );
+   if ( fBdd  ) initClauseNetwork( fIncre , fCkt );
+   if ( fSub  ) buildSubsumeTable( *_s1 );
+   if ( fPure ) assertPureLit();
 
    cout << "--------------------------------------\n";
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla , parLits;
@@ -711,6 +713,24 @@ SsatSolver::getLearntClaLen( Solver & S , const vec<int>& selClaInd , const vec<
       }
    }
    return learnt.size();
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Assign pure X literals to be true.]
+
+  Description [If some X literal is pure, always deselect.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::assertPureLit()
+{
+   Abc_Print( 0 , "  > pure literal under construction ...\n" );
 }
 
 ////////////////////////////////////////////////////////////////////////
