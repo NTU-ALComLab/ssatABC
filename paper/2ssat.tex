@@ -1,0 +1,267 @@
+\documentclass{llncs}
+\usepackage{times}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{caption}
+\usepackage{amsfonts}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{multirow}
+\usepackage{subfigure}
+\usepackage{latexsym}
+\usepackage{rotating}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{color}
+\usepackage{url}
+
+\iffalse
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{fact}{Fact}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{remark}{Remark}
+\newtheorem{step}{Step}
+\newtheorem{formulation}{Problem Statement}
+\fi
+\newcommand{\mytilde}[1]{\overset{\sim}{#1}}
+\newcommand{\invR}{\begin{sideways}%
+\begin{sideways}$\mathsf{R}$\end{sideways}\end{sideways}}
+\def\QED{\mbox{\rule[0pt]{1.5ex}{1.5ex}}}
+\def\endproof{\hspace*{\fill}~\QED\par\endtrivlist}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% macros to write pseudo-code
+
+\newlength{\pgmtab}  %  \pgmtab is the width of each tab in the
+\setlength{\pgmtab}{1em}  %  program environment
+\newenvironment{program}{\renewcommand{\baselinestretch}{1}%
+\begin{tabbing}\hspace{0em}\=\hspace{0em}\=%
+\hspace{\pgmtab}\=\hspace{\pgmtab}\=\hspace{\pgmtab}\=\hspace{\pgmtab}\=%
+\hspace{\pgmtab}\=\hspace{\pgmtab}\=\hspace{\pgmtab}\=\hspace{\pgmtab}\=%
+\hspace{\pgmtab}\=\hspace{\pgmtab}\=\hspace{\pgmtab}\=
+\+\+\kill}{\end{tabbing}\renewcommand{\baselinestretch}{\intl}}
+\newcommand {\BEGIN}{{\bf begin\ }}
+\newcommand {\ELSE}{{\bf else\ }}
+\newcommand {\IF}{{\bf if\ }}
+\newcommand {\ELIF}{{\bf elif\ }}
+\newcommand {\FOR}{{\bf for\ }}
+\newcommand {\TO}{{\bf to\ }}
+\newcommand {\DO}{{\bf do\ }}
+\newcommand {\WHILE}{{\bf while\ }}
+\newcommand {\ACCEPT}{{\bf accept}}
+\newcommand {\REJECT}{\mbox{\bf reject}}
+\newcommand {\THEN}{\mbox{\bf then\ }}
+\newcommand {\END}{{\bf end}}
+\newcommand {\RETURN}{\mbox{\bf return\ }}
+\newcommand {\HALT}{\mbox{\bf halt}}
+\newcommand {\REPEAT}{\mbox{\bf repeat\ }}
+\newcommand {\UNTIL}{\mbox{\bf until\ }}
+\newcommand {\TRUE}{\textsc{true}}
+\newcommand {\FALSE}{\textsc{false}}
+\newcommand {\FORALL}{\mbox{\bf for all\ }}
+\newcommand {\DOWNTO}{\mbox{\bf down to\ }}
+\newcommand {\INPUT}{{\bf input}}
+\newcommand {\OUTPUT}{{\bf output}}
+\newcommand {\YES}{\textsc{Yes}}
+\newcommand {\NO}{\textsc{No}}
+
+\newcommand {\READ}{{\bf read\ }}
+\newcommand {\RESOLVE}{{\bf resolve\ }}
+\newcommand {\REDUCE}{{\bf reduce\ }}
+\newcommand {\SAVE}{{\bf save\ }}
+\newcommand {\ASSIGN}{{\bf assign\ }}
+\newcommand {\PUSH}{\mbox{\bf push\ }}
+\newcommand {\PUSHBACK}{\mbox{\bf push back\ }}
+\newcommand {\INITIALIZE}{{\bf initialize\ }}
+\newcommand {\FOREACH}{{\bf foreach\ }}
+\newcommand {\ALLOC}{{\bf allocate\ }}
+\newcommand {\BREAK}{{\bf break}}
+\newcommand {\CONTI}{{\bf continue}}
+\newcommand {\NULL}{{\bf NULL}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\title{Solving Exist-Random Quantified Stochastic Boolean Satisfiability by Clause Selection}
+\title{Solving E-MAJSAT by Clause Containment Learning}
+\author{Nian-Ze Lee, Yen-Shi Wang, and Jie-Hong R. Jiang}
+\institute{
+Department of Electrical Engineering / Graduate Institute of Electronics Engineering\\
+National Taiwan University, Taipei 10617, Taiwan\\
+\email{}}
+\begin{document}
+
+\maketitle
+\begin{abstract}
+Stochastic Boolean Satisfiability (SSAT) is an expressive language to formulate computational problems with randomness. Solving SSAT formulas has the same computational complexity (PSPACE-complete) as solving Quantified Boolean Formula (QBF). In spite of the abundant applications and profound theoretical values, SSAT has received relatively less attentions than QBF. This paper focuses on exist-random quantified SSAT formulas, which are also known as E-MAJSAT and have various applications in probabilistic conformant planning, posteriori hypothesis (MAP), and maximum expected utility (MEU). Leveraging the technique of clause selection, which has been recently used to solve QBF successfully, we propose a new clause learning technique and design an algorithm to solve E-MAJSAT. Several enhancement skills are exploited to improve the computational efficiency. The proposed algorithm is evaluated over a collection of benchmarks including hand-craft families, random $k$-CNF formulas, probabilistic conformant planning, and probabilistic circuit verification. Experimental results demonstrate that the proposed algorithm outperforms the state-of-the-art algorithm in runtime with one order of magnitude improvement in memory consumption over random $k$-CNF formulas, and the enhancement skills achieve exponential speedup over hand-craft families.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+\textcolor{red}{TODO...}
+
+\section{Preliminaries}\label{sec:preli}
+Let $\mathbb{B} = \{\top, \perp\}$, where $\top$ and $\perp$ denote logic TRUE and FALSE. A Boolean variable is defined on $\mathbb{B}$, and we call it {\it variable} in the sequel. A {\it literal} $l$ is a variable $x$ or its negation $\neg x$ and $var(l)=x$. An assignment on a set of variables $X$ is a function $\tau:X \rightarrow \mathbb{B}$. A Boolean formula $\phi$ over variables of $\phi$, $var(\phi) \subseteq \{x_1, x_2, \ldots, x_n\}$, is usually written in conjunctive normal form (CNF). For $\phi = \bigwedge_{i=1}^{n} C_i$ we also write it as $\phi = \{C_1, C_2, \ldots, C_n\}$, each clause $C_i$ is composed of disjunction of literals.
+
+For an assignment $\tau$ defined on $X \subseteq var(\phi)$, it's a complete (resp. partial) assignment if $X = var(\phi)$ (resp. $X \subset var(\phi)$). $\phi|_{\tau}$ is a formula obtained by substituting every appearance of $x \in X$ by $\tau(x)$ in $\phi$. We also write $\phi|_{\tau} = \{C_i : C_i|_{\tau} \neq \top, 1 \leq i \leq n\}$ for later use. An assignment $\tau$ is written in conjunction of literals for simplicity (ex. $\tau = x_1\neg x_2 x_3$ means $\tau(x_1) = \top$, $\tau(x_2) = \perp$ and $\tau(x_3) = \top$). It's an {\it satisfying assignment} (resp. {\it unsatisfying assignment}) if $\phi|_{\tau} = \top$ (resp. $\phi|_{\tau} = \perp$).
+
+
+\subsection{Model Counting}
+Given a CNF formula $\phi$, the \textit{model counting} problem finds the number of satisfying assignments of $\phi$. In its weighted version, a weighting function $\omega$ maps each Boolean variable $x \in \mathtt{var}(\phi)$ to a \textit{weight} $\omega(x) \in [0,1]$, which represents $\mathrm{Pr}[x=\top]$. The weight of a negative literal $\neg x$ is defined to be $1-\omega(x)$. The weight of an assignment equals the product of the weights of its individual literals. The weight of a Boolean formula equals the summation of weights of its satisfying assignments. There are two categories of model counting algorithms: \textit{Exact model counting} computes the precise number of satisfying assignments of a formula; \textit{approximate model counting} computes the upper or lower bounds of the number of satisfying assignments of a formula with some confidence level.
+\iffalse
+\begin{example}\label{ex:weight}
+Consider the same matrix $\phi$ as in Example 1.
+Given a weight function where $\omega(x_1) = 0.2$, $\omega(x_2) = 0.3$, $\omega(x_3) = 0.5$. The SAT mintern $x_1x_2\neg x_3$ has weight of $0.03$ and the UNSAT cube $\neg x_1$ has weight of $0.2$. Total weight of $\phi$ is sum of the weight of two satisfying assignments: $\tau_1 = x_1x_2$, $\tau_2 = x_1x_3$, which is $0.16$.
+\end{example}
+\fi
+
+\subsection{Stochastic Boolean Satisfiability}
+A \textit{stochastic Boolean satisfiability} (SSAT) formula is of the form
+\[
+\Phi = Q_1 x_1 \ldots Q_n x_n. \phi,
+\]
+where $Q_i \in \{\exists, \invR^{p_i}\}$ and $\phi$ is a quantifier-free Boolean formula. In addition to the existential quantifier $\exists$, the randomized quantifier $\invR^{p_i}$ on $x_i$ assigns a probability $p_i \in [0,1]$ for $x_i$ to be true. The quantifier part is called the \textit{prefix}, and the Boolean formula is called the \textit{matrix}.
+Given an SSAT formula $\Phi$, let $v$ be the outermost variable in the prefix. The satisfying probability of $\Phi$ can be computed using the following rules.
+\begin{enumerate}
+  \item[a)] $\mathrm{Pr}[\top]=1$,
+  \item[b)] $\mathrm{Pr}[\perp]=0$,
+  \item[c)] $\mathrm{Pr}[\Phi]=\max\{\mathrm{Pr}[\Phi|_{\neg v}], \mathrm{Pr}[\Phi|_{v}]\}$, if $v$ is existentially quantified,
+  \item[d)] $\mathrm{Pr}[\Phi]=(1-p)\mathrm{Pr}[\Phi|_{\neg v}] + p\mathrm{Pr}[\Phi|_{v}]$, if $v$ is randomly quantified by $\invR^p$,
+\end{enumerate}
+where $\Phi|_{\neg v}$ and $\Phi|_{v}$ denote the SSAT formulas derived by eliminating the outermost quantifier of $v$ by substituting the value of $v$ in the matrix with $\perp$ and $\top$, respectively. In this paper, we aims at solving the \textit{exist-random quantified SSAT formula (ER-SSAT)} of the form $\Phi=\exists X \invR Y. \phi(X,Y)$, where $X=\{e_1,\ldots,e_n\}$ and $Y=\{r_1,\ldots,r_m\}$ are two disjoint sets of Boolean variables.
+
+\subsection{Clause Selection}\label{sec:select}
+\textcolor{red}{TODO...}
+
+
+\subsection{Reduction from ER-SSAT to Model Counting}
+Given a ER-SSAT formula $\Phi=\exists X \invR Y. \phi(X,Y)$, our goal is to evaluate $Pr[\Phi]$. By the rules of SSAT formula, it's to find $\max\{Pr[\Phi|_{\tau}]:\forall \tau \in X \rightarrow \mathbb{B}\}$. Each $\Phi|_{\tau} = \invR Y.\phi (Y)$ is merely random quantified SSAT formula since all $X$ variables have been eliminated. If we assign each random quantified variable $r_i$ a weight $p_i$ corresponding to randomized quantifier $\invR^{p_i} r_i$, $Pr[\Phi|_{\tau}]$ can be seen as a Boolean formula $\phi$ with a weighting function. So we can use any model counting algorithm to find the value for it.
+
+When we are trying all the assignments on $X$, it is common for two assignments $\tau_1$, $\tau_2$ such that $\phi|_{\tau_1} \supseteq \phi|_{\tau_2}$. The implication $\phi|_{\tau_1} \rightarrow \phi|_{\tau_2}$ can be induced, so if there is an assignment $\alpha_1$ such that $\phi|_{\tau_1 \wedge \alpha_1} = \top$ then $\phi|_{\tau_2 \wedge \alpha_1} = \top$. Take the weighting function	into consideration, the weights of all satisfying assignments of $\phi|_{\tau_2}$ must be great equal then $\phi|_{\tau_1}$. It gives us the propositions below:
+
+
+\begin{proposition}
+For two SSAT formulas $\Phi_1 = \invR Y.\phi_1 (Y)$, $\Phi_2 = \invR Y.\phi_2 (Y)$. If $\phi_1 \supseteq \phi_2$ then $Pr[\Phi_2] \geq Pr[\Phi_1]$.
+\end{proposition}
+
+% and will imply $Pr[\Phi|_{\tau_2}] \geq Pr[\Phi|_{\tau_1}]$
+
+\section{Clause Containment Learning for ER-SSAT}\label{sec:contain}
+Consider an exist-random SSAT formula $\Phi = \exists X \invR Y.\phi$. To search for the maximum satisfying probability of $\Phi$, it suffices to enumerate every assignment $\tau$ on $X$, and calculate the corresponding satisfying probability $\mathrm{Pr}[\Phi|_{\tau}]$. Apparently, the above brute-force approach is computationally unaffordable. However, leveraging the idea of clause selection discussed in Section~\ref{sec:select}, we propose the \emph{clause containment learning} technique to deduce useful information after each trial of an assignment $\tau$ on $X$. The learnt information will be recorded as a blocking clause to avoid computations on fruitless assignments and therefore speedup the searching process of assignments on $X$. The proposed learning technique is based on the following key observation.
+
+\begin{proposition}\label{prop:contain}
+For any two Boolean formulas $\phi_1$ and $\phi_2$ over the same set of variables $X$ with the same weighting function $\omega:X \rightarrow [0,1]$, we have 
+\begin{eqnarray}
+  (\phi_1 \Rightarrow \phi_2) &\Rightarrow& \omega(\phi_1) \leq \omega(\phi_2).
+\end{eqnarray}
+\end{proposition}
+
+Combining the above observation and clause selection technique yields the proposed clause containment learning. After an arbitrary assignment $\tau_1$ on $X$ is substituted into $\phi$, some clauses are selected effectively. For any other assignment $\tau_2$ who selects every clauses selected by $\tau_1$, by Proposition~\ref{prop:contain} it is known that $\mathrm{Pr}[\phi|_{\tau_2}] \leq \mathrm{Pr}[\phi|_{\tau_1}]$. Since the satisfying probability is not larger for sure, $\tau_2$ is not worth trying. For all such assignments, they should be blocked after $\tau_1$ is considered. The disjunction of the negation of selection variables of clauses selected by $\tau_1$ is conjoined with the selector to enforce at least one of the selected clauses to be deselected afterwards. The above idea gives rise to the following clause-containment-learning-based algorithm to solve exist-random quantified SSAT formulas.
+
+Take a different viewpoint from variables, we bring the clause containment concept into solving the problem. For instance, a SSAT formula $\Phi = \exists X \invR Y.\phi$, where $\phi$ is:
+\begin{itemize}
+  \item[] $C_1: (e_1 \vee r_1 \vee r_2)$
+  \item[] $C_2: (e_1 \vee e_2 \vee \neg r_1 \vee \neg r_3)$
+  \item[] $C_3: (\neg e_2 \vee \neg e_3 \vee r_2 \vee \neg r_3)$
+  \item[] $C_4: (\neg e_1 \vee \neg e_3 \vee r_3)$
+\end{itemize}
+At the beginning, we need to choose an assignment for $X$. Let $\alpha_0 = \neg e_1 \neg e_2 \neg e_3$ and it will make $C_3 = C_4 = \top$ and $\phi|_{\alpha_0} = \{C_1$, $C_2\}$. Then we can compute $Pr[\Phi|_{\alpha_0}]=\frac{1}{2}$. At this point, we need to try another assignment $\alpha_1$ for exist variables. Now if $\phi|_{\alpha_1} \supseteq \{C_1, C_2\}$
+, then $Pr[\Phi|_{\alpha_1}] \leq Pr[\Phi|_{\alpha_0}]$ can be derived directly from Prop 1. To avoid picking such assignments, discovering $e_1 \Leftrightarrow C_1 \notin \phi|_{\alpha_1}$ and $(e_1 \vee e_2) \Leftrightarrow C_2 \notin \phi|_{\alpha_1}$. So we add a blocking clause $(e_1 \vee e_2)$ when choosing next assignment. By adding this clause, we chooses $\alpha_1 = \neg e_1 e_2 \neg e_3$. This assignment make $C_2 = C_3 = C_4 = \top$ and $\phi|_{\alpha_1}=\{C_1\}$. $Pr[\Phi|_{\alpha_1}] = \frac{3}{4}$. This time we will add $(e_1)$ as blocking clause and then choose $\alpha_2 = e_1 \neg e_2 \neg e_3$, get $Pr[\Phi|_{\alpha_2}] = 1$. So we know $Pr[\Phi] = 1$.
+
+In the procedure above, we add two blocking clauses to avoid choosing the superset of present set of clauses at the next time. The idea can be written as an algorithm presented in Figure~\ref{fig:basic}.
+%$\phi|_{\alpha_0} = (r_1 \vee r_2)\lor(\neg r_1 \vee \neg r_3)$
+\begin{figure}[h]
+\mbox{}\hrulefill \vspace{-.6em}
+\small
+\begin{program}
+\>  {\bf \textit{SolveERSSAT}}\\
+ \> \> \INPUT: $\Phi=\exists X \invR Y.\phi(X,Y)$\\
+ \> \> \OUTPUT: $Pr[\Phi]$.\\
+ \> \> \BEGIN\\
+ \> \> 01 \> \> $\psi(X)$ := $\top$;\\
+ \> \> 02 \> \> prop = 0;\\
+ \> \> 03 \> \> \WHILE \texttt{SAT}$(\psi) = \top$\\
+ \> \> 04 \> \> \> $\tau$ := $\psi$.model;\\
+ \> \> 05 \> \> \> \IF \texttt{SAT}$(\phi|_{\tau})=\top$\\
+ \> \> 06 \> \> \> \> prop = $\max(\text{prop}, \texttt{ModelCount}(\phi|_{\tau}))$\\
+ \> \> 07 \> \> \> \> bkCla = $\bigvee_{var(l)\in X \wedge l \in C \wedge C \in \phi|_{\tau}}l$\\
+ \> \> 08 \> \> \> \ELSE \texttt{//\texttt{SAT}$(\phi|_{\tau})=\perp$}\\
+ \> \> 09 \> \> \> \> bkCla = \texttt{MiniUNSAT}$(\phi$.conflict$)$;\\
+ \> \> 10 \> \> \> $\psi$ = $\psi \wedge$ bkClas;\\
+ \> \> 11 \> \> \RETURN prop; \\
+ \> \> \END
+\end{program}
+\vspace{-1.2em} \mbox{}\hrulefill \caption{\small Algorithm: Solving exist-random quantified SSAT with clause containment learning} \label{fig:basic}
+\end{figure}
+
+% need to define what is model and what is conflict
+The algorithm takes an exist-random quantified SSAT formula as input and will return the satisfying propability of the fomula. There are two SAT solvers in this algorithm. First one holds the CNF formula $\phi(X, Y)$. Second one holds $\top$ initially at line 1, and we call it selector in the sequel. Each time we run the selector solver at line 3, if it returns $\perp$ means we have tried all the assignments for $X$, done. At line 4 we get an assginment $\tau$ over $X$ from selector. We put this assignment as assumption to solve $\phi$. If it is satisfiable, we will do model counting on $\phi|_{\tau}$ to get the probability and the detail is in the later section. The blocking clause is collected at line 7. For unsatisfiable case the blocking clause is the disjunction of conflict literals derived from SAT solver.
+
+\subsection{Minimal UNSAT Core}
+
+\section{Enhancement Skills}\label{sec:enhance}
+	To enhance the searching ability of our basic algorithm presented in Section 3, we propose three methods here. Each of them is implemented independently of the others, so we can turn on any combination of them for solving a SSAT problem. Figure \ref{fig:propose} shows the overall process of our algorithm.
+
+\begin{figure}[h]
+\mbox{}\hrulefill \vspace{-.6em}
+\small
+\begin{program}
+\>  {\bf \textit{SolveERSSAT}}\\
+ \> \> \INPUT: $\Phi=\exists X \invR Y.\phi(X,Y)$\\
+ \> \> \OUTPUT: $Pr[\Phi]$.\\
+ \> \> \BEGIN\\
+ \> \> 01 \> \> $\psi(X, Z)$ := $\bigwedge_{}(s_i \Leftrightarrow \bigvee_{var(l)\in X \wedge l \in C \wedge C \in \phi}l)$;\\
+ \> \> 02 \> \> prop = 0;\\
+ \> \> 03 \> \> table = \texttt{BuildSubsumeTable}$(\phi)$;\\
+ \> \> 04 \> \> \WHILE \texttt{SAT}$(\psi) = \top$\\
+ \> \> 05 \> \> \> $\tau$ := $\psi$.model;\\
+ \> \> 06 \> \> \> \IF \texttt{SAT}$(\phi|_{\tau})=\top$\\
+ \> \> 07 \> \> \> \> $\tau'$ = \texttt{GreedyDropClauses}$(\phi|_{\tau})$\\
+ \> \> 08 \> \> \> \> prop = $\max(\text{prop}, \texttt{ModelCount}(\phi|_{\tau'}))$\\
+ \> \> 09 \> \> \> \> bkCla = \texttt{CollectBkClause}$(\phi|_{\tau'}, \text{table})$\\
+ \> \> 10 \> \> \> \> length = 0;\\
+ \> \> 11 \> \> \> \> \DO \\
+ \> \> 12 \> \> \> \> \> length\texttt{++};\\
+ \> \> 13 \> \> \> \> \> $\tau^{-}$ = \texttt{DropLits}$(\text{bkCla},\text{length})$\\
+ \> \> 14 \> \> \> \> \WHILE \texttt{ModelCount}$(\phi|_{\tau^{-}})\leq \text{prop}$\\
+ \> \> 15 \> \> \> \> length\texttt{--};\\
+ \> \> 16 \> \> \> \> bkCla = \texttt{RemoveTail}$(\text{bkCla}, \text{length})$\\
+ \> \> 17 \> \> \> \ELSE \texttt{//\texttt{SAT}$(\phi|_{\tau})=\perp$}\\
+ \> \> 18 \> \> \> \> bkCla = \texttt{MiniUNSAT}$(\phi$.conflict$)$;\\
+ \> \> 19 \> \> \> $\psi$ = $\psi \wedge$ bkClas;\\
+ \> \> 20 \> \> \RETURN prop; \\
+ \> \> \END
+\end{program}
+\vspace{-1.2em} \mbox{}\hrulefill \caption{\small Algorithm: Solving exist-random quantified SSAT with enhanced techniques} \label{fig:propose}
+\end{figure}
+The first concept focuses on the length of blocking clause. A table is constructed at line 3 and be used at line 9. It records the subsumed relations over exist variables $X$ of all clauses in $\phi$. The second methods is performed at line 7, it greedily drops clauses from $\phi|_{\tau}$ and gets a new assignment corresponding to clauses remained. The last power technique is between line 10-16. We try to drop literals from original blocking clause. Each of the proposed method will be described in detail from Section 3.1-3.3 respectively.
+
+\subsection{Clause Subsumptions}
+To understand the concept in a simple way, let's consider the same SSAT formula in Section 2. This time after we try the assignment $\tau_0 = \neg e_1 \neg e_2 \neg e_3$ and $\phi|_{\tau_0}=\{C_1, C_2\}$, finding $e_1 \rightarrow (e_1 \vee e_2), e_1 \in C_1, (e_1 \vee e_2) \in C_2$. This means for the next assignment $\tau_1$on $X$, $C_1 \notin \phi|_{\tau_1} \rightarrow C_2 \notin \phi|_{\tau_1}$. Imply that the blocking clause can be reduced from $e_1 \vee e_1 \vee e_2$ to $e_1$.
+\subsection{Greedy}
+$\tau_0=\neg e_1 \neg e_2 \neg e_3$\\
+$\phi|_{\tau_0}=\{C_1, C_2\}$\\
+$\tau_1=e_1 \neg e_2 \neg e_3$\\
+$\phi|_{\tau_1}=\{\}$\\
+\subsection{Partial Assignment}
+\begin{itemize}
+  \item[] $C_1: (e_1 \vee e_2 \vee r_1 \vee r_2)$
+  \item[] $C_2: (\neg e_1 \vee e_3 \vee \neg r_1 \vee \neg r_3)$
+  \item[] $C_3: (\neg e_2 \vee \neg e_4 \vee r_2 \vee \neg r_3)$
+  \item[] $C_4: (e_1 \vee \neg e_3 \vee r_3)$
+\end{itemize}
+$\tau_0=\neg e_1 \neg e_2 \neg e_3 \neg e_4$
+\section{Implementation Details}\label{sec:implement}
+\section{Experimental Results}\label{sec:experiment}
+\subsection{Our family}
+\subsection{Random k-CNF}
+\subsection{Sand Castle}
+\subsection{MPEC}
+
+\section{Conclusions}\label{sec:conclusion}
+
+\end{document}
+
