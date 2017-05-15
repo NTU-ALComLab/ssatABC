@@ -139,7 +139,7 @@ SsatSolver::aSolve2SSAT( double range , int upper , int lower , bool fMini , boo
          //if ( _unsatClause.size() < _satClause.size() )
             _unsatPb = fBdd ? cubeToNetwork(false) : cachetCount(false);
          //else
-            _satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
+            //_satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
          if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
             timer.nCachet += 1;

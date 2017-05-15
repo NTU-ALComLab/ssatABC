@@ -191,10 +191,10 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    bool fAll , fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre , fCkt , fPure , fVerbose , fTimer;
 
    range    = 0.0;
-   upper    = 16;
-   lower    = 65536;
-   //upper    = -1;
-   //lower    = -1;
+   //upper    = 16;
+   //lower    = 65536;
+   upper    = -1;
+   lower    = -1;
    fAll     = true;
    fMini    = true;
    fBdd     = true;
@@ -303,8 +303,8 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    Abc_PrintTime( 1 , "  > Time       " , Abc_Clock() - gloClk );
    delete pSsat;
    gloSsat = NULL;
-   if ( fTimer ) printTimer( &timer );
-   printf( "\n" );
+   //if ( fTimer ) printTimer( &timer );
+   //printf( "\n" );
    return 0;
 
 usage:
