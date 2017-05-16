@@ -1,14 +1,17 @@
 COUNT=0
-echo "name, number, value, abc time, total time" > randomER-sdimacs.csv
+LOGFILE=randomER-sdimacs${1}.csv
+echo "Start." > ${LOGFILE}
 for k in $(seq 3 9)
 do
-  TESTCASES=$(ls expSsat/ssatER/random/${k}CNF/sdimacs)
+  TESTCASES=$(ls ~/ssatABC/expSsat/ssatER/random/${k}CNF/sdimacs)
   for name in ${TESTCASES}
   do
-    printf "%s, " ${name} >> randomER-sdimacs.csv
-    { timeout 1000 time -p ./bin/abc -c "ssat expSsat/ssatER/random/${k}CNF/sdimacs/${name}" ; } > tt2.log 2>&1 && cat tt2.log | grep "calls\|Lower\|real\|Time" | awk 'NR==1{printf "%d, ", $7} NR==2{printf "%s, ", $5} NR==3{printf "%s, ", $4} NR==4{printf "%s\n", $2}' >> randomER-sdimacs.csv || echo "-, -, -, -" >> randomER-sdimacs.csv
-  echo "case ${COUNT} done."
-  COUNT=$((${COUNT} + 1))
+    number=`echo ${name} | cut -f2 -d"."`
+    if (( number % 5 == 1 || number % 5 == 3 )); then
+       printf "%s, " ${name} >> ${LOGFILE}
+       timeout 1000 ~/ssatABC/bin/abc -c "ssat ${1} /home/users/danny/ssatABC/expSsat/ssatER/random/${k}CNF/sdimacs/${name}" >> ${LOGFILE}
+       echo "case ${COUNT} done."
+       COUNT=$((${COUNT} + 1))
+    fi
   done
 done
-rm -f tt2.log

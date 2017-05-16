@@ -37,6 +37,8 @@ using namespace std;
 
 static bool subsume( const vec<Lit>& , const vec<Lit>& );
 extern SsatTimer timer;
+static int clause_number = 0;
+static int clause_average = 0;
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -85,6 +87,11 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          }
          printf( "\n  > optimizing assignment to exist vars:\n\t" );
          dumpCla( _erModel );
+cout << "CCC root clause : " << _s1->nClauses() << '\n';
+cout << "CCC clause_number : " << clause_number << '\n';
+cout << "CCC clause_average : " << clause_average << '\n';
+cout << "DDD clause_ratio: " << (double)((double)clause_average/(double)_s1->nClauses()) << '\n';
+clause_average = 0; clause_number = 0;
          return;
       }
       if ( _fTimer ) {
@@ -148,6 +155,11 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             printf( "\n  > optimizing assignment to exist vars:\n\t" );
             dumpCla( eLits );
             _satPb = subvalue;
+cout << "CCC root clause : " << _s1->nClauses() << '\n';
+cout << "CCC clause_number : " << clause_number << '\n';
+cout << "CCC clause_average : " << clause_average << '\n';
+cout << "DDD clause_ratio: " << (double)((double)clause_average/(double)_s1->nClauses()) << '\n';
+clause_average = 0; clause_number = 0;
             return;
          }
          if ( subvalue > _satPb ) {
@@ -346,7 +358,7 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla , vec<int> & ClasInd , int dropInd
       }
    }
    bool subsume = false;
-   // dumpCla(*_s1);
+   //dumpCla(*_s1);
    for ( int i = 0 ; i < ClasInd.size() ; ++i ) {
       Clause & c = _s1->ca[_s1->clauses[ClasInd[i]]];
       if ( fSub ) {
@@ -355,7 +367,7 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla , vec<int> & ClasInd , int dropInd
             for ( int j = 0 ; j < ClasInd.size(); ++j ) {
                if ( ClasInd[j] == *it ) {
                   subsume = true;
-                  // cout << " " << ClasInd[j] << " subsume " << i << '\n';
+            //cout << " " << ClasInd[j] << " subsume " << i << '\n';
                   break;
                }
             }
@@ -560,6 +572,9 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
 
    fprintf(f, "p cnf %d %d\n", max, cnt);
 
+clause_average = (clause_average * clause_number + cnt) / (clause_number+1); 
+++clause_number;
+
    for ( int i = 0 ; i < dropIndex ; ++i ) {
       fprintf( f , "%s%d 0\n" , sign(assumps[i]) ? "-" : "" , mapVar( var(assumps[i]) , map , max ) + 1 );
    }
@@ -605,24 +620,23 @@ SsatSolver::buildSubsumeTable( Solver & S )
    assert( numOfClas > 1 );
    _subsumeTable.growTo( numOfClas );
 
-   for ( int i = 0 ; i < S.nClauses()-1 ; ++i ) {
+   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
       Clause &c = S.ca[S.clauses[i]];
-      for ( int j = i + 1 ; j < S.nClauses() ; ++j ) {
+      for ( int j = 0; j < S.nClauses() ; ++j ) {
+         if ( j == i ) continue;
          if ( subsume ( c , S.ca[S.clauses[j]] ) ) {
            _subsumeTable[i].insert(j);
          }
       }
    }
-   /*
-   dumpCla( S );
-   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
-      cout << "  > Clause " << i << " is subsumed by : " << endl;
-      for ( set<int>::iterator it = _subsumeTable[i].begin() ; it != _subsumeTable[i].end() ; ++it ) {
-         cout << *it << ' ';
-      }
-      cout << "\n";
-   }
-   */
+//   dumpCla( S );
+//   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
+//      cout << "  > Clause " << i << " is subsumed by : " << endl;
+//      for ( set<int>::iterator it = _subsumeTable[i].begin() ; it != _subsumeTable[i].end() ; ++it ) {
+//         cout << *it << ' ';
+//      }
+//      cout << "\n";
+//   }
 }
 
 bool
