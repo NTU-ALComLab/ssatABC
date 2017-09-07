@@ -560,8 +560,8 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
 
    fprintf(f, "p cnf %d %d\n", max, cnt);
 
-clause_average = (clause_average * clause_number + cnt) / (clause_number+1); 
-++clause_number;
+// clause_average = (clause_average * clause_number + cnt) / (clause_number+1); 
+// ++clause_number;
 
    for ( int i = 0 ; i < dropIndex ; ++i ) {
       fprintf( f , "%s%d 0\n" , sign(assumps[i]) ? "-" : "" , mapVar( var(assumps[i]) , map , max ) + 1 );
