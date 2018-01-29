@@ -1,0 +1,39 @@
+Error:  insufficient memory in create_tree_node
+Error: insufficient memory to allocate SUBPROB->vints
+terminate called after throwing an instance of 'St9bad_alloc'
+  what():  std::bad_alloc
+timeout: the monitored command dumped core
+./test.sh: line 15: 14498 Aborted                 timeout ${TIMEOUT} ${SSATPROGRAM} ${CURDIR}/test-${double}-${j}.ssat >> ${LOGFILE}
+Error: insufficient memory to allocate SUBPROB
+Error: insufficient memory to allocate SUBPROB
+terminate called after throwing an instance of 'St9bad_alloc'
+  what():  std::bad_alloc
+timeout: the monitored command dumped core
+./test.sh: line 15: 16134 Aborted                 timeout ${TIMEOUT} ${SSATPROGRAM} ${CURDIR}/test-${double}-${j}.ssat >> ${LOGFILE}
+Error: insufficient memory to allocate SUBPROB->vints
+Error: insufficient memory to allocate SUBPROB->cints
+Error: insufficient memory to allocate SUBPROB->cints
+Command exited with non-zero status 255
+	Command being timed: "./test.sh"
+	User time (seconds): 5740.64
+	System time (seconds): 49.32
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:36:45
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3988948
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 32255721
+	Voluntary context switches: 1490914
+	Involuntary context switches: 8065
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 704
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 255

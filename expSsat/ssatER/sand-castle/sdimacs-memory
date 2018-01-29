@@ -1,0 +1,28 @@
+abc: src/ssat/core/ssatERSolve.cc:605: void Minisat::SsatSolver::buildSubsumeTable(Minisat::Solver&): Assertion `numOfClas > 1' failed.
+timeout: the monitored command dumped core
+./test-abc.sh: line 12:  7376 Aborted                 timeout ${TIMEOUT} ${ABCPROGRAM} -c "ssat $1 ${CURDIR}/sdimacs/SC-${i}.sdimacs" >> ${LOGFILE}
+timeout: the monitored command dumped core
+Command exited with non-zero status 124
+	Command being timed: "./test-abc.sh"
+	User time (seconds): 12469.72
+	System time (seconds): 3.94
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:27:49
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 526088
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 3738968
+	Voluntary context switches: 50745
+	Involuntary context switches: 17253
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 2080
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 124
