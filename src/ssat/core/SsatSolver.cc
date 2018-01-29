@@ -217,7 +217,7 @@ SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool f
                        bool fSub , bool fGreedy , bool fDynamic , bool fIncre , bool fCkt , bool fPure )
 {
    if ( _numLv > 3 || _numLv == 1 )
-      fprintf( stderr , "WARNING! Currently only support \"AE 2QBF\" or \"RE 2SSAT\"...\n" );
+      fprintf( stderr , "[ERROR] Currently only support \"{RE,ER}-2SSAT\"!\n" );
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
       erSolve2SSAT( fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre , fCkt , fPure );
    else if ( fAll )

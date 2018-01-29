@@ -503,6 +503,10 @@ SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars , con
          Abc_ObjAssignName( pObj , name , "" );
          for ( int j = 0 ; j < c.size() ; ++j ) {
             if ( _level[var(c[j])] && _s1->value(c[j]) != l_False ) {
+               if ( !Vec_PtrEntry( vMapVars , var(c[j]) ) ) { 
+                  Abc_Print( -1 , "erNtkCreateNode(): var %d is not created as a Pi!\n" , var(c[j])+1 ); 
+                  exit(1); 
+               }
                Abc_ObjAddFanin( pObj , (Abc_Obj_t*)Vec_PtrEntry( vMapVars , var(c[j]) ) );
                pfCompl[Abc_ObjFaninNum(pObj)-1] = sign(c[j]) ? 1 : 0;
             }
