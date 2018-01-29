@@ -545,7 +545,7 @@ SsatSolver::interrupt()
    printf( "[INFO] # of   SAT cubes: %d\n" ,   _satClause.size() );
    if ( _unsatClause.size() ) {
       clk = Abc_Clock();
-      _unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );
+      //_unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );
       //Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
       printf( "  > Time consumed TO\n" );
       fflush(stdout);

@@ -1,30 +1,23 @@
   > On file c1908.sdimacs
-ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c1908.sdimacs".
+ABC command line: "ssat -b /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/old_sdimacs/c1908.sdimacs".
 
 
 ==== SSAT solving process ====
-  > current Upper bound = 2.050161e-03
-  > Time elapsed =     0.01 sec
-  > current Upper bound = 7.383227e-04
-  > Time elapsed =     4.87 sec
-						  > current Lower bound = 7.224083e-05
-						  > Time elasped =     9.04 sec
-						  > current Lower bound = 2.042055e-04
-						  > Time elasped =    27.84 sec
-						  > current Lower bound = 2.729893e-04
-						  > Time elasped =    56.78 sec
-						  > current Lower bound = 3.463626e-04
-						  > Time elasped =    95.96 sec
-						  > current Lower bound = 4.757047e-04
-						  > Time elasped =   143.07 sec
-						  > current Lower bound = 5.830526e-04
-						  > Time elasped =   203.00 sec
-						  > current Lower bound = 6.803274e-04
-						  > Time elasped =   272.62 sec
-						  > current Lower bound = 7.743835e-04
-						  > Time elasped =   351.64 sec
 
-  > Upper bound = 7.383227e-04
-  > Lower bound = 7.743835e-04
-  > Time   =   351.64 sec
+  > Setting (_upperLimit,_lowerLimit) to (16,65536)
+  > Use cachet as model counting engine
+  > Start sat/unsat cube collection
 
+  > current Upper bound = 2.050160e-03
+  > current Upper bound = 7.383040e-04
+						  > current Lower bound = 7.200000e-05
+						  > current Lower bound = 2.040000e-04
+						  > current Lower bound = 2.730000e-04
+
+[WARNING] interruption occurs, compute results before exiting
+[INFO] # of UNSAT cubes: 42
+[INFO] # of   SAT cubes: 262144
+  > Time consumed TO
+  > Upper bound = 7.383040e-04
+  > Final Lower bound = 2.730000e-04
+timeout on c1908 , solve time: 1000

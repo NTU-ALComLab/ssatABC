@@ -1,46 +1,22 @@
   > On file c3540.sdimacs
-ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c3540.sdimacs".
+ABC command line: "ssat -b /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/old_sdimacs/c3540.sdimacs".
 
 
 ==== SSAT solving process ====
-						  > current Lower bound = 1.245975e-03
-						  > Time elasped =     8.26 sec
-						  > current Lower bound = 2.215862e-03
-						  > Time elasped =    25.79 sec
-						  > current Lower bound = 3.438115e-03
-						  > Time elasped =    53.50 sec
-						  > current Lower bound = 4.485250e-03
-						  > Time elasped =    91.30 sec
-						  > current Lower bound = 6.221175e-03
-						  > Time elasped =   141.79 sec
-						  > current Lower bound = 8.174121e-03
-						  > Time elasped =   203.47 sec
-						  > current Lower bound = 9.320498e-03
-						  > Time elasped =   275.93 sec
-						  > current Lower bound = 1.119506e-02
-						  > Time elasped =   363.57 sec
-						  > current Lower bound = 1.277864e-02
-						  > Time elasped =   467.26 sec
-						  > current Lower bound = 1.426566e-02
-						  > Time elasped =   582.17 sec
-						  > current Lower bound = 1.594549e-02
-						  > Time elasped =   698.92 sec
-						  > current Lower bound = 1.722693e-02
-						  > Time elasped =   840.30 sec
-						  > current Lower bound = 1.887310e-02
-						  > Time elasped =   985.95 sec
-						  > current Lower bound = 2.041477e-02
-						  > Time elasped =  1153.21 sec
-						  > current Lower bound = 2.206880e-02
-						  > Time elasped =  1338.83 sec
-						  > current Lower bound = 2.378380e-02
-						  > Time elasped =  1539.80 sec
-						  > current Lower bound = 2.560520e-02
-						  > Time elasped =  1807.20 sec
-						  > current Lower bound = 2.734286e-02
-						  > Time elasped =  2257.38 sec
 
-  > Upper bound = 1.708984e-03
-  > Lower bound = 2.734286e-02
-  > Time   =  2265.17 sec
+  > Setting (_upperLimit,_lowerLimit) to (16,65536)
+  > Use cachet as model counting engine
+  > Start sat/unsat cube collection
 
+						  > current Lower bound = 1.246000e-03
+						  > current Lower bound = 2.216000e-03
+						  > current Lower bound = 3.438000e-03
+						  > current Lower bound = 4.485000e-03
+
+[WARNING] interruption occurs, compute results before exiting
+[INFO] # of UNSAT cubes: 13
+[INFO] # of   SAT cubes: 327680
+  > Time consumed TO
+  > Upper bound = 1.000000e+00
+  > Final Lower bound = 4.485000e-03
+timeout on c3540 , solve time: 1000

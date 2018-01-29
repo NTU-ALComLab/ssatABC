@@ -1,91 +1,21 @@
   > On file c5315.sdimacs
-ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c5315.sdimacs".
+ABC command line: "ssat -b /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/old_sdimacs/c5315.sdimacs".
 
 
 ==== SSAT solving process ====
-  > current Upper bound = 8.649211e-01
-  > Time elapsed =     0.03 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =    22.36 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =    56.32 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   103.24 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   156.09 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   221.99 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   302.59 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   392.63 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   492.77 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   595.55 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   705.66 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   828.02 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =   967.27 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  1121.02 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  1281.35 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  1438.29 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  1582.76 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  1731.19 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  1898.74 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  2090.87 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  2270.50 sec
-  > current Upper bound = 5.982988e-01
-  > Time elapsed =  2385.32 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  2465.46 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  2636.60 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  2809.20 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  2994.32 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  3198.17 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  3418.73 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  3635.65 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  3866.57 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  4117.28 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  4389.84 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  4674.80 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  4973.29 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  5286.22 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  5605.06 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  5927.41 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  6325.81 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  6708.64 sec
-						  > current Lower bound = 0.000000e+00
-						  > Time elasped =  7104.47 sec
 
-[Warning] interruption occurs, compute bounds before exit ...
-  > Final Upper bound = 5.982988e-01
-Time elapsed for upper bound =     0.00 sec
+  > Setting (_upperLimit,_lowerLimit) to (16,65536)
+  > Use cachet as model counting engine
+  > Start sat/unsat cube collection
+
+  > current Upper bound = 8.649210e-01
+						  > current Lower bound = 0.000000e+00
+						  > current Lower bound = 0.000000e+00
+
+[WARNING] interruption occurs, compute results before exiting
+[INFO] # of UNSAT cubes: 28
+[INFO] # of   SAT cubes: 196608
+  > Time consumed TO
+  > Upper bound = 8.649210e-01
   > Final Lower bound = 0.000000e+00
-Time elapsed for lower bound =   189.40 sec
+timeout on c5315 , solve time: 1000
