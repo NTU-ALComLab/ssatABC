@@ -545,8 +545,9 @@ SsatSolver::interrupt()
    printf( "[INFO] # of   SAT cubes: %d\n" ,   _satClause.size() );
    if ( _unsatClause.size() ) {
       clk = Abc_Clock();
-      _unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );
-      Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
+      //_unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );
+      //Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
+      printf( "  > Time consumed TO\n" );
       fflush(stdout);
    }
    /*if ( _satClause.size() ) {
@@ -555,10 +556,10 @@ SsatSolver::interrupt()
       Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
       fflush(stdout);
    }*/
-   printf( "  > Final Upper bound = %e\n" , 1-_unsatPb );
+   printf( "  > Upper bound = %e\n" , 1-_unsatPb );
    printf( "  > Final Lower bound = %e\n" , _satPb  );
-   if ( _fTimer ) printTimer( &timer );
-   printf( "\n" );
+   //if ( _fTimer ) printTimer( &timer );
+   //printf( "\n" );
 }
 
 ////////////////////////////////////////////////////////////////////////

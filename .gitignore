@@ -81,6 +81,6 @@ testbench/*
 *.genlib
 *.tcl
 *.case
-*.sh
+# *.sh
 *.tgz
 .__afs*

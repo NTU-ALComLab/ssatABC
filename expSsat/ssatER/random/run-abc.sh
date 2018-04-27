@@ -6,7 +6,7 @@ echo "name, value, abc time, #call, real time" > ${CSVFILE}
 
 for k in $(seq 3 9)
 do
-  TESTCASES=$(ls expSsat/ssatER/random/${k}CNF/sdimacs)
+  TESTCASES=$(ls ~/ssatABC/expSsat/ssatER/random/${k}CNF/sdimacs)
   for name in ${TESTCASES}
   do
     printf "%s, " ${name} >> ${CSVFILE}

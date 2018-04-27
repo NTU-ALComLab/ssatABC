@@ -1,23 +1,19 @@
   > On file c7552.sdimacs
-ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c7552.sdimacs".
+ABC command line: "ssat -b /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/old_sdimacs/c7552.sdimacs".
 
 
 ==== SSAT solving process ====
-  > current Upper bound = 2.394907e-01
-  > Time elapsed =     0.02 sec
-						  > current Lower bound = 7.324219e-03
-						  > Time elasped =   129.13 sec
-						  > current Lower bound = 8.469582e-03
-						  > Time elasped =   535.41 sec
-						  > current Lower bound = 8.469582e-03
-						  > Time elasped =  1396.35 sec
-						  > current Lower bound = 1.800203e-02
-						  > Time elasped =  2920.20 sec
-						  > current Lower bound = 2.965534e-02
-						  > Time elasped =  5153.04 sec
 
-[Warning] interruption occurs, compute bounds before exit ...
-  > Final Upper bound = 2.346491e-01
-Time elapsed for upper bound =    34.12 sec
-  > Final Lower bound = 2.965534e-02
-Time elapsed for lower bound =    34.12 sec
+  > Setting (_upperLimit,_lowerLimit) to (16,65536)
+  > Use cachet as model counting engine
+  > Start sat/unsat cube collection
+
+  > current Upper bound = 2.394910e-01
+
+[WARNING] interruption occurs, compute results before exiting
+[INFO] # of UNSAT cubes: 27
+[INFO] # of   SAT cubes: 65536
+  > Time consumed TO
+  > Upper bound = 2.394910e-01
+  > Final Lower bound = 0.000000e+00
+timeout on c7552 , solve time: 1000

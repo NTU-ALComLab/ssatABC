@@ -1,159 +1,42 @@
   > On file c432.sdimacs
-ABC command line: "ssat /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/sdimacs/c432.sdimacs".
+ABC command line: "ssat -b /home/users/nianze/ssat/ssatABC/expSsat/ssatRE/PEC/old_sdimacs/c432.sdimacs".
 
 
 ==== SSAT solving process ====
-  > current Upper bound = 1.199841e-02
-  > Time elapsed =     0.03 sec
-  > current Upper bound = 1.162922e-02
-  > Time elapsed =     0.28 sec
-  > current Upper bound = 1.135778e-02
-  > Time elapsed =     0.45 sec
-  > current Upper bound = 1.121819e-02
-  > Time elapsed =     0.94 sec
-  > current Upper bound = 1.095259e-02
-  > Time elapsed =     1.15 sec
-  > current Upper bound = 1.082599e-02
-  > Time elapsed =     2.30 sec
-  > current Upper bound = 1.075304e-02
-  > Time elapsed =     2.79 sec
-  > current Upper bound = 1.071763e-02
-  > Time elapsed =     3.42 sec
-  > current Upper bound = 1.063359e-02
-  > Time elapsed =     4.43 sec
-  > current Upper bound = 1.059079e-02
-  > Time elapsed =     6.70 sec
-  > current Upper bound = 1.056540e-02
-  > Time elapsed =     7.97 sec
-						  > current Lower bound = 6.973743e-05
-						  > Time elasped =     9.92 sec
-  > current Upper bound = 1.051974e-02
-  > Time elapsed =    11.21 sec
-  > current Upper bound = 1.048553e-02
-  > Time elapsed =    13.75 sec
-  > current Upper bound = 1.045609e-02
-  > Time elapsed =    18.38 sec
-  > current Upper bound = 1.043308e-02
-  > Time elapsed =    21.04 sec
-  > current Upper bound = 1.041603e-02
-  > Time elapsed =    24.29 sec
-  > current Upper bound = 1.040971e-02
-  > Time elapsed =    26.83 sec
-						  > current Lower bound = 1.382232e-04
-						  > Time elasped =    33.09 sec
-  > current Upper bound = 1.039326e-02
-  > Time elapsed =    40.17 sec
-  > current Upper bound = 1.037943e-02
-  > Time elapsed =    50.02 sec
-						  > current Lower bound = 2.000332e-04
-						  > Time elasped =    61.61 sec
-  > current Upper bound = 1.037014e-02
-  > Time elapsed =    70.93 sec
-  > current Upper bound = 1.036179e-02
-  > Time elapsed =    87.33 sec
-						  > current Lower bound = 2.810955e-04
-						  > Time elasped =   100.26 sec
-  > current Upper bound = 1.035637e-02
-  > Time elapsed =   123.95 sec
-  > current Upper bound = 1.035088e-02
-  > Time elapsed =   136.61 sec
-						  > current Lower bound = 3.381968e-04
-						  > Time elasped =   146.77 sec
-  > current Upper bound = 1.034510e-02
-  > Time elapsed =   166.72 sec
-  > current Upper bound = 1.034123e-02
-  > Time elapsed =   190.67 sec
-						  > current Lower bound = 3.955364e-04
-						  > Time elasped =   203.59 sec
-  > current Upper bound = 1.033843e-02
-  > Time elapsed =   237.52 sec
-						  > current Lower bound = 4.397631e-04
-						  > Time elasped =   265.74 sec
-						  > current Lower bound = 5.137920e-04
-						  > Time elasped =   334.17 sec
-  > current Upper bound = 1.033652e-02
-  > Time elapsed =   367.13 sec
-						  > current Lower bound = 6.022453e-04
-						  > Time elasped =   417.10 sec
-						  > current Lower bound = 6.614923e-04
-						  > Time elasped =   485.59 sec
-  > current Upper bound = 1.033473e-02
-  > Time elapsed =   520.49 sec
-						  > current Lower bound = 7.335544e-04
-						  > Time elasped =   573.29 sec
-						  > current Lower bound = 7.992983e-04
-						  > Time elasped =   655.01 sec
-						  > current Lower bound = 8.735061e-04
-						  > Time elasped =   745.82 sec
-  > current Upper bound = 1.033342e-02
-  > Time elapsed =   814.74 sec
-						  > current Lower bound = 9.146929e-04
-						  > Time elasped =   852.55 sec
-						  > current Lower bound = 9.673834e-04
-						  > Time elasped =   954.59 sec
-						  > current Lower bound = 1.027703e-03
-						  > Time elasped =  1066.60 sec
-  > current Upper bound = 1.033282e-02
-  > Time elapsed =  1145.61 sec
-						  > current Lower bound = 1.106679e-03
-						  > Time elasped =  1200.21 sec
-						  > current Lower bound = 1.210213e-03
-						  > Time elasped =  1331.20 sec
-						  > current Lower bound = 1.297116e-03
-						  > Time elasped =  1475.32 sec
-						  > current Lower bound = 1.350999e-03
-						  > Time elasped =  1621.68 sec
-						  > current Lower bound = 1.408994e-03
-						  > Time elasped =  1779.02 sec
-						  > current Lower bound = 1.481771e-03
-						  > Time elasped =  1947.42 sec
-						  > current Lower bound = 1.562595e-03
-						  > Time elasped =  2124.48 sec
-						  > current Lower bound = 1.611114e-03
-						  > Time elasped =  2303.55 sec
-						  > current Lower bound = 1.677394e-03
-						  > Time elasped =  2490.68 sec
-  > current Upper bound = 1.033205e-02
-  > Time elapsed =  2594.07 sec
-						  > current Lower bound = 1.723945e-03
-						  > Time elasped =  2678.98 sec
-						  > current Lower bound = 1.770556e-03
-						  > Time elasped =  2854.17 sec
-						  > current Lower bound = 1.823187e-03
-						  > Time elasped =  3041.26 sec
-						  > current Lower bound = 1.882076e-03
-						  > Time elasped =  3235.49 sec
-						  > current Lower bound = 1.972318e-03
-						  > Time elasped =  3440.67 sec
-						  > current Lower bound = 2.034307e-03
-						  > Time elasped =  3650.53 sec
-						  > current Lower bound = 2.094746e-03
-						  > Time elasped =  3874.97 sec
-						  > current Lower bound = 2.163410e-03
-						  > Time elasped =  4105.29 sec
-						  > current Lower bound = 2.238214e-03
-						  > Time elasped =  4343.33 sec
-						  > current Lower bound = 2.297759e-03
-						  > Time elasped =  4588.11 sec
-						  > current Lower bound = 2.343178e-03
-						  > Time elasped =  4840.01 sec
-						  > current Lower bound = 2.408385e-03
-						  > Time elasped =  5119.76 sec
-						  > current Lower bound = 2.471268e-03
-						  > Time elasped =  5413.69 sec
-						  > current Lower bound = 2.554476e-03
-						  > Time elasped =  5722.11 sec
-						  > current Lower bound = 2.604246e-03
-						  > Time elasped =  6016.33 sec
-						  > current Lower bound = 2.665818e-03
-						  > Time elasped =  6349.59 sec
-						  > current Lower bound = 2.724767e-03
-						  > Time elasped =  6658.51 sec
-						  > current Lower bound = 2.777934e-03
-						  > Time elasped =  6982.74 sec
 
-[Warning] interruption occurs, compute bounds before exit ...
-  > Final Upper bound = 1.033163e-02
-Time elapsed for upper bound =    32.36 sec
-  > Final Lower bound = 2.832115e-03
-Time elapsed for lower bound =   120.69 sec
+  > Setting (_upperLimit,_lowerLimit) to (16,65536)
+  > Use cachet as model counting engine
+  > Start sat/unsat cube collection
+
+  > current Upper bound = 1.199840e-02
+  > current Upper bound = 1.162920e-02
+  > current Upper bound = 1.135780e-02
+  > current Upper bound = 1.121820e-02
+  > current Upper bound = 1.095260e-02
+  > current Upper bound = 1.082600e-02
+  > current Upper bound = 1.075310e-02
+  > current Upper bound = 1.071760e-02
+  > current Upper bound = 1.063360e-02
+  > current Upper bound = 1.059080e-02
+  > current Upper bound = 1.056540e-02
+						  > current Lower bound = 7.000000e-05
+  > current Upper bound = 1.051980e-02
+  > current Upper bound = 1.048560e-02
+  > current Upper bound = 1.045610e-02
+  > current Upper bound = 1.043310e-02
+  > current Upper bound = 1.041600e-02
+  > current Upper bound = 1.040970e-02
+						  > current Lower bound = 1.380000e-04
+  > current Upper bound = 1.039320e-02
+  > current Upper bound = 1.037950e-02
+						  > current Lower bound = 2.000000e-04
+  > current Upper bound = 1.037020e-02
+  > current Upper bound = 1.036180e-02
+
+[WARNING] interruption occurs, compute results before exiting
+[INFO] # of UNSAT cubes: 336
+[INFO] # of   SAT cubes: 262144
+  > Time consumed TO
+  > Upper bound = 1.036180e-02
+  > Final Lower bound = 2.000000e-04
+timeout on c432 , solve time: 1000
