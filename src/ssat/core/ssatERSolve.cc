@@ -137,6 +137,8 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          if ( _s1->nClauses() == 0 ) {
             Abc_Print( -1 , "  > There is no clause left ...\n" );
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
+            Abc_Print( 0 , "  > Under construction ...\n" );
+            exit(1);
          }
          if ( _fTimer ) clk = Abc_Clock();
          subvalue  = fBdd ? clauseToNetwork( eLits , totalSize , fIncre , fCkt ) : countModels( eLits , totalSize );

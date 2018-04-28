@@ -213,8 +213,7 @@ SsatSolver::readPrefix( StreamBuffer & in , Solver & S , double prob ,
 ***********************************************************************/
 
 void
-SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , bool fBdd , bool fPart , 
-                       bool fSub , bool fGreedy , bool fDynamic , bool fIncre , bool fCkt , bool fPure )
+SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre , bool fCkt , bool fPure )
 {
    if ( _numLv > 3 || _numLv == 1 )
       fprintf( stderr , "[ERROR] Currently only support \"{RE,ER}-2SSAT\"!\n" );

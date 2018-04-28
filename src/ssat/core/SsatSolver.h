@@ -87,7 +87,7 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat    ( double , int , int , bool , bool , bool , bool , bool , bool , bool , bool , bool , bool ); // Solve 2SSAT/2QBF
+   void        solveSsat    ( double=0.0 , int=-1 , int=-1 , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true ); // Solve 2SSAT/2QBF
    void        bddSolveSsat ( bool , bool ); // Solve SSAT by bdd
    // ER-2-Ssat solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
