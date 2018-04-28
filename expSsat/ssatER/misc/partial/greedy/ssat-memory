@@ -1,0 +1,48 @@
+Error: insufficient memory to allocate SUBPROB
+Error: insufficient memory to allocate SUBPROB->cints
+Error: insufficient memory to allocate SUBPROB
+Error: insufficient memory to allocate SUBPROB->vints
+Error: insufficient memory to allocate SUBPROB
+Error: insufficient memory to allocate SUBPROB
+Error: insufficient memory to allocate SUBPROB
+Error: insufficient memory to allocate SUBPROB
+Error: insufficient memory to allocate SUBPROB->vints
+Error: insufficient memory to allocate SUBPROB->vints
+Error:  insufficient memory in create_tree_node
+Error: insufficient memory to allocate SUBPROB->vints
+Error: insufficient memory to allocate SUBPROB->vints
+terminate called after throwing an instance of 'St9bad_alloc'
+  what():  std::bad_alloc
+timeout: the monitored command dumped core
+./test.sh: line 14: 12927 Aborted                 timeout ${TIMEOUT} ${SSATPROGRAM} ${CURDIR}/test-${i}-${j}.ssat >> ${LOGFILE}
+Error: insufficient memory to allocate SUBPROB->vints
+Error: insufficient memory to allocate SUBPROB->vints
+Error: insufficient memory to allocate SUBPROB->vints
+Error:  insufficient memory in create_tree_node
+Error: insufficient memory to allocate SUBPROB->vints
+Error: insufficient memory to allocate SUBPROB->cints
+Error: insufficient memory to allocate SUBPROB->vints
+Command exited with non-zero status 255
+	Command being timed: "./test.sh"
+	User time (seconds): 5349.84
+	System time (seconds): 77.02
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:30:33
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3988940
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 60906130
+	Voluntary context switches: 798556
+	Involuntary context switches: 7244
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 800
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 255
