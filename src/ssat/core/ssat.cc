@@ -203,7 +203,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    pParams->fPure    = true;
    pParams->fAll     = true;
    pParams->fMini    = true;
-   pParams->fTimer   = true;
+   pParams->fTimer   = false;
    pParams->fVerbose = true;
    Extra_UtilGetoptReset();
    while ( ( c = Extra_UtilGetopt( argc, argv, "RULambpsgdicrvth" ) ) != EOF )
