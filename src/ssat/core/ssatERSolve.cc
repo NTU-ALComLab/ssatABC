@@ -80,35 +80,11 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
       if ( !_s2->okay() ) { // _s2 UNSAT --> main loop terminate
          printf( "\n  > optimizing assignment to exist vars:\n\t" );
          dumpCla( _erModel );
-         return; // FIXME: break???
+         //return; // FIXME: break???
+         break;
       }
-      getExistAssignment( eLits ); // pseudo code line05
-#if 0
-      if ( pParams->fGreedy ) {
-         vec<Lit> block , assump;
-         block.capacity( _claLits.size() );
-         assump.capacity( _claLits.size() );
-         for (;;) {
-            block.clear();
-            assump.clear();
-            for ( int i = 0 ; i < _claLits.size() ; ++i ) {
-               if ( _claLits[i] == lit_Undef ) continue;
-               (_s2->modelValue(_claLits[i]) == l_True) ? block.push(~_claLits[i]) : assump.push(~_claLits[i]);
-            }
-            _s2->addClause( block );
-            if ( _fTimer ) clk = Abc_Clock();
-            if ( !_s2->solve(assump) ) { 
-               if ( _fTimer ) { timer.timeGd += Abc_Clock()-clk; ++timer.nGdsolve; }
-               break;
-            }
-            if ( _fTimer ) { timer.timeGd += Abc_Clock()-clk; ++timer.nGdsolve; }
-            for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
-               eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-         }
-      }
-#else
-   if ( pParams->fGreedy ) selectMinClauses( eLits );
-#endif
+      getExistAssignment( eLits ); // line05
+      if ( pParams->fGreedy ) selectMinClauses( eLits ); // line07
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(eLits) ) { // UNSAT case
          if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
