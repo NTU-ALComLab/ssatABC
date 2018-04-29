@@ -132,8 +132,10 @@ private:
    void        aSolve             ( Ssat_Params_t * ); // All-SAT enumeration solve
    void        erSolve2SSAT       ( Ssat_Params_t * ); // Solve ER/ERE-2SSAT
    void        printParams        ( Ssat_Params_t * ) const;
-   void        getExistAssignment ( vec<Lit> & ) const;
-   void        selectMinClauses   ( vec<Lit> & );
+   void        getExistAssignment ( vec<Lit>& ) const;
+   void        selectMinClauses   ( vec<Lit>& );
+   void        collectBkClaER     ( vec<Lit>& , vec<int>& , int , bool );
+   void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -147,9 +149,8 @@ private:
    void        qSolve2SSAT        ( Ssat_Params_t * );
    void        aSolve2QBF         ();
    void        aSolve2SSAT        ( Ssat_Params_t * );
-   void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
+   void        miniUnsatCore      ( const vec<Lit>& , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
-   void        collectBkClaER     ( vec<Lit>& , vec<int>& , int , bool );
    void        collectBkClaER     ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& , int ) const;
    void        collectParLits     ( vec<Lit>& , vec<int>& );

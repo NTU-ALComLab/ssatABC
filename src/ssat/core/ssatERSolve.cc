@@ -70,59 +70,53 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    vec<int> ClasInd;
    int dropIndex , totalSize , beforeDrop = 0;
    double subvalue;
+   bool sat;
    abctime clk = 0 , clk1 = Abc_Clock();
    _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
    // main loop, pseudo code line04-14
    while ( true )  {
       if ( _fTimer ) clk = Abc_Clock();
-      _s2->solve();
+      sat = _s2->solve();
       if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
-      if ( !_s2->okay() ) { // _s2 UNSAT --> main loop terminate
+      if ( !sat ) { // _s2 UNSAT --> main loop terminate
          printf( "\n  > optimizing assignment to exist vars:\n\t" );
          dumpCla( _erModel );
-         //return; // FIXME: break???
          break;
       }
       getExistAssignment( eLits ); // line05
       if ( pParams->fGreedy ) selectMinClauses( eLits ); // line07
       if ( _fTimer ) clk = Abc_Clock();
-      if ( !_s1->solve(eLits) ) { // UNSAT case
-         if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
+      sat = _s1->solve(eLits);
+      if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
+      if ( !sat ) { // UNSAT case, line12-13
          if ( pParams->fMini ) {
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
             _s2->addClause( sBkCla );
-            if ( _fTimer ) {
-               timer.lenBase += sBkCla.size();
-               timer.lenPartial += sBkCla.size();
-            }
+            if ( _fTimer ) { timer.lenBase += sBkCla.size(); timer.lenPartial += sBkCla.size(); }
          }
-         else 
-            _s2->addClause( _s1->conflict );
+         else _s2->addClause( _s1->conflict );
       }
       else { // SAT case
-         if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
          dropIndex = eLits.size();
          totalSize = eLits.size();
          if ( _s1->nClauses() == 0 ) {
             Abc_Print( -1 , "  > There is no clause left ...\n" );
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
-            Abc_Print( 0 , "  > Under construction ...\n" );
+            Abc_Print( 0  , "  > Under construction ...\n" );
             exit(1);
          }
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = pParams->fBdd ? clauseToNetwork( eLits , totalSize , pParams->fIncre , pParams->fCkt ) : countModels( eLits , totalSize );
-         if ( _fTimer ) {
-            timer.timeCa += Abc_Clock()-clk;
-            ++timer.nCachet;
-         }
-         if ( subvalue == 1 ) {
-            printf( "\n  > optimizing assignment to exist vars:\n\t" );
-            dumpCla( eLits );
+         subvalue = pParams->fBdd ? clauseToNetwork( eLits , totalSize , pParams->fIncre , pParams->fCkt ) : countModels( eLits , totalSize );
+         if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+         if ( subvalue == 1 ) { // early termination
             _satPb = subvalue;
-            return;
+            eLits.copyTo( _erModel );
+            printf( "\n  > optimizing assignment to exist vars:\n\t" );
+            dumpCla( _erModel );
+            break;
          }
-         if ( subvalue > _satPb ) {
+         if ( subvalue > _satPb ) { // update current solution
             if ( _fVerbose ) {
                printf( "  > find a better solution , value = %f\n" , subvalue );
                Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk1 );
@@ -134,11 +128,12 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          sBkCla.clear();
          ClasInd.clear();
          parLits.clear();
-         collectBkClaER( sBkCla , ClasInd , dropIndex , pParams->fSub );
+         collectBkClaER( sBkCla , ClasInd , dropIndex , pParams->fSub ); // clause subsumption: line08
          if ( _fTimer ) {
             pParams->fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
             if ( pParams->fDynamic ) beforeDrop = sBkCla.size();
          }
+#if 0
          sBkCla.copyTo( parLits );
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
@@ -169,8 +164,9 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
                }
             }
          }
-         sBkCla.clear();
-         for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
+#else
+         if ( pParams->fPart ) discardLit( pParams , subvalue , sBkCla , ClasInd );
+#endif         
          _s2->addClause( sBkCla );
          if ( _fTimer ) {
             timer.lenPartial += sBkCla.size();
@@ -185,7 +181,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             }
          }
       }
-      if ( _fTimer ) ++timer.nS1solve;
    }
 }
 
@@ -780,6 +775,57 @@ SsatSolver::selectMinClauses( vec<Lit> & eLits )
       if ( !sat ) break;            // minimal set of clauses obtained
       getExistAssignment( eLits );  // update exist assignment 
    }
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Partial assignment pruning.]
+
+  Description [Enable by setting fPart to true.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & sBkCla , vec<int> & ClasInd )
+{
+   abctime clk = 0;
+   int dropIndex = sBkCla.size();
+   vec<Lit> parLits;
+   sBkCla.copyTo( parLits );
+   for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
+   if ( dropIndex >= 1 ) {
+      if ( pParams->fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
+      else                                      dropIndex -= 1;
+      while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
+      if ( _fTimer ) clk = Abc_Clock();
+      subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+      if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+      if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
+         while ( true ) {
+            --dropIndex;
+            if ( _fTimer ) clk = Abc_Clock();
+            subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+            if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+            if ( subvalue > _satPb ) break;
+         }
+         ++dropIndex;
+      }
+      else { // fail, undo dropping 1 by 1 
+         while ( true ) {
+            ++dropIndex;
+            if ( _fTimer ) clk = Abc_Clock();
+            subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+            if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+            if ( subvalue <= _satPb ) break;
+         }
+      }
+   }
+   sBkCla.clear();
+   for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
 }
 
 ////////////////////////////////////////////////////////////////////////
