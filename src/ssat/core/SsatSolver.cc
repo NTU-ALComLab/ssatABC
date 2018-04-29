@@ -218,11 +218,11 @@ SsatSolver::solveSsat( Ssat_Params_t * pParams )
    if ( _numLv > 3 || _numLv == 1 )
       fprintf( stderr , "[ERROR] Currently only support \"{RE,ER}-2SSAT\"!\n" );
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
-      erSolve2SSAT( pParams );
+      erSolve2SSAT(pParams);
    else if ( pParams->fAll )
-      aSolve( pParams ); 
+      aSolve(pParams); 
    else
-      qSolve( pParams );
+      qSolve(pParams);
 }
    
 void

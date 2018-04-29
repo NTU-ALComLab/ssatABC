@@ -294,7 +294,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzclose(in);
    gloClk = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
-   pSsat->solveSsat( pParams );
+   pSsat->solveSsat(pParams);
    Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );

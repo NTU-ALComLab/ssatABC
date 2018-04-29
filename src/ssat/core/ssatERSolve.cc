@@ -57,7 +57,7 @@ extern SsatTimer timer;
 void
 SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
 {
-   if ( _fVerbose ) printParams( pParams );
+   if ( _fVerbose ) printParams(pParams);
    _s1->simplify();
    _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
    if ( pParams->fBdd  ) initClauseNetwork( pParams->fIncre , pParams->fCkt );
@@ -65,27 +65,33 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    if ( pParams->fPure ) assertPureLit();
 
    cout << "--------------------------------------\n";
+   // declare and initialize temp variables
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla , parLits;
    vec<int> ClasInd;
-   double subvalue;
    int dropIndex , totalSize , beforeDrop = 0;
-   _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
+   double subvalue;
    abctime clk = 0 , clk1 = Abc_Clock();
-   for(;;) {
+   _erModel.capacity( _rootVars[0].size() ); _erModel.clear();
+   // main loop, pseudo code line04-14
+   while ( true )  {
       if ( _fTimer ) clk = Abc_Clock();
+#if 0
       if ( !_s2->solve() ) {
-         if ( _fTimer ) {
-            timer.timeS2 += Abc_Clock()-clk;
-            ++timer.nS2solve;
-         }
+         if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
          printf( "\n  > optimizing assignment to exist vars:\n\t" );
          dumpCla( _erModel );
-         return;
+         return; // FIXME: break???
       }
-      if ( _fTimer ) {
-         timer.timeS2 += Abc_Clock()-clk;
-         ++timer.nS2solve;
+      if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
+#else
+      _s2->solve();
+      if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
+      if ( !_s2->okay() ) { // _s2 UNSAT --> main loop terminate
+         printf( "\n  > optimizing assignment to exist vars:\n\t" );
+         dumpCla( _erModel );
+         return; // FIXME: break???
       }
+#endif
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( pParams->fGreedy ) {
@@ -757,7 +763,7 @@ SsatSolver::assertPureLit()
    }
    for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
       if ( phase[_rootVars[0][i]] == 0 || phase[_rootVars[0][i]] == 1 ) {
-         printf( "  > [INFO] asserting pure literal %s%d\n" , phase[_rootVars[0][i]] ? "-":" " , _rootVars[0][i]+1 );
+         if ( _fVerbose ) printf( "  > [INFO] asserting pure literal %s%d\n" , phase[_rootVars[0][i]] ? "-":" " , _rootVars[0][i]+1 );
          _s2->addClause( mkLit( _rootVars[0][i] , (bool)phase[_rootVars[0][i]] ) );
       }
    }
