@@ -131,12 +131,12 @@ private:
    void        qSolve             ( Ssat_Params_t * ); // Qesto-like solve
    void        aSolve             ( Ssat_Params_t * ); // All-SAT enumeration solve
    void        erSolve2SSAT       ( Ssat_Params_t * ); // Solve ER/ERE-2SSAT
-   void        printParams        ( Ssat_Params_t * ) const;
-   void        getExistAssignment ( vec<Lit>& ) const;
    void        assertPureLit      ();
    void        selectMinClauses   ( vec<Lit>& );
    void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , int );
    void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
+   void        printParams        ( Ssat_Params_t * ) const;
+   void        getExistAssignment ( vec<Lit>& ) const;
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );

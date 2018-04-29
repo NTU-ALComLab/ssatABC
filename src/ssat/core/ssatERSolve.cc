@@ -80,11 +80,11 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
       if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
       if ( !sat ) { // _s2 UNSAT --> main loop terminate
          printf( "\n  > optimizing assignment to exist vars:\n\t" );
-         dumpCla( _erModel );
+         dumpCla(_erModel);
          break;
       }
-      getExistAssignment( eLits ); // line05
-      if ( pParams->fGreedy ) selectMinClauses( eLits ); // line07
+      getExistAssignment(eLits); // line05
+      if ( pParams->fGreedy ) selectMinClauses(eLits); // line07
       if ( _fTimer ) clk = Abc_Clock();
       sat = _s1->solve(eLits);
       if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
@@ -92,10 +92,10 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          if ( pParams->fMini ) {
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
-            _s2->addClause( sBkCla );
+            _s2->addClause(sBkCla);
             if ( _fTimer ) { timer.lenBase += sBkCla.size(); timer.lenPartial += sBkCla.size(); }
          }
-         else _s2->addClause( _s1->conflict );
+         else _s2->addClause(_s1->conflict);
       }
       else { // SAT case
          dropIndex = eLits.size();
@@ -113,7 +113,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             _satPb = subvalue;
             eLits.copyTo( _erModel );
             printf( "\n  > optimizing assignment to exist vars:\n\t" );
-            dumpCla( _erModel );
+            dumpCla(_erModel);
             break;
          }
          if ( subvalue > _satPb ) { // update current solution
@@ -123,12 +123,12 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
                fflush(stdout);
             }
             _satPb = subvalue;
-            eLits.copyTo( _erModel );
+            eLits.copyTo(_erModel);
          }
          sBkCla.clear();
          ClasInd.clear();
          if ( pParams->fSub ) collectBkClaERSub( sBkCla , ClasInd , dropIndex ); // clause subsumption: line08
-         else                 collectBkClaER( sBkCla );
+         else                 collectBkClaER(sBkCla);
          if ( _fTimer ) {
             pParams->fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
             if ( pParams->fDynamic ) beforeDrop = sBkCla.size();
