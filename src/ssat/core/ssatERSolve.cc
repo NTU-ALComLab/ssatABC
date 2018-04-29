@@ -75,15 +75,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    // main loop, pseudo code line04-14
    while ( true )  {
       if ( _fTimer ) clk = Abc_Clock();
-#if 0
-      if ( !_s2->solve() ) {
-         if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
-         printf( "\n  > optimizing assignment to exist vars:\n\t" );
-         dumpCla( _erModel );
-         return; // FIXME: break???
-      }
-      if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
-#else
       _s2->solve();
       if ( _fTimer ) { timer.timeS2 += Abc_Clock()-clk; ++timer.nS2solve; }
       if ( !_s2->okay() ) { // _s2 UNSAT --> main loop terminate
@@ -91,9 +82,8 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          dumpCla( _erModel );
          return; // FIXME: break???
       }
-#endif
-      for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
-         eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
+      getExistAssignment( eLits ); // pseudo code line05
+#if 0
       if ( pParams->fGreedy ) {
          vec<Lit> block , assump;
          block.capacity( _claLits.size() );
@@ -116,6 +106,9 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
                eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
          }
       }
+#else
+   if ( pParams->fGreedy ) selectMinClauses( eLits );
+#endif
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(eLits) ) { // UNSAT case
          if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
@@ -221,7 +214,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
 }
 
 void
-SsatSolver::printParams( Ssat_Params_t * pParams )
+SsatSolver::printParams( Ssat_Params_t * pParams ) const
 {
    printf( "  > Using %s for counting, greedy=%s, subsume=%s, partial=%s, dynamic=%s, incremental=%s, circuit=%s, pure=%s\n", 
             pParams->fBdd          ? "bdd":"cachet" , 
@@ -232,6 +225,14 @@ SsatSolver::printParams( Ssat_Params_t * pParams )
             pParams->fIncre        ? "yes":"no" , 
             pParams->fCkt          ? "yes":"no" , 
             pParams->fPure         ? "yes":"no" );
+}
+
+void
+SsatSolver::getExistAssignment( vec<Lit> & eLits ) const
+{
+   assert( _s2->okay() );
+   for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
+      eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
 }
 
 Solver*
@@ -766,6 +767,42 @@ SsatSolver::assertPureLit()
          if ( _fVerbose ) printf( "  > [INFO] asserting pure literal %s%d\n" , phase[_rootVars[0][i]] ? "-":" " , _rootVars[0][i]+1 );
          _s2->addClause( mkLit( _rootVars[0][i] , (bool)phase[_rootVars[0][i]] ) );
       }
+   }
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Select a minimal set of clauses.]
+
+  Description [Enable by setting fGreedy to true.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::selectMinClauses( vec<Lit> & eLits )
+{
+   abctime clk = 0;
+   bool sat = false;
+   vec<Lit> block , assump;
+   block.capacity( _claLits.size() );
+   assump.capacity( _claLits.size() );
+   while ( true ) {
+      block.clear();
+      assump.clear();
+      for ( int i = 0 ; i < _claLits.size() ; ++i ) {
+         if ( _claLits[i] == lit_Undef ) continue;
+         ( _s2->modelValue(_claLits[i]) == l_True ) ? block.push(~_claLits[i]) : assump.push(~_claLits[i]);
+      }
+      _s2->addClause( block );
+      if ( _fTimer ) clk = Abc_Clock();
+      sat = _s2->solve(assump);
+      if ( _fTimer ) { timer.timeGd += Abc_Clock()-clk; ++timer.nGdsolve; }
+      if ( !sat ) break;            // minimal set of clauses obtained
+      getExistAssignment( eLits );  // update exist assignment 
    }
 }
 
