@@ -74,6 +74,29 @@ typedef struct SsatTimer_ {
    int  avgDrop; // average dropped literals
 } SsatTimer;
 
+// parameters for SsatSolver
+typedef struct Ssat_ParamsStruct_t_
+{
+   // reSSAT
+   double range;     // acceptable gap between upper and lower bounds
+   int    upper;     // #UNSAT cubes to compute upper bounds (-1: compute only once)
+   int    lower;     // #SAT   cubes to compute lower bounds (-1: compute only once)
+   // erSSAT
+   bool   fGreedy;   // using minimal clasue selection
+   bool   fSub;      // using clause subsumption
+   bool   fPart;     // using partial assignment pruning
+   bool   fBdd;      // using BDD or Cachet to compute weight
+   bool   fDynamic;  // using dynamic dropping
+   bool   fIncre;    // using incremental counting
+   bool   fCkt;      // using circuit for counting
+   bool   fPure;     // using pure literal assertion
+   // misc
+   bool   fAll;      // using All-SAT enumeration to solve
+   bool   fMini;     // using minimal UNSAT core
+   bool   fTimer;    // profiling runtime information 
+   bool   fVerbose;  // print verbose information
+} Ssat_Params_t;
+
 //=================================================================================================
 // SsatSolver -- the main class:
 
@@ -81,15 +104,15 @@ class SsatSolver {
 
 public:
    // Constructor/Destructor:
-   SsatSolver( bool fVerbose = false , bool fTimer = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) 
-   { _fVerbose = fVerbose; _fTimer = fTimer; _pNtkCnf = NULL; _dd = NULL; }
+   SsatSolver( bool fTimer = false , bool fVerbose = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) 
+   { _fTimer = fTimer; _fVerbose = fVerbose; _pNtkCnf = NULL; _dd = NULL; }
    ~SsatSolver();
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat    ( double=0.0 , int=-1 , int=-1 , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true , bool=true ); // Solve 2SSAT/2QBF
+   void        solveSsat    ( Ssat_Params_t * ); // Solve RE/ER-2SSAT
    void        bddSolveSsat ( bool , bool ); // Solve SSAT by bdd
-   // ER-2-Ssat solving by branch and bound method
+   // ER-2SSAT solving by branch and bound method
    void        solveBranchBound( Abc_Ntk_t* );
    double      upperBound() const { return 1.0 - _unsatPb; }
    double      lowerBound() const { return _satPb; }
@@ -105,9 +128,10 @@ private:
    Solver *    parse_SDIMACS      ( gzFile& );
    void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
    // solve interface
-   void        qSolve             ( double , int , int , bool ); // Qesto-like solve
-   void        aSolve             ( double , int , int , bool , bool ); // All-SAT enumeration solve
-   void        erSolve2SSAT       ( bool , bool , bool , bool , bool , bool , bool , bool , bool ); // Solve ER/ERE-2SSAT
+   void        qSolve             ( Ssat_Params_t * ); // Qesto-like solve
+   void        aSolve             ( Ssat_Params_t * ); // All-SAT enumeration solve
+   void        erSolve2SSAT       ( Ssat_Params_t * ); // Solve ER/ERE-2SSAT
+   void        printParams        ( Ssat_Params_t * );
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -118,9 +142,9 @@ private:
    Solver *    buildAllSelector   ();
    void        addSelectCla       ( Solver& , const Lit& , const vec<Lit>& );
    void        qSolve2QBF         ();
-   void        qSolve2SSAT        ( double , int , int , bool );
+   void        qSolve2SSAT        ( Ssat_Params_t * );
    void        aSolve2QBF         ();
-   void        aSolve2SSAT        ( double , int , int , bool , bool );
+   void        aSolve2SSAT        ( Ssat_Params_t * );
    void        miniUnsatCore      ( const vec<Lit> & , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
    void        collectBkClaER     ( vec<Lit>& , vec<int>& , int , bool );

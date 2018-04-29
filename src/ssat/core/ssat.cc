@@ -186,27 +186,25 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
 {
    SsatSolver * pSsat;
    gzFile in;
-   double range;
-   int upper , lower , c;
-   bool fAll , fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre , fCkt , fPure , fVerbose , fTimer;
-
-   range    = 0.0;
-   //upper    = 16;
-   //lower    = 65536;
-   upper    = -1;
-   lower    = -1;
-   fAll     = true;
-   fMini    = true;
-   fBdd     = true;
-   fPart    = true;
-   fSub     = true;
-   fGreedy  = true;
-   fDynamic = true;
-   fIncre   = true;
-   fCkt     = true;
-   fPure    = true;
-   fVerbose = true;
-   fTimer   = true;
+   int c;
+   Ssat_Params_t Params , * pParams = &Params;
+   // set defaults
+   memset( pParams , 0 , sizeof(Ssat_Params_t) );
+   pParams->range    = 0.0;
+   pParams->upper    = -1;
+   pParams->lower    = -1;
+   pParams->fGreedy  = true;
+   pParams->fSub     = true;
+   pParams->fPart    = true;
+   pParams->fBdd     = true;
+   pParams->fDynamic = true;
+   pParams->fIncre   = true;
+   pParams->fCkt     = true;
+   pParams->fPure    = true;
+   pParams->fAll     = true;
+   pParams->fMini    = true;
+   pParams->fTimer   = true;
+   pParams->fVerbose = true;
    Extra_UtilGetoptReset();
    while ( ( c = Extra_UtilGetopt( argc, argv, "RULambpsgdicrvth" ) ) != EOF )
    {
@@ -217,63 +215,63 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
                 Abc_Print( -1 , "Command line switch \"-R\" should be followed by a positive floating number.\n" );
                 goto usage;
             }
-            range = atof( argv[globalUtilOptind] );
+            pParams->range = atof( argv[globalUtilOptind] );
             globalUtilOptind++;
-            if ( range < 0.0 || range > 1.0 ) goto usage;
+            if ( pParams->range < 0.0 || pParams->range > 1.0 ) goto usage;
             break;
          case 'U':
             if ( globalUtilOptind >= argc ) {
                 Abc_Print( -1 , "Command line switch \"-U\" should be followed by a positive integer.\n" );
                 goto usage;
             }
-            upper = atoi( argv[globalUtilOptind] );
+            pParams->upper = atoi( argv[globalUtilOptind] );
             globalUtilOptind++;
-            if ( upper != -1 && !(upper > 0) ) goto usage;
+            if ( (pParams->upper < 0) && (pParams->upper != -1) ) goto usage;
             break;
          case 'L':
             if ( globalUtilOptind >= argc ) {
                 Abc_Print( -1 , "Command line switch \"-L\" should be followed by a positive integer.\n" );
                 goto usage;
             }
-            lower = atoi( argv[globalUtilOptind] );
+            pParams->lower = atoi( argv[globalUtilOptind] );
             globalUtilOptind++;
-            if ( lower != -1 && !(lower > 0) ) goto usage;
-            break;
-         case 'a':
-            fAll ^= 1;
-            break;
-         case 'm':
-            fMini ^= 1;
-            break;
-         case 'b':
-            fBdd ^= 1;
-            break;
-         case 'p':
-            fPart ^= 1;
-            break;
-         case 's':
-            fSub ^= 1;
+            if ( (pParams->lower < 0) && (pParams->lower != -1) ) goto usage;
             break;
          case 'g':
-            fGreedy ^= 1;
+            pParams->fGreedy ^= 1;
+            break;
+         case 's':
+            pParams->fSub ^= 1;
+            break;
+         case 'p':
+            pParams->fPart ^= 1;
+            break;
+         case 'b':
+            pParams->fBdd ^= 1;
             break;
          case 'd':
-            fDynamic ^= 1;
+            pParams->fDynamic ^= 1;
             break;
          case 'i':
-            fIncre ^= 1;
+            pParams->fIncre ^= 1;
             break;
          case 'c':
-            fCkt ^= 1;
+            pParams->fCkt ^= 1;
             break;
          case 'r':
-            fPure ^= 1;
+            pParams->fPure ^= 1;
             break;
-         case 'v':
-            fVerbose ^= 1;
+         case 'a':
+            pParams->fAll ^= 1;
+            break;
+         case 'm':
+            pParams->fMini ^= 1;
             break;
          case 't':
-            fTimer ^= 1;
+            pParams->fTimer ^= 1;
+            break;
+         case 'v':
+            pParams->fVerbose ^= 1;
             break;
          case 'h':
             goto usage;
@@ -290,41 +288,40 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
       Abc_Print( -1 , "There is no ssat file %s\n" , argv[globalUtilOptind] );
       return 1;
    }
-   gloSsat = pSsat = new SsatSolver( fVerbose , fTimer );
-   initTimer( &timer );
+   gloSsat = pSsat = new SsatSolver( pParams->fTimer , pParams->fVerbose );
+   initTimer(&timer);
    pSsat->readSSAT(in);
    gzclose(in);
    gloClk = Abc_Clock();
    Abc_Print( -2 , "\n==== SSAT solving process ====\n" );
-   pSsat->solveSsat( range , upper , lower , fAll , fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre , fCkt , fPure );
+   pSsat->solveSsat( pParams );
    Abc_Print( -2 , "\n==== SSAT solving result ====\n" );
    Abc_Print( -2 , "\n  > Upper bound = %e\n" , pSsat->upperBound() );
    Abc_Print( -2 , "  > Lower bound = %e\n"   , pSsat->lowerBound() );
    Abc_PrintTime( 1 , "  > Time       " , Abc_Clock() - gloClk );
    delete pSsat;
    gloSsat = NULL;
-   //if ( fTimer ) printTimer( &timer );
-   //printf( "\n" );
+   if ( pParams->fTimer ) { printTimer( &timer ); printf( "\n" ); }
    return 0;
 
 usage:
    Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-ambpsgdicrvth] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
-   Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , range );
-   Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , upper );
-   Abc_Print( -2 , "\t-L <num>  : number of SAT   cubes for lower bound, default=%d (-1: construct only once)\n" , lower );
-   Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=%s\n" , fAll ? "yes" : "no" );
-   Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=%s\n" , fMini ? "yes" : "no" );
-   Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=%s\n" , fBdd ? "bdd" : "cachet" );
-   Abc_Print( -2 , "\t-p        : toggles using partial assignment technique, default=%s\n" , fPart ? "yes" : "no" );
-   Abc_Print( -2 , "\t-s        : toggles using subsumption simplify technique, default=%s\n" , fSub ? "yes" : "no" );
-   Abc_Print( -2 , "\t-g        : toggles using greedy heuristic, default=%s\n" , fGreedy ? "yes" : "no" );
-   Abc_Print( -2 , "\t-d        : toggles using dynamic dropping, default=%s\n" , fDynamic ? "yes" : "no" );
-   Abc_Print( -2 , "\t-i        : toggles using incremental counting, default=%s\n" , fIncre ? "yes" : "no" );
-   Abc_Print( -2 , "\t-c        : toggles using circuit for counting, default=%s\n" , fCkt ? "yes" : "no" );
-   Abc_Print( -2 , "\t-r        : toggles using pure literal, default=%s\n" , fPure ? "yes" : "no" );
-   Abc_Print( -2 , "\t-v        : toggles verbose information, default=%s\n" , fVerbose ? "yes" : "no" );
-   Abc_Print( -2 , "\t-t        : toggles runtime information, default=%s\n" , fTimer ? "yes" : "no" );
+   Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , pParams->range );
+   Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , pParams->upper );
+   Abc_Print( -2 , "\t-L <num>  : number of SAT   cubes for lower bound, default=%d (-1: construct only once)\n" , pParams->lower );
+   Abc_Print( -2 , "\t-g        : toggles using greedy heuristic, default=%s\n" , pParams->fGreedy ? "yes" : "no" );
+   Abc_Print( -2 , "\t-s        : toggles using subsumption simplify technique, default=%s\n" , pParams->fSub ? "yes" : "no" );
+   Abc_Print( -2 , "\t-p        : toggles using partial assignment technique, default=%s\n" , pParams->fPart ? "yes" : "no" );
+   Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=%s\n" , pParams->fBdd ? "bdd" : "cachet" );
+   Abc_Print( -2 , "\t-d        : toggles using dynamic dropping, default=%s\n" , pParams->fDynamic ? "yes" : "no" );
+   Abc_Print( -2 , "\t-i        : toggles using incremental counting, default=%s\n" , pParams->fIncre ? "yes" : "no" );
+   Abc_Print( -2 , "\t-c        : toggles using circuit for counting, default=%s\n" , pParams->fCkt ? "yes" : "no" );
+   Abc_Print( -2 , "\t-r        : toggles using pure literal, default=%s\n" , pParams->fPure ? "yes" : "no" );
+   Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=%s\n" , pParams->fAll ? "yes" : "no" );
+   Abc_Print( -2 , "\t-m        : toggles using minimal UNSAT core, default=%s\n" , pParams->fMini ? "yes" : "no" );
+   Abc_Print( -2 , "\t-t        : toggles runtime information, default=%s\n" , pParams->fTimer ? "yes" : "no" );
+   Abc_Print( -2 , "\t-v        : toggles verbose information, default=%s\n" , pParams->fVerbose ? "yes" : "no" );
    Abc_Print( -2 , "\t-h        : prints the command summary\n" );
    Abc_Print( -2 , "\tfile      : the sdimacs file\n" );
    return 1;

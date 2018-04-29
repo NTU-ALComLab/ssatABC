@@ -213,26 +213,26 @@ SsatSolver::readPrefix( StreamBuffer & in , Solver & S , double prob ,
 ***********************************************************************/
 
 void
-SsatSolver::solveSsat( double range , int upper , int lower , bool fAll , bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , bool fDynamic , bool fIncre , bool fCkt , bool fPure )
+SsatSolver::solveSsat( Ssat_Params_t * pParams )
 {
    if ( _numLv > 3 || _numLv == 1 )
       fprintf( stderr , "[ERROR] Currently only support \"{RE,ER}-2SSAT\"!\n" );
    else if ( isEVar(_rootVars[0][0]) && isRVar(_rootVars[1][0]) )
-      erSolve2SSAT( fMini , fBdd , fPart , fSub , fGreedy , fDynamic , fIncre , fCkt , fPure );
-   else if ( fAll )
-      aSolve( range , upper , lower , fMini , fBdd ); 
+      erSolve2SSAT( pParams );
+   else if ( pParams->fAll )
+      aSolve( pParams ); 
    else
-      qSolve( range , upper , lower , fMini );
+      qSolve( pParams );
 }
    
 void
-SsatSolver::qSolve( double range , int upper , int lower , bool fMini )
+SsatSolver::qSolve( Ssat_Params_t * pParams )
 {
    _s1->simplify(); // avoid clause deletion after solving
    _s2 = buildQestoSelector();
    initSelLitMark(); // avoid repeat selection vars in blocking clause
    if ( isAVar( _rootVars[0][0] ) ) qSolve2QBF();
-   else                             qSolve2SSAT( range , upper , lower , fMini );
+   else                             qSolve2SSAT( pParams);
 }
 
 /**Function*************************************************************
@@ -323,16 +323,16 @@ SsatSolver::qSolve2QBF()
 ***********************************************************************/
 
 void
-SsatSolver::qSolve2SSAT( double range , int upper , int lower , bool fMini )
+SsatSolver::qSolve2SSAT( Ssat_Params_t * pParams )
 {
    vec<Lit> rLits( _rootVars[0].size() ) , sBkCla;
    abctime clk = Abc_Clock();
-   _upperLimit = upper;
-   _lowerLimit = lower;
+   _upperLimit = pParams->upper;
+   _lowerLimit = pParams->lower;
    (_upperLimit > 0) ? _unsatClause.capacity( _upperLimit ) : _unsatClause.capacity( 1000000 );
    (_lowerLimit > 0) ? _satClause.capacity( _lowerLimit ) : _satClause.capacity( 1000000 );
    initCubeNetwork( false );
-   while ( 1.0 - _unsatPb - _satPb > range ) {
+   while ( 1.0 - _unsatPb - _satPb > pParams->range ) {
       if ( !_s2->solve() ) {
          _unsatPb = cubeToNetwork(false);
          _satPb = cubeToNetwork(true);
@@ -341,7 +341,7 @@ SsatSolver::qSolve2SSAT( double range , int upper , int lower , bool fMini )
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( !_s1->solve(rLits) ) { // UNSAT case
-         if ( fMini ) {
+         if ( pParams->fMini ) {
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
             _unsatClause.push();

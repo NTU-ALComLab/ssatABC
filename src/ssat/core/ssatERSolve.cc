@@ -55,19 +55,14 @@ extern SsatTimer timer;
 ***********************************************************************/
 
 void
-SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool fGreedy , 
-                          bool fDynamic , bool fIncre , bool fCkt , bool fPure )
+SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
 {
-   if ( _fVerbose ) {
-      printf( "  > Using %s for counting, partial=%s, subsume=%s, greedy=%s, dynamic=%s, incremental=%s, circuit=%s, pure=%s\n" , 
-              fBdd ? "bdd":"cachet" , fPart ? "yes":"no" , fSub ? "yes":"no" , fGreedy ? "yes":"no" , 
-              fDynamic ? "yes":"no" , fIncre ? "yes":"no" , fCkt ? "yes":"no" , fPure ? "yes":"no" );
-   }
+   if ( _fVerbose ) printParams( pParams );
    _s1->simplify();
-   _s2 = fGreedy ? buildQestoSelector() : buildERSelector();
-   if ( fBdd  ) initClauseNetwork( fIncre , fCkt );
-   if ( fSub  ) buildSubsumeTable( *_s1 );
-   if ( fPure ) assertPureLit();
+   _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
+   if ( pParams->fBdd  ) initClauseNetwork( pParams->fIncre , pParams->fCkt );
+   if ( pParams->fSub  ) buildSubsumeTable( *_s1 );
+   if ( pParams->fPure ) assertPureLit();
 
    cout << "--------------------------------------\n";
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla , parLits;
@@ -93,7 +88,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
       }
       for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
          eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-      if ( fGreedy ) {
+      if ( pParams->fGreedy ) {
          vec<Lit> block , assump;
          block.capacity( _claLits.size() );
          assump.capacity( _claLits.size() );
@@ -118,7 +113,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(eLits) ) { // UNSAT case
          if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
-         if ( fMini ) {
+         if ( pParams->fMini ) {
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
             _s2->addClause( sBkCla );
@@ -141,7 +136,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
             exit(1);
          }
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = fBdd ? clauseToNetwork( eLits , totalSize , fIncre , fCkt ) : countModels( eLits , totalSize );
+         subvalue  = pParams->fBdd ? clauseToNetwork( eLits , totalSize , pParams->fIncre , pParams->fCkt ) : countModels( eLits , totalSize );
          if ( _fTimer ) {
             timer.timeCa += Abc_Clock()-clk;
             ++timer.nCachet;
@@ -164,26 +159,26 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          sBkCla.clear();
          ClasInd.clear();
          parLits.clear();
-         collectBkClaER( sBkCla , ClasInd , dropIndex , fSub );
+         collectBkClaER( sBkCla , ClasInd , dropIndex , pParams->fSub );
          if ( _fTimer ) {
-            fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
-            if ( fDynamic ) beforeDrop = sBkCla.size();
+            pParams->fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
+            if ( pParams->fDynamic ) beforeDrop = sBkCla.size();
          }
          sBkCla.copyTo( parLits );
          for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
          dropIndex = parLits.size();
-         if ( fPart && dropIndex >= 1 ) {
-            if ( fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
+         if ( pParams->fPart && dropIndex >= 1 ) {
+            if ( pParams->fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
             else                             dropIndex -= 1;
             while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
             if ( _fTimer ) clk = Abc_Clock();
-            subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre , fCkt ) : countModels( parLits , dropIndex );
+            subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
             if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
             if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
                for (;;) {
                   --dropIndex;
                   if ( _fTimer ) clk = Abc_Clock();
-                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre , fCkt ) : countModels( parLits , dropIndex );
+                  subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
                   if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
                   if ( subvalue > _satPb ) break;
                }
@@ -193,7 +188,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
                for (;;) {
                   ++dropIndex;
                   if ( _fTimer ) clk = Abc_Clock();
-                  subvalue  = fBdd ? clauseToNetwork( parLits , dropIndex , fIncre , fCkt ) : countModels( parLits , dropIndex );
+                  subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
                   if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
                   if ( subvalue <= _satPb ) break;
                }
@@ -204,7 +199,7 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
          _s2->addClause( sBkCla );
          if ( _fTimer ) {
             timer.lenPartial += sBkCla.size();
-            if ( fDynamic ) {
+            if ( pParams->fDynamic ) {
                timer.lenDrop += beforeDrop - sBkCla.size();
                //if ( !timer.avgDone ) printf( "  > %d-th s2 solving, current avg drop = %f\n" , timer.nS2solve , timer.lenDrop / timer.nS2solve );
                if ( !timer.avgDone && timer.nS2solve >= 500 ) { // 500 is a magic number: tune it!
@@ -219,6 +214,20 @@ SsatSolver::erSolve2SSAT( bool fMini , bool fBdd , bool fPart , bool fSub , bool
    }
 }
 
+void
+SsatSolver::printParams( Ssat_Params_t * pParams )
+{
+   printf( "  > Using %s for counting, greedy=%s, subsume=%s, partial=%s, dynamic=%s, incremental=%s, circuit=%s, pure=%s\n", 
+            pParams->fBdd          ? "bdd":"cachet" , 
+            pParams->fGreedy       ? "yes":"no" , 
+            pParams->fSub          ? "yes":"no" , 
+            pParams->fPart         ? "yes":"no" , 
+            pParams->fDynamic      ? "yes":"no" , 
+            pParams->fIncre        ? "yes":"no" , 
+            pParams->fCkt          ? "yes":"no" , 
+            pParams->fPure         ? "yes":"no" );
+}
+
 Solver*
 SsatSolver::buildERSelector()
 {
@@ -228,7 +237,6 @@ SsatSolver::buildERSelector()
 void
 SsatSolver::updateBkBySubsume( vec<Lit>& Lits )
 {
-  
 }
 
 bool
