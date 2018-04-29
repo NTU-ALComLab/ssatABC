@@ -27,6 +27,7 @@ using namespace Minisat;
 
 TEST_CASE( "toliet" , "[planning]" )
 {
+   abctime clk = Abc_Clock();
    Ssat_Params_t Params , * pParams = &Params;
    // set defaults
    memset( pParams , 0 , sizeof(Ssat_Params_t) );
@@ -53,6 +54,7 @@ TEST_CASE( "toliet" , "[planning]" )
    double answer = pSsat->lowerBound();
    REQUIRE( answer == Approx(0.001953125) );
    delete pSsat;
+   Abc_PrintTime( 1 , "  > Elasped time" , Abc_Clock()-clk );
 }
 
 ////////////////////////////////////////////////////////////////////////
