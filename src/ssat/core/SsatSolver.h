@@ -133,8 +133,9 @@ private:
    void        erSolve2SSAT       ( Ssat_Params_t * ); // Solve ER/ERE-2SSAT
    void        printParams        ( Ssat_Params_t * ) const;
    void        getExistAssignment ( vec<Lit>& ) const;
+   void        assertPureLit      ();
    void        selectMinClauses   ( vec<Lit>& );
-   void        collectBkClaER     ( vec<Lit>& , vec<int>& , int , bool );
+   void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , int );
    void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
@@ -203,9 +204,6 @@ private:
    void        computeSsatBdd     ();
    // build the subsumption table
    void        buildSubsumeTable  ( Solver& );
-   void        updateBkBySubsume  ( vec<Lit>& );
-   // assert pure X literals to be true
-   void        assertPureLit      ();
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;

@@ -203,10 +203,10 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    pParams->fPure    = true;
    pParams->fAll     = true;
    pParams->fMini    = true;
-   pParams->fTimer   = false;
+   pParams->fTimer   = true;
    pParams->fVerbose = true;
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "RULambpsgdicrvth" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RULgspbdicramtvh" ) ) != EOF )
    {
       switch ( c )
       {
@@ -305,7 +305,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-ambpsgdicrvth] <file>\n" );
+   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-gspbdicramtvh] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
    Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , pParams->range );
    Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , pParams->upper );
