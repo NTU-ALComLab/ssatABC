@@ -151,7 +151,7 @@ SsatSolver::aSolve2SSAT( Ssat_Params_t * pParams )
          rLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s1->solve(rLits) ) { // UNSAT case
-         if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
+         if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1_unsat; }
          _unsatClause.push();
          if ( pParams->fMini ) {
             sBkCla.clear();
@@ -184,7 +184,7 @@ SsatSolver::aSolve2SSAT( Ssat_Params_t * pParams )
          }
       }
       else { // SAT case
-         if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
+         if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1_sat; }
          _satClause.push();
          if ( pParams->fMini ) {
             sBkCla.clear();

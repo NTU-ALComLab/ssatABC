@@ -68,7 +68,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    // declare and initialize temp variables
    vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
    vec<int> ClasInd;
-   int dropIndex , totalSize , beforeDrop = 0;
+   int dropIndex , totalSize , lenBeforeDrop = 0;
    double subvalue;
    bool sat;
    abctime clk = 0 , clk1 = Abc_Clock();
@@ -87,17 +87,18 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
       if ( pParams->fGreedy ) selectMinClauses(eLits); // line07
       if ( _fTimer ) clk = Abc_Clock();
       sat = _s1->solve(eLits);
-      if ( _fTimer ) { timer.timeS1 += Abc_Clock()-clk; ++timer.nS1solve; }
+      if ( _fTimer ) timer.timeS1 += Abc_Clock()-clk;
       if ( !sat ) { // UNSAT case, line12-13
+         if ( _fTimer ) ++timer.nS1_unsat;
          if ( pParams->fMini ) {
             sBkCla.clear();
             miniUnsatCore( _s1->conflict , sBkCla );
             _s2->addClause(sBkCla);
-            if ( _fTimer ) { timer.lenBase += sBkCla.size(); timer.lenPartial += sBkCla.size(); }
          }
          else _s2->addClause(_s1->conflict);
       }
       else { // SAT case
+         if ( _fTimer ) ++timer.nS1_sat;
          dropIndex = eLits.size();
          totalSize = eLits.size();
          if ( _s1->nClauses() == 0 ) {
@@ -130,18 +131,19 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          if ( pParams->fSub ) collectBkClaERSub( sBkCla , ClasInd , dropIndex ); // clause subsumption: line08
          else                 collectBkClaER(sBkCla);
          if ( _fTimer ) {
-            pParams->fSub ? timer.lenSubsume += sBkCla.size() : timer.lenBase += sBkCla.size();
-            if ( pParams->fDynamic ) beforeDrop = sBkCla.size();
+            if ( pParams->fSub ) timer.lenSubsume += sBkCla.size();
+            else                 timer.lenBase    += sBkCla.size();
+            if ( pParams->fDynamic ) lenBeforeDrop = sBkCla.size();
          }
          if ( pParams->fPart ) discardLit( pParams , subvalue , sBkCla , ClasInd ); // partial assignment pruning: line11
          _s2->addClause( sBkCla );
          if ( _fTimer ) {
             timer.lenPartial += sBkCla.size();
             if ( pParams->fDynamic ) { // record average # of dropped lits
-               timer.lenDrop += beforeDrop - sBkCla.size();
+               timer.lenDrop += lenBeforeDrop - sBkCla.size();
                if ( !timer.avgDone && timer.nS2solve >= 500 ) { // 500 is a magic number: tune it!
                   timer.avgDone = true;
-                  timer.avgDrop = (int)(timer.lenDrop / timer.nS2solve);
+                  timer.avgDrop = (int)(timer.lenDrop / timer.nS1_sat);
                   printf( "  > average done, avg drop = %d\n" , timer.avgDrop );
                }
             }
@@ -176,6 +178,19 @@ Solver*
 SsatSolver::buildERSelector()
 {
    return buildAllSelector();
+}
+
+void
+SsatSolver::removeDupLit( vec<Lit> & c ) const
+{
+   Lit p; 
+   int i , j;
+   
+   sort(c);
+   for ( i = j = 0 , p = lit_Undef ; i < c.size() ; i++ )
+      if ( _s1->value(c[i]) != l_False && c[i] != p )
+         c[j++] = p = c[i];
+   c.shrink(i-j);
 }
 
 bool
@@ -286,6 +301,7 @@ SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
          }
       }
    }
+   removeDupLit(sBkCla);
 }
 
 /**Function*************************************************************
@@ -535,8 +551,9 @@ SsatSolver::selectMinClauses( vec<Lit> & eLits )
       _s2->addClause( block );
       if ( _fTimer ) clk = Abc_Clock();
       sat = _s2->solve(assump);
-      if ( _fTimer ) { timer.timeGd += Abc_Clock()-clk; ++timer.nGdsolve; }
+      if ( _fTimer ) timer.timeGd += Abc_Clock()-clk;
       if ( !sat ) break;            // minimal set of clauses obtained
+      if ( _fTimer ) ++timer.nGdsolve;
       getExistAssignment( eLits );  // update exist assignment 
    }
 }
@@ -602,15 +619,7 @@ SsatSolver::collectBkClaERSub( vec<Lit> & sBkCla , vec<int> & ClasInd , int drop
             sBkCla.push (c[j]);
       }
    }
-   sort(sBkCla);
-   Lit p; int i, j;
-   for (i = j = 0, p = lit_Undef; i < sBkCla.size(); i++)
-       if (_s1->value(sBkCla[i]) != l_False && sBkCla[i] != p)
-           sBkCla[j++] = p = sBkCla[i];
-   sBkCla.shrink(i - j);
-   
-   // cout << "  > Clause after tidying up. " << endl;
-   // dumpCla( sBkCla );
+   removeDupLit(sBkCla);
 }
 
 void

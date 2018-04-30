@@ -64,14 +64,15 @@ typedef struct Ssat_Timer_t_ {
    abctime timeBd; // Bdd construction
    // timeCt ~ timeCk + timeSt + timeBd
    // iteration info
-   int nS1solve;   // # of s1 solving
-   int nS2solve;   // # of s2 solving
-   int nGdsolve;   // # of s2 greedy
-   int nCount;     // # of counting
+   int nS1_sat;     // # of s1 solving
+   int nS1_unsat;   // # of s1 solving
+   int nS2solve;    // # of s2 solving
+   int nGdsolve;    // # of s2 successful greedy
+   int nCount;      // # of counting
    // learnt clause info
    double lenBase;     // total length of base learnt clause
-   double lenPartial;  // total length of partial learnt clause
    double lenSubsume;  // total length of subsume learnt clause
+   double lenPartial;  // total length of partial learnt clause
    double lenDrop;     // total length of dropped literals
    // for dynamic dropping
    bool avgDone; // indicates average done
@@ -141,6 +142,7 @@ private:
    void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
    void        printParams        ( Ssat_Params_t * ) const;
    void        getExistAssignment ( vec<Lit>& ) const;
+   void        removeDupLit       ( vec<Lit>& ) const;
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );

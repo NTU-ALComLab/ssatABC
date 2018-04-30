@@ -111,13 +111,14 @@ initTimer( Ssat_Timer_t * pTimer )
    pTimer->timeCk     = 0;
    pTimer->timeSt     = 0;
    pTimer->timeBd     = 0;
-   pTimer->nS1solve   = 0;
+   pTimer->nS1_sat    = 0;
+   pTimer->nS1_unsat  = 0;
    pTimer->nS2solve   = 0;
    pTimer->nGdsolve   = 0;
    pTimer->nCount     = 0;
    pTimer->lenBase    = 0.0;
-   pTimer->lenPartial = 0.0;
    pTimer->lenSubsume = 0.0;
+   pTimer->lenPartial = 0.0;
    pTimer->lenDrop    = 0.0;
    pTimer->avgDone    = false;
    pTimer->avgDrop    = 0;
@@ -136,14 +137,15 @@ printTimer( Ssat_Timer_t * pTimer )
    Abc_PrintTime( 1 , "  > Time consumed on build  bdd " , pTimer->timeBd );
    Abc_PrintTime( 1 , "  > Total elapsed time          " , Abc_Clock()-gloClk );
    Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
-   Abc_Print( -2 , "  > Number of s1 solving                = %10d\n" , pTimer->nS1solve  );
+   Abc_Print( -2 , "  > Number of s1 solving (SAT)          = %10d\n" , pTimer->nS1_sat   );
+   Abc_Print( -2 , "  > Number of s1 solving (UNSAT)        = %10d\n" , pTimer->nS1_unsat );
    Abc_Print( -2 , "  > Number of s2 solving                = %10d\n" , pTimer->nS2solve  );
-   Abc_Print( -2 , "  > Number of s2 greedy                 = %10d\n" , pTimer->nGdsolve  );
-   Abc_Print( -2 , "  > Number of calls to model counting   = %10d\n" , pTimer->nCount   );
-   Abc_Print( -2 , "  > Average length of learnt (base)     = %10f\n" , pTimer->lenBase    / pTimer->nS2solve );
-   Abc_Print( -2 , "  > Average length of learnt (partial)  = %10f\n" , pTimer->lenPartial / pTimer->nS2solve );
-   Abc_Print( -2 , "  > Average length of learnt (subsume)  = %10f\n" , pTimer->lenSubsume / pTimer->nS2solve );
-   Abc_Print( -2 , "  > Average number of dropped literals  = %10f\n" , pTimer->lenDrop / pTimer->nS2solve );
+   Abc_Print( -2 , "  > Number of s2 successful greedy      = %10d\n" , pTimer->nGdsolve  );
+   Abc_Print( -2 , "  > Number of calls to model counting   = %10d\n" , pTimer->nCount    );
+   Abc_Print( -2 , "  > Average length of learnt (base)     = %10f\n" , pTimer->lenBase    / pTimer->nS1_sat );
+   Abc_Print( -2 , "  > Average length of learnt (subsume)  = %10f\n" , pTimer->lenSubsume / pTimer->nS1_sat );
+   Abc_Print( -2 , "  > Average length of learnt (partial)  = %10f\n" , pTimer->lenPartial / pTimer->nS1_sat );
+   Abc_Print( -2 , "  > Average number of dropped literals  = %10f\n" , pTimer->lenDrop / pTimer->nS1_sat );
 }
 
 /**Function*************************************************************
