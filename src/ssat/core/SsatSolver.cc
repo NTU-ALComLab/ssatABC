@@ -33,8 +33,8 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-extern SsatTimer timer;
-extern void printTimer( SsatTimer* );
+extern Ssat_Timer_t timer;
+extern void printTimer( Ssat_Timer_t * );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -538,27 +538,26 @@ SsatSolver::test() const
 void
 SsatSolver::interrupt()
 {
-   printf( "\n[WARNING] interruption occurs, compute results before exiting\n" );
-   abctime clk = 0;
-   printf( "[INFO] # of UNSAT cubes: %d\n" , _unsatClause.size() );
-   printf( "[INFO] # of   SAT cubes: %d\n" ,   _satClause.size() );
+   printf( "\n[WARNING] interruption occurs: report results before termination\n" );
+   //abctime clk = 0;
    if ( _unsatClause.size() ) {
-      clk = Abc_Clock();
-      //_unsatPb = _pNtkCube ? cubeToNetwork( false ) : cachetCount( false );
+      printf( "[INFO] # of UNSAT cubes: %d\n" , _unsatClause.size() );
+      //clk = Abc_Clock();
+      //_unsatPb = _pNtkCube ? cubeToNetwork(false) : cachetCount(false);
       //Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
-      printf( "  > Time consumed TO\n" );
-      fflush(stdout);
+      //fflush(stdout);
    }
-   /*if ( _satClause.size() ) {
-      clk = Abc_Clock();
-      _satPb = _pNtkCube ? cubeToNetwork( true ) : cachetCount( true );
-      Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
-      fflush(stdout);
-   }*/
+   if ( _satClause.size() ) {
+      printf( "[INFO] # of   SAT cubes: %d\n" ,   _satClause.size() );
+      //clk = Abc_Clock();
+      //_satPb = _pNtkCube ? cubeToNetwork(true) : cachetCount(true);
+      //Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
+      //fflush(stdout);
+   }
    printf( "  > Upper bound = %e\n" , 1-_unsatPb );
-   printf( "  > Final Lower bound = %e\n" , _satPb  );
-   //if ( _fTimer ) printTimer( &timer );
-   //printf( "\n" );
+   printf( "  > Lower bound = %e\n" , _satPb  );
+   if ( _fTimer ) printTimer( &timer );
+   printf( "\n" );
 }
 
 ////////////////////////////////////////////////////////////////////////

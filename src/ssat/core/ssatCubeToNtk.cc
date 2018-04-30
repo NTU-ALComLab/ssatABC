@@ -23,7 +23,7 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-extern SsatTimer timer;
+extern Ssat_Timer_t timer;
 //#define DEBUG
 // external functions from ABC
 extern "C" {

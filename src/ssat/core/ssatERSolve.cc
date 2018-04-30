@@ -36,7 +36,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////
 
 static bool subsume( const vec<Lit>& , const vec<Lit>& );
-extern SsatTimer timer;
+extern Ssat_Timer_t timer;
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -108,7 +108,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          }
          if ( _fTimer ) clk = Abc_Clock();
          subvalue = pParams->fBdd ? clauseToNetwork( eLits , totalSize , pParams->fIncre , pParams->fCkt ) : countModels( eLits , totalSize );
-         if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue == 1 ) { // early termination
             _satPb = subvalue;
             eLits.copyTo( _erModel );
@@ -745,13 +745,13 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & s
       while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
       if ( _fTimer ) clk = Abc_Clock();
       subvalue = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-      if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+      if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
       if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
          while ( true ) {
             --dropIndex;
             if ( _fTimer ) clk = Abc_Clock();
             subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-            if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+            if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
             if ( subvalue > _satPb ) break;
          }
          ++dropIndex;
@@ -761,7 +761,7 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & s
             ++dropIndex;
             if ( _fTimer ) clk = Abc_Clock();
             subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-            if ( _fTimer ) { timer.timeCa += Abc_Clock()-clk; ++timer.nCachet; }
+            if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
             if ( subvalue <= _satPb ) break;
          }
       }

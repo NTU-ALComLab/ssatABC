@@ -53,18 +53,22 @@ namespace Minisat {
 typedef vec< std::set<int> > SubTbl;
 
 // runtime profilier
-typedef struct SsatTimer_ {
-   abctime timeS1; // s1 solving time
-   abctime timeS2; // s2 solving time
-   abctime timeGd; // s2 greedy time
-   abctime timeCa; // Counting time
-   abctime timeBd; // Bdd construction time
-   abctime timeCk; // Cnf to sop ckt time
-   abctime timeSt; // Sop ckt strash time
+typedef struct Ssat_Timer_t_ {
+   // timing info
+   abctime timeS1; // s1 solving
+   abctime timeS2; // s2 solving
+   abctime timeGd; // s2 greedy
+   abctime timeCt; // Counting
+   abctime timeCk; // Cnf to sop ckt
+   abctime timeSt; // Sop ckt strash to aig
+   abctime timeBd; // Bdd construction
+   // timeCt ~ timeCk + timeSt + timeBd
+   // iteration info
+   int nS1solve;   // # of s1 solving
    int nS2solve;   // # of s2 solving
    int nGdsolve;   // # of s2 greedy
-   int nS1solve;   // # of s1 solving
-   int nCachet;    // # of Cachet calls
+   int nCount;     // # of counting
+   // learnt clause info
    double lenBase;     // total length of base learnt clause
    double lenPartial;  // total length of partial learnt clause
    double lenSubsume;  // total length of subsume learnt clause
@@ -72,7 +76,7 @@ typedef struct SsatTimer_ {
    // for dynamic dropping
    bool avgDone; // indicates average done
    int  avgDrop; // average dropped literals
-} SsatTimer;
+} Ssat_Timer_t;
 
 // parameters for SsatSolver
 typedef struct Ssat_ParamsStruct_t_

@@ -37,15 +37,16 @@ static bool Ssat_NtkReadQuan       ( char * );
 
 // other helpers
 static void sig_handler  ( int );
-static void initTimer    ( SsatTimer* );
-void        printTimer   ( SsatTimer* );
+static void initTimer    ( Ssat_Timer_t * );
+void        printTimer   ( Ssat_Timer_t * );
 
 ////////////////////////////////////////////////////////////////////////
 ///                        VARIABLES DECLARATIONS                    ///
 ////////////////////////////////////////////////////////////////////////
 
+// global variables
 SsatSolver         * gloSsat;
-SsatTimer            timer;
+Ssat_Timer_t         timer;
 abctime              gloClk;
 map<string,double>   quanMap; // Pi name -> quan prob , -1 means exist
 
@@ -101,19 +102,19 @@ Ssat_End( Abc_Frame_t * pAbc )
 ***********************************************************************/
 
 void
-initTimer( SsatTimer * pTimer )
+initTimer( Ssat_Timer_t * pTimer )
 {
    pTimer->timeS1     = 0;
    pTimer->timeS2     = 0;
    pTimer->timeGd     = 0;
-   pTimer->timeCa     = 0;
-   pTimer->timeBd     = 0;
+   pTimer->timeCt     = 0;
    pTimer->timeCk     = 0;
    pTimer->timeSt     = 0;
+   pTimer->timeBd     = 0;
    pTimer->nS1solve   = 0;
-   pTimer->nGdsolve   = 0;
    pTimer->nS2solve   = 0;
-   pTimer->nCachet    = 0;
+   pTimer->nGdsolve   = 0;
+   pTimer->nCount     = 0;
    pTimer->lenBase    = 0.0;
    pTimer->lenPartial = 0.0;
    pTimer->lenSubsume = 0.0;
@@ -123,22 +124,22 @@ initTimer( SsatTimer * pTimer )
 }
 
 void
-printTimer( SsatTimer * pTimer )
+printTimer( Ssat_Timer_t * pTimer )
 {
    Abc_Print( -2 , "\n==== Runtime profiling ====\n\n" );
    Abc_PrintTime( 1 , "  > Time consumed on s1 solving " , pTimer->timeS1 );
    Abc_PrintTime( 1 , "  > Time consumed on s2 solving " , pTimer->timeS2 );
    Abc_PrintTime( 1 , "  > Time consumed on s2 greedy  " , pTimer->timeGd );
-   Abc_PrintTime( 1 , "  > Time consumed on counting   " , pTimer->timeCa );
-   Abc_PrintTime( 1 , "  > Time consumed on build  sop " , pTimer->timeCk );
-   Abc_PrintTime( 1 , "  > Time consumed on strash sop " , pTimer->timeSt );
+   Abc_PrintTime( 1 , "  > Time consumed on counting   " , pTimer->timeCt );
+   Abc_PrintTime( 1 , "  > Time consumed on build  ckt " , pTimer->timeCk );
+   Abc_PrintTime( 1 , "  > Time consumed on strash ckt " , pTimer->timeSt );
    Abc_PrintTime( 1 , "  > Time consumed on build  bdd " , pTimer->timeBd );
    Abc_PrintTime( 1 , "  > Total elapsed time          " , Abc_Clock()-gloClk );
    Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
    Abc_Print( -2 , "  > Number of s1 solving                = %10d\n" , pTimer->nS1solve  );
    Abc_Print( -2 , "  > Number of s2 solving                = %10d\n" , pTimer->nS2solve  );
    Abc_Print( -2 , "  > Number of s2 greedy                 = %10d\n" , pTimer->nGdsolve  );
-   Abc_Print( -2 , "  > Number of calls to model counting   = %10d\n" , pTimer->nCachet   );
+   Abc_Print( -2 , "  > Number of calls to model counting   = %10d\n" , pTimer->nCount   );
    Abc_Print( -2 , "  > Average length of learnt (base)     = %10f\n" , pTimer->lenBase    / pTimer->nS2solve );
    Abc_Print( -2 , "  > Average length of learnt (partial)  = %10f\n" , pTimer->lenPartial / pTimer->nS2solve );
    Abc_Print( -2 , "  > Average length of learnt (subsume)  = %10f\n" , pTimer->lenSubsume / pTimer->nS2solve );

@@ -33,7 +33,7 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-extern SsatTimer timer;
+extern Ssat_Timer_t timer;
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -141,8 +141,8 @@ SsatSolver::aSolve2SSAT( Ssat_Params_t * pParams )
          //else
             //_satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
          if ( _fTimer ) {
-            timer.timeCa += Abc_Clock()-clk;
-            timer.nCachet += 1;
+            timer.timeCt += Abc_Clock()-clk;
+            ++timer.nCount;
          }
          return;
       }
@@ -174,8 +174,8 @@ SsatSolver::aSolve2SSAT( Ssat_Params_t * pParams )
             if ( _fTimer ) clk = Abc_Clock();
             _unsatPb = pParams->fBdd ? cubeToNetwork(false) : cachetCount(false);
             if ( _fTimer ) {
-               timer.timeCa += Abc_Clock()-clk;
-               ++timer.nCachet;
+               timer.timeCt += Abc_Clock()-clk;
+               ++timer.nCount;
             }
             if ( _fVerbose ) {
                printf( "  > current Upper bound = %e\n" , 1-_unsatPb );
@@ -204,8 +204,8 @@ SsatSolver::aSolve2SSAT( Ssat_Params_t * pParams )
             if ( _fTimer ) clk = Abc_Clock();
             _satPb = pParams->fBdd ? cubeToNetwork(true) : cachetCount(true);
             if ( _fTimer ) {
-               timer.timeCa += Abc_Clock()-clk;
-               ++timer.nCachet;
+               timer.timeCt += Abc_Clock()-clk;
+               ++timer.nCount;
             }
             if ( _fVerbose ) {
                printf( "\t\t\t\t\t\t  > current Lower bound = %e\n" , _satPb );
