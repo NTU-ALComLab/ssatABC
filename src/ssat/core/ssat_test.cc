@@ -22,6 +22,9 @@ using namespace Minisat;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+extern void initParams ( Ssat_Params_t * );
+extern void printParams( Ssat_Params_t * );
+
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -36,23 +39,7 @@ TEST_CASE( "toliet" , "[planning]" )
    printf("  > Current working dir: %s\n", cwd);
    targetFile = strcat(cwd, "/expSsat/ssatER/planning/ToiletA/toilet_a_10_01.2.qdimacs");
    printf("  > Testing target: %s\n", targetFile);
-   // set defaults
-   memset( pParams , 0 , sizeof(Ssat_Params_t) );
-   pParams->range    = 0.0;
-   pParams->upper    = -1;
-   pParams->lower    = -1;
-   pParams->fGreedy  = true;
-   pParams->fSub     = true;
-   pParams->fPart    = true;
-   pParams->fBdd     = true;
-   pParams->fDynamic = true;
-   pParams->fIncre   = true;
-   pParams->fCkt     = true;
-   pParams->fPure    = true;
-   pParams->fAll     = true;
-   pParams->fMini    = true;
-   pParams->fTimer   = true;
-   pParams->fVerbose = true;
+   initParams( pParams );
    gzFile in = gzopen( targetFile, "rb" );
    SsatSolver * pSsat = new SsatSolver( pParams->fTimer , pParams->fVerbose );
    pSsat->readSSAT(in);

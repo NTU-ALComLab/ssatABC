@@ -90,8 +90,9 @@ typedef struct Ssat_ParamsStruct_t_
    bool   fGreedy;   // using minimal clasue selection
    bool   fSub;      // using clause subsumption
    bool   fPart;     // using partial assignment pruning
-   bool   fBdd;      // using BDD or Cachet to compute weight
    bool   fDynamic;  // using dynamic dropping
+   bool   fPart2;    // using partial pruning version.2
+   bool   fBdd;      // using BDD or Cachet to compute weight
    bool   fIncre;    // using incremental counting
    bool   fCkt;      // using circuit for counting
    bool   fPure;     // using pure literal assertion
@@ -140,7 +141,6 @@ private:
    void        selectMinClauses   ( vec<Lit>& );
    void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , int );
    void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
-   void        printParams        ( Ssat_Params_t * ) const;
    void        getExistAssignment ( vec<Lit>& ) const;
    void        removeDupLit       ( vec<Lit>& ) const;
    // branch and bound helpers

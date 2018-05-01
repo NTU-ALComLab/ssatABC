@@ -35,9 +35,12 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
+// global variables
+extern Ssat_Timer_t timer;
+// functions
+extern void printParams   ( Ssat_Params_t * );
 static bool subsume       ( const vec<Lit>& , const vec<Lit>& );
 static void setDropVec    ( vec<bool>& , const int& );
-extern Ssat_Timer_t timer;
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -152,20 +155,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          }
       }
    }
-}
-
-void
-SsatSolver::printParams( Ssat_Params_t * pParams ) const
-{
-   printf( "  > Using %s for counting, greedy=%s, subsume=%s, partial=%s, dynamic=%s, incremental=%s, circuit=%s, pure=%s\n", 
-            pParams->fBdd          ? "bdd":"cachet" , 
-            pParams->fGreedy       ? "yes":"no" , 
-            pParams->fSub          ? "yes":"no" , 
-            pParams->fPart         ? "yes":"no" , 
-            pParams->fDynamic      ? "yes":"no" , 
-            pParams->fIncre        ? "yes":"no" , 
-            pParams->fCkt          ? "yes":"no" , 
-            pParams->fPure         ? "yes":"no" );
 }
 
 void
