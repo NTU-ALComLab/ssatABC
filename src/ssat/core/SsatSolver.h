@@ -139,8 +139,10 @@ private:
    void        erSolve2SSAT       ( Ssat_Params_t * ); // Solve ER/ERE-2SSAT
    void        assertPureLit      ();
    void        selectMinClauses   ( vec<Lit>& );
-   void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , int );
+   void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , bool );
+   bool        checkSubsume       ( const vec<int>& , int ) const;
    void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
+   void        discardAllLit      ( Ssat_Params_t * , vec<Lit>& );
    void        getExistAssignment ( vec<Lit>& ) const;
    void        removeDupLit       ( vec<Lit>& ) const;
    // branch and bound helpers

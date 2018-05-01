@@ -133,14 +133,14 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          }
          sBkCla.clear();
          ClasInd.clear();
-         if ( pParams->fSub ) collectBkClaERSub( sBkCla , ClasInd , dropIndex ); // clause subsumption: line08
-         else                 collectBkClaER(sBkCla);
+         collectBkClaERSub( sBkCla , ClasInd , pParams->fSub ); // containment learning + clause subsumption: line08,10
          if ( _fTimer ) {
             if ( pParams->fSub ) timer.lenSubsume += sBkCla.size();
             else                 timer.lenBase    += sBkCla.size();
             if ( pParams->fDynamic ) lenBeforeDrop = sBkCla.size();
          }
-         if ( pParams->fPart ) discardLit( pParams , subvalue , sBkCla , ClasInd ); // partial assignment pruning: line11
+         if      ( pParams->fPart  ) discardLit( pParams , subvalue , sBkCla , ClasInd ); // partial assignment pruning: line11
+         else if ( pParams->fPart2 ) discardAllLit( pParams , sBkCla );
          _s2->addClause( sBkCla );
          if ( _fTimer ) {
             timer.lenPartial += sBkCla.size();
@@ -562,55 +562,37 @@ SsatSolver::selectMinClauses( vec<Lit> & eLits )
 ***********************************************************************/
 
 void
-SsatSolver::collectBkClaERSub( vec<Lit> & sBkCla , vec<int> & ClasInd , int dropIndex )
+SsatSolver::collectBkClaERSub( vec<Lit> & sBkCla , vec<int> & ClasInd , bool fSub )
 {
-   vec<bool> drop( _s1->nVars() , false );
-   for ( int i = dropIndex ; i < _rootVars[0].size() ; ++i ) drop[_rootVars[0][i]] = true;
-
    bool block;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       block = true;
       Clause & c = _s1->ca[_s1->clauses[i]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( drop[var(c[j])] || isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
             block = false;
             break;
          }
       }
-      if ( block ) {
-         ClasInd.push(i);
-         /*
-         for ( int j = 0 ; j < c.size() ; ++j ) {
-            // cout << ( sign(c[j]) ? "-": "" ) << var(c[j])+1 << " ";
-            if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
-               sBkCla.push (c[j]);
-         }
-         */
-         // cout << "\n";
-      }
+      if ( block ) ClasInd.push(i);
    }
-   bool subsume = false;
-   //dumpCla(*_s1);
    for ( int i = 0 ; i < ClasInd.size() ; ++i ) {
+      if (fSub && checkSubsume(ClasInd , i)) continue;
       Clause & c = _s1->ca[_s1->clauses[ClasInd[i]]];
-      subsume = false;
-      for ( set<int>::iterator it = _subsumeTable[ClasInd[i]].begin() ; it != _subsumeTable[ClasInd[i]].end() ; ++it ) {
-         for ( int j = 0 ; j < ClasInd.size(); ++j ) {
-            if ( ClasInd[j] == *it ) {
-               subsume = true;
-         //cout << " " << ClasInd[j] << " subsume " << i << '\n';
-               break;
-            }
-         }
-         if ( subsume ) break;
-      }
-      if ( subsume ) continue;
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
-            sBkCla.push (c[j]);
-      }
+      for ( int j = 0 ; j < c.size() ; ++j )
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 ) sBkCla.push (c[j]);
    }
    removeDupLit(sBkCla);
+}
+
+bool
+SsatSolver::checkSubsume( const vec<int> & ClasInd, int i ) const
+{
+   for ( set<int>::iterator it = _subsumeTable[ClasInd[i]].begin() ; it != _subsumeTable[ClasInd[i]].end() ; ++it )
+      for ( int j = 0 ; j < ClasInd.size() ; ++j )
+         if ( ClasInd[j] == *it )
+            return true;
+   return false;
 }
 
 void
@@ -774,6 +756,28 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & s
    }
    sBkCla.clear();
    for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
+}
+
+void
+SsatSolver::discardAllLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
+{
+   if ( sBkCla.size() == 0 ) return;
+   abctime clk = 0;
+   double subvalue = 0.0;
+   vec<Lit> eLit;
+   sBkCla.copyTo(eLit);
+   for ( int i = 0 ; i < eLit.size() ; ++i ) eLit[i] = ~eLit[i];
+   vec<bool> dropVec( eLit.size() , false );
+   // try to drop EACH literal
+   for ( int i = 0 ; i < eLit.size() ; ++i ) {
+      dropVec[i] = true;
+      if ( _fTimer ) clk = Abc_Clock();
+      subvalue = clauseToNetwork( eLit , dropVec , pParams->fIncre , pParams->fCkt );
+      if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+      if ( subvalue > _satPb ) dropVec[i] = false;
+   }
+   sBkCla.clear();
+   for ( int i = 0 ; i < dropVec.size(); ++i ) if ( !dropVec[i] ) sBkCla.push( ~eLit[i] );
 }
 
 void

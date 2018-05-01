@@ -242,7 +242,6 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    gzFile in;
    int c;
    Ssat_Params_t Params , * pParams = &Params;
-   // set defaults
    initParams( pParams );
    Extra_UtilGetoptReset();
    while ( ( c = Extra_UtilGetopt( argc, argv, "RULgspdqbicramtvh" ) ) != EOF )
