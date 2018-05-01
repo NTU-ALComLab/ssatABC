@@ -141,7 +141,7 @@ private:
    void        assertPureLit      ();
    void        selectMinClauses   ( vec<Lit>& );
    void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , bool );
-   void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
+   void        discardLit         ( Ssat_Params_t * , vec<Lit>& );
    void        discardAllLit      ( Ssat_Params_t * , vec<Lit>& );
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
@@ -168,7 +168,6 @@ private:
    void        buildSubsumeTable  ( Solver& );
    bool        checkSubsume       ( const vec<int>& , int ) const;
    bool        subsume            ( const Clause& , const Clause& ) const;
-   bool        dropLit            ( const vec<Lit>& , vec<int>& , int , double& );
    void        getExistAssignment ( vec<Lit>& ) const;
    void        removeDupLit       ( vec<Lit>& ) const;
    // write file for Model Counting

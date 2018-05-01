@@ -38,8 +38,9 @@ using namespace std;
 // global variables
 extern Ssat_Timer_t timer;
 // functions
-extern void printParams   ( Ssat_Params_t * );
-static void setDropVec    ( vec<bool>& , const int& );
+extern void printParams       ( Ssat_Params_t * );
+static void setDropVec        ( vec<bool>& , const int& );
+static void convertClaCube    ( const vec<Lit>& , vec<Lit>& );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -136,7 +137,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             else                 timer.lenBase    += sBkCla.size();
             if ( pParams->fDynamic ) lenBeforeDrop = sBkCla.size();
          }
-         if      ( pParams->fPart  ) discardLit( pParams , subvalue , sBkCla , ClasInd ); // partial assignment pruning: line11
+         if      ( pParams->fPart  ) discardLit( pParams , sBkCla ); // partial assignment pruning: line11
          else if ( pParams->fPart2 ) discardAllLit( pParams , sBkCla );
          _s2->addClause( sBkCla );
          if ( _fTimer ) {
@@ -318,31 +319,28 @@ SsatSolver::subsume( const Clause & c1 , const Clause & c2 ) const
 ***********************************************************************/
 
 void
-SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & sBkCla , vec<int> & ClasInd )
+SsatSolver::discardLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
 {
    if ( sBkCla.size() == 0 ) return;
    abctime clk = 0;
-   // initialize drop vector
-   int dropIndex = sBkCla.size();
-   vec<bool> dropVec( _rootVars[0].size() , false );
-   // set partial lit
-   vec<Lit> parLits;
-   sBkCla.copyTo(parLits);
-   for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
+   double subvalue = 0.0;
+   vec<Lit> eLits;
+   convertClaCube( sBkCla , eLits );
+   vec<bool> dropVec( eLits.size() , false );
+   int dropIndex = eLits.size();
    // dropping
    if ( pParams->fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
    else                                      dropIndex -= 1;
-   while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
    setDropVec( dropVec , dropIndex );
    if ( _fTimer ) clk = Abc_Clock();
-   subvalue = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+   subvalue = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , dropIndex );
    if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
    if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
       while ( true ) {
          --dropIndex;
          setDropVec( dropVec , dropIndex );
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+         subvalue  = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , dropIndex );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue > _satPb ) break;
       }
@@ -353,13 +351,13 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & s
          ++dropIndex;
          setDropVec( dropVec , dropIndex );
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+         subvalue  = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , dropIndex );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue <= _satPb ) break;
       }
    }
    sBkCla.clear();
-   for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
+   for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~eLits[i] );
 }
 
 void
@@ -370,44 +368,11 @@ setDropVec( vec<bool> & dropVec , const int & dropIndex )
    for ( int i = dropIndex ; i < dropVec.size() ; ++i ) dropVec[i] = true; 
 }
 
-bool
-SsatSolver::dropLit( const vec<Lit>& parLits, vec<int>& ClasInd, int dropIndex, double& subvalue )
+void
+convertClaCube( const vec<Lit> & cla , vec<Lit> & cube )
 {
-   bool dropCla;
-   double claValue;
-   vec<int> newClasInd;
-   
-   for ( int i = 0 , n = ClasInd.size() ; i < n ; ++i ) {
-      Clause & c = _s1->ca[_s1->clauses[ClasInd[i]]];
-      dropCla = false;
-      claValue = 1;
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && !dropCla ) {
-            for ( int k = dropIndex ; k < parLits.size() ; ++k ) {
-               if ( var(c[j]) == var(parLits[k]) ) {
-                  dropCla = true;
-                  break;
-               }
-            }
-         }
-         else if ( isRVar(var(c[j])) ) {
-            if ( _s1->value(c[j]) == l_True )
-               claValue *= _quan[var(c[j])];
-            else
-               claValue *= 1 - _quan[var(c[j])];
-         }
-      }
-      if ( dropCla )
-         subvalue += claValue;
-      else
-         newClasInd.push(ClasInd[i]);
-   }
-   if ( newClasInd.size() == ClasInd.size() )
-      return false;
-   newClasInd.copyTo(ClasInd);
-   if ( subvalue <= _satPb )
-      return false;
-   return true;
+   cla.copyTo(cube);
+   for ( int i = 0 ; i < cube.size() ; ++i ) cube[i] = ~cube[i];
 }
 
 void
@@ -416,20 +381,18 @@ SsatSolver::discardAllLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
    if ( sBkCla.size() == 0 ) return;
    abctime clk = 0;
    double subvalue = 0.0;
-   vec<Lit> eLit;
-   sBkCla.copyTo(eLit);
-   for ( int i = 0 ; i < eLit.size() ; ++i ) eLit[i] = ~eLit[i];
-   vec<bool> dropVec( eLit.size() , false );
-   // try to drop EACH literal
-   for ( int i = 0 ; i < eLit.size() ; ++i ) {
+   vec<Lit> eLits;
+   convertClaCube( sBkCla , eLits );
+   vec<bool> dropVec( eLits.size() , false );
+   for ( int i = 0 ; i < eLits.size() ; ++i ) {
       dropVec[i] = true;
       if ( _fTimer ) clk = Abc_Clock();
-      subvalue = clauseToNetwork( eLit , dropVec , pParams->fIncre , pParams->fCkt );
+      subvalue = clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt );
       if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
       if ( subvalue > _satPb ) dropVec[i] = false;
    }
    sBkCla.clear();
-   for ( int i = 0 ; i < dropVec.size(); ++i ) if ( !dropVec[i] ) sBkCla.push( ~eLit[i] );
+   for ( int i = 0 ; i < dropVec.size(); ++i ) if ( !dropVec[i] ) sBkCla.push(~eLits[i]);
 }
 
 /**Function*************************************************************
