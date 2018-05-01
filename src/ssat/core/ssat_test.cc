@@ -13,6 +13,7 @@
 ///                          INCLUDES                                ///
 ////////////////////////////////////////////////////////////////////////
 
+#include <unistd.h>
 #include "extUnitTest/catch.hpp"
 #include "SsatSolver.h"
 using namespace Minisat;
@@ -27,8 +28,14 @@ using namespace Minisat;
 
 TEST_CASE( "toliet" , "[planning]" )
 {
+   char cwd[1024], * targetFile;
    abctime clk = Abc_Clock();
    Ssat_Params_t Params , * pParams = &Params;
+   // get current dir and target file name
+   getcwd(cwd, sizeof(cwd));
+   printf("  > Current working dir: %s\n", cwd);
+   targetFile = strcat(cwd, "/expSsat/ssatER/planning/ToiletA/toilet_a_10_01.2.qdimacs");
+   printf("  > Testing target: %s\n", targetFile);
    // set defaults
    memset( pParams , 0 , sizeof(Ssat_Params_t) );
    pParams->range    = 0.0;
@@ -46,7 +53,7 @@ TEST_CASE( "toliet" , "[planning]" )
    pParams->fMini    = true;
    pParams->fTimer   = true;
    pParams->fVerbose = true;
-   gzFile in = gzopen( "/home/users/nianze/ssat/ssatABC/expSsat/ssatER/planning/ToiletA/toilet_a_10_01.2.qdimacs" , "rb" );
+   gzFile in = gzopen( targetFile, "rb" );
    SsatSolver * pSsat = new SsatSolver( pParams->fTimer , pParams->fVerbose );
    pSsat->readSSAT(in);
    gzclose(in);
