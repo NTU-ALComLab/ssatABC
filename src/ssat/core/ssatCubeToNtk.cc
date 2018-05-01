@@ -442,7 +442,7 @@ SsatSolver::erNtkCreatePo( Abc_Ntk_t * pNtkClause )
 }
 
 double
-SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncre , bool fCkt )
+SsatSolver::clauseToNetwork( const vec<Lit> & eLits , const vec<bool> & drop , bool fIncre , bool fCkt )
 {
    Abc_Obj_t * pObj;
    abctime clk=0;
@@ -452,7 +452,7 @@ SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncr
       Abc_Obj_t * pObjCla;
       if ( _fTimer ) clk = Abc_Clock();
       Abc_NtkForEachNode( _pNtkCube , pObj , i ) Abc_NtkDeleteObj( pObj );
-      pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars , eLits , dropIndex );
+      pObjCla = erNtkCreateNode( _pNtkCube , _vMapVars , eLits , drop );
       if ( _fTimer ) timer.timeCk += Abc_Clock()-clk;
       if ( pObjCla ) {
          erNtkPatchPoCheck( _pNtkCube , pObjCla );
@@ -466,7 +466,7 @@ SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncr
       Abc_NtkForEachPi( _pNtkCube , pObj , i )
 	      pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
       if ( _fTimer ) clk = Abc_Clock();
-      bCnf = erNtkCreateBdd( _dd , _vMapVars , eLits , dropIndex , Abc_NtkPiNum(_pNtkCube) , _rootVars[1].size() );
+      bCnf = erNtkCreateBdd( _dd , _vMapVars , eLits , drop , Abc_NtkPiNum(_pNtkCube) , _rootVars[1].size() );
       if ( _fTimer ) timer.timeBd += Abc_Clock()-clk;
       if ( Cudd_IsConstant( bCnf ) ) prob = 1.0;
       else {
@@ -479,7 +479,7 @@ SsatSolver::clauseToNetwork( const vec<Lit> & eLits , int dropIndex , bool fIncr
 }
 
 Abc_Obj_t*
-SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , int dropIndex )
+SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , const vec<bool> & dropVec )
 {
    vec<bool> drop( _s1->nVars() , false );
    Abc_Obj_t * pObj , * pObjCla = NULL;
@@ -487,7 +487,7 @@ SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars , con
    char name[1024];
    bool select;
 
-   for ( int i = dropIndex ; i < eLits.size() ; ++i ) drop[var(eLits[i])] = true;
+   for ( int i = 0 ; i < eLits.size() ; ++i ) if ( dropVec[i] ) drop[var(eLits[i])] = true;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       select = true;
       Clause & c = _s1->ca[_s1->clauses[i]];
@@ -533,7 +533,7 @@ SsatSolver::erNtkPatchPoCheck( Abc_Ntk_t * pNtkClause , Abc_Obj_t * pObjCla )
 }
 
 DdNode*
-SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , int dropIndex , int numPi , int numRand )
+SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Lit> & eLits , const vec<bool> & dropVec , int numPi , int numRand )
 {
    vec<DdNode*> claNodes;
    vec<bool> drop( _s1->nVars() , false );
@@ -542,7 +542,7 @@ SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Li
 
    bCnf = Cudd_ReadOne( dd );
    Cudd_Ref( bCnf );
-   for ( int i = dropIndex ; i < eLits.size() ; ++i ) drop[var(eLits[i])] = true;
+   for ( int i = 0 ; i < eLits.size() ; ++i ) if ( dropVec[i] ) drop[var(eLits[i])] = true;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       select = true;
       Clause & c = _s1->ca[_s1->clauses[i]];

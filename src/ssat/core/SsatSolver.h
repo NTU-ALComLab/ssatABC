@@ -193,9 +193,9 @@ private:
    void        initClauseNetwork  ( bool , bool );
    void        erNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkCreatePo      ( Abc_Ntk_t * );
-   double      clauseToNetwork    ( const vec<Lit>& , int , bool , bool );
-   Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , const vec<Lit>& , int );
-   DdNode *    erNtkCreateBdd     ( DdManager * , Vec_Ptr_t * , const vec<Lit>& , int , int ,int );
+   double      clauseToNetwork    ( const vec<Lit>& , const vec<bool>& , bool , bool );
+   Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , const vec<Lit>& , const vec<bool>& );
+   DdNode *    erNtkCreateBdd     ( DdManager * , Vec_Ptr_t * , const vec<Lit>& , const vec<bool>& , int ,int );
    void        erNtkPatchPoCheck  ( Abc_Ntk_t * , Abc_Obj_t * );
    DdManager * erInitCudd         ( int , int , int );
    double      erNtkBddComputeSp  ( Abc_Ntk_t * , bool );

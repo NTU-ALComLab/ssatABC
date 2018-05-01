@@ -35,7 +35,8 @@ using namespace std;
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-static bool subsume( const vec<Lit>& , const vec<Lit>& );
+static bool subsume       ( const vec<Lit>& , const vec<Lit>& );
+static void setDropVec    ( vec<bool>& , const int& );
 extern Ssat_Timer_t timer;
 
 ////////////////////////////////////////////////////////////////////////
@@ -66,8 +67,9 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
 
    cout << "--------------------------------------\n";
    // declare and initialize temp variables
-   vec<Lit> eLits( _rootVars[0].size() ) , sBkCla;
-   vec<int> ClasInd;
+   vec<Lit>  eLits( _rootVars[0].size() ) , sBkCla;
+   vec<bool> dropVec( _rootVars[0].size() , false );
+   vec<int>  ClasInd;
    int dropIndex , totalSize , lenBeforeDrop = 0;
    double subvalue;
    bool sat;
@@ -108,7 +110,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             exit(1);
          }
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue = pParams->fBdd ? clauseToNetwork( eLits , totalSize , pParams->fIncre , pParams->fCkt ) : countModels( eLits , totalSize );
+         subvalue = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , totalSize );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue == 1 ) { // early termination
             _satPb = subvalue;
@@ -743,40 +745,54 @@ SsatSolver::getLearntClaLen( Solver & S , const vec<int>& selClaInd , const vec<
 void
 SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & sBkCla , vec<int> & ClasInd )
 {
+   if ( sBkCla.size() == 0 ) return;
    abctime clk = 0;
+   // initialize drop vector
    int dropIndex = sBkCla.size();
+   vec<bool> dropVec( _rootVars[0].size() , false );
+   // set partial lit
    vec<Lit> parLits;
-   sBkCla.copyTo( parLits );
+   sBkCla.copyTo(parLits);
    for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
-   if ( dropIndex >= 1 ) {
-      if ( pParams->fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
-      else                                      dropIndex -= 1;
-      while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
-      if ( _fTimer ) clk = Abc_Clock();
-      subvalue = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-      if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-      if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
-         while ( true ) {
-            --dropIndex;
-            if ( _fTimer ) clk = Abc_Clock();
-            subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-            if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-            if ( subvalue > _satPb ) break;
-         }
-         ++dropIndex;
+   // dropping
+   if ( pParams->fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
+   else                                      dropIndex -= 1;
+   while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
+   setDropVec( dropVec , dropIndex );
+   if ( _fTimer ) clk = Abc_Clock();
+   subvalue = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+   if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+   if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
+      while ( true ) {
+         --dropIndex;
+         setDropVec( dropVec , dropIndex );
+         if ( _fTimer ) clk = Abc_Clock();
+         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+         if ( subvalue > _satPb ) break;
       }
-      else { // fail, undo dropping 1 by 1 
-         while ( true ) {
-            ++dropIndex;
-            if ( _fTimer ) clk = Abc_Clock();
-            subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropIndex , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-            if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-            if ( subvalue <= _satPb ) break;
-         }
+      ++dropIndex;
+   }
+   else { // fail, undo dropping 1 by 1 
+      while ( true ) {
+         ++dropIndex;
+         setDropVec( dropVec , dropIndex );
+         if ( _fTimer ) clk = Abc_Clock();
+         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+         if ( subvalue <= _satPb ) break;
       }
    }
    sBkCla.clear();
    for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
+}
+
+void
+setDropVec( vec<bool> & dropVec , const int & dropIndex )
+{
+   assert( dropIndex >= 0 && dropIndex <= dropVec.size() );
+   for ( int i = 0 ; i < dropIndex ; ++i ) dropVec[i] = false;
+   for ( int i = dropIndex ; i < dropVec.size() ; ++i ) dropVec[i] = true; 
 }
 
 ////////////////////////////////////////////////////////////////////////
