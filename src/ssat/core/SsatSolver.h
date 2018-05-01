@@ -116,10 +116,10 @@ public:
    // Problem specification:
    void        readSSAT( gzFile& );
    // Ssat Solving:
-   void        solveSsat    ( Ssat_Params_t * ); // Solve RE/ER-2SSAT
-   void        bddSolveSsat ( bool , bool ); // Solve SSAT by bdd
-   // ER-2SSAT solving by branch and bound method
-   void        solveBranchBound( Abc_Ntk_t* );
+   void        solveSsat        ( Ssat_Params_t * ); // Solve RE/ER-2SSAT
+   void        bddSolveSsat     ( bool , bool );     // Solve SSAT by bdd
+   void        solveBranchBound ( Abc_Ntk_t* );   // ER-2SSAT solving by branch and bound method
+   // get statistics 
    double      upperBound() const { return 1.0 - _unsatPb; }
    double      lowerBound() const { return _satPb; }
    int         nSatCube()   const { return _nSatCube; }
@@ -130,21 +130,19 @@ public:
    void        interrupt();
 private:
    // member functions
-   // read helpers
+   // parser helpers
    Solver *    parse_SDIMACS      ( gzFile& );
    void        readPrefix         ( StreamBuffer& , Solver& , double , int , int& , int& );
    // solve interface
    void        qSolve             ( Ssat_Params_t * ); // Qesto-like solve
    void        aSolve             ( Ssat_Params_t * ); // All-SAT enumeration solve
    void        erSolve2SSAT       ( Ssat_Params_t * ); // Solve ER/ERE-2SSAT
+   // erSolve helpers
    void        assertPureLit      ();
    void        selectMinClauses   ( vec<Lit>& );
    void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , bool );
-   bool        checkSubsume       ( const vec<int>& , int ) const;
    void        discardLit         ( Ssat_Params_t * , double , vec<Lit>& , vec<int>& );
    void        discardAllLit      ( Ssat_Params_t * , vec<Lit>& );
-   void        getExistAssignment ( vec<Lit>& ) const;
-   void        removeDupLit       ( vec<Lit>& ) const;
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -160,19 +158,19 @@ private:
    void        aSolve2SSAT        ( Ssat_Params_t * );
    void        miniUnsatCore      ( const vec<Lit>& , vec<Lit>& );
    void        collectBkCla       ( vec<Lit>& );
-   void        collectBkClaER     ( vec<Lit>& );
    void        miniHitSet         ( vec<Lit>& , int ) const;
-   void        collectParLits     ( vec<Lit>& , vec<int>& );
    void        miniHitOneHotLit   ( vec<Lit>& , vec<bool>& ) const;
    void        miniHitCollectLit  ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    void        miniHitDropLit     ( vec<Lit>& , vec<Lit>& , vec<bool>& ) const;
    double      cachetCount        ( bool );
    double      baseProb           () const;
    double      countModels        ( const vec<Lit>& , int );
-   bool        checkSubsumption   ( Solver& ) const;
+   void        buildSubsumeTable  ( Solver& );
+   bool        checkSubsume       ( const vec<int>& , int ) const;
    bool        subsume            ( const Clause& , const Clause& ) const;
-   int         getLearntClaLen    ( Solver& , const vec<int>& , const vec<bool>& ) const;
    bool        dropLit            ( const vec<Lit>& , vec<int>& , int , double& );
+   void        getExistAssignment ( vec<Lit>& ) const;
+   void        removeDupLit       ( vec<Lit>& ) const;
    // write file for Model Counting
    void        toDimacsWeighted   ( FILE* , const vec<Lit>& , int );
    void        toDimacsWeighted   ( const char* , const vec<Lit>& , int );
@@ -210,8 +208,6 @@ private:
    void        cnfNtkCreatePo     ( Abc_Ntk_t * , Abc_Obj_t * );
    void        buildBddFromNtk    ( bool , bool );
    void        computeSsatBdd     ();
-   // build the subsumption table
-   void        buildSubsumeTable  ( Solver& );
    // inline methods
    bool        isProblemVar       ( const Var& ) const;
    bool        isRVar             ( const Var& ) const;

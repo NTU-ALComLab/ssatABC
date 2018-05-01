@@ -39,7 +39,6 @@ using namespace std;
 extern Ssat_Timer_t timer;
 // functions
 extern void printParams   ( Ssat_Params_t * );
-static bool subsume       ( const vec<Lit>& , const vec<Lit>& );
 static void setDropVec    ( vec<bool>& , const int& );
 
 ////////////////////////////////////////////////////////////////////////
@@ -73,7 +72,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    vec<Lit>  eLits( _rootVars[0].size() ) , sBkCla;
    vec<bool> dropVec( _rootVars[0].size() , false );
    vec<int>  ClasInd;
-   int dropIndex , totalSize , lenBeforeDrop = 0;
+   int lenBeforeDrop = 0;
    double subvalue;
    bool sat;
    abctime clk = 0 , clk1 = Abc_Clock();
@@ -104,8 +103,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
       }
       else { // SAT case
          if ( _fTimer ) ++timer.nS1_sat;
-         dropIndex = eLits.size();
-         totalSize = eLits.size();
          if ( _s1->nClauses() == 0 ) {
             Abc_Print( -1 , "  > There is no clause left ...\n" );
             Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
@@ -113,7 +110,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             exit(1);
          }
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , totalSize );
+         subvalue = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , eLits.size() );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue == 1 ) { // early termination
             _satPb = subvalue;
@@ -133,7 +130,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          }
          sBkCla.clear();
          ClasInd.clear();
-         collectBkClaERSub( sBkCla , ClasInd , pParams->fSub ); // containment learning + clause subsumption: line08,10
+         collectBkClaERSub( sBkCla , ClasInd , pParams->fSub ); // clause containment learning + subsumption: line08,10
          if ( _fTimer ) {
             if ( pParams->fSub ) timer.lenSubsume += sBkCla.size();
             else                 timer.lenBase    += sBkCla.size();
@@ -157,31 +154,220 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    }
 }
 
-void
-SsatSolver::getExistAssignment( vec<Lit> & eLits ) const
-{
-   assert( _s2->okay() );
-   for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
-      eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
-}
+/**Function*************************************************************
 
-Solver*
-SsatSolver::buildERSelector()
-{
-   return buildAllSelector();
-}
+  Synopsis    [Assign pure X literals to be true.]
+
+  Description [If some X literal is pure, always deselect.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
 
 void
-SsatSolver::removeDupLit( vec<Lit> & c ) const
+SsatSolver::assertPureLit()
 {
-   Lit p; 
-   int i , j;
-   
-   sort(c);
-   for ( i = j = 0 , p = lit_Undef ; i < c.size() ; i++ )
-      if ( _s1->value(c[i]) != l_False && c[i] != p )
-         c[j++] = p = c[i];
-   c.shrink(i-j);
+   vec<int> phase( _s1->nVars() , -1 ); // -1: default, 0:pos, 1:neg, 2: both
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      CRef     cr = _s1->clauses[i];
+      Clause & c  = _s1->ca[cr];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( _level[var(c[j])] == 0 && phase[var(c[j])] != 2 ) {
+            if ( phase[var(c[j])] == -1 ) 
+               phase[var(c[j])] = sign(c[j]) ? 1 : 0;
+            else if ( ((bool)phase[var(c[j])]) ^ sign(c[j]) )
+               phase[var(c[j])] = 2;
+         }
+      }
+   }
+   for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
+      if ( phase[_rootVars[0][i]] == 0 || phase[_rootVars[0][i]] == 1 )
+         _s2->addClause( mkLit( _rootVars[0][i] , (bool)phase[_rootVars[0][i]] ) );
+   }
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Select a minimal set of clauses.]
+
+  Description [Enable by setting fGreedy to true.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::selectMinClauses( vec<Lit> & eLits )
+{
+   abctime clk = 0;
+   bool sat = false;
+   vec<Lit> block , assump;
+   block.capacity( _claLits.size() );
+   assump.capacity( _claLits.size() );
+   while ( true ) {
+      block.clear();
+      assump.clear();
+      for ( int i = 0 ; i < _claLits.size() ; ++i ) {
+         if ( _claLits[i] == lit_Undef ) continue;
+         ( _s2->modelValue(_claLits[i]) == l_True ) ? block.push(~_claLits[i]) : assump.push(~_claLits[i]);
+      }
+      _s2->addClause( block );
+      if ( _fTimer ) clk = Abc_Clock();
+      sat = _s2->solve(assump);
+      if ( _fTimer ) timer.timeGd += Abc_Clock()-clk;
+      if ( !sat ) break;            // minimal set of clauses obtained
+      if ( _fTimer ) ++timer.nGdsolve;
+      getExistAssignment( eLits );  // update exist assignment 
+   }
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Clause subsumption]
+
+  Description [Enable by setting fSub to true]
+               
+  SideEffects [Cachet: variables ids must be consecutive!]
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::collectBkClaERSub( vec<Lit> & sBkCla , vec<int> & ClasInd , bool fSub )
+{
+   bool block;
+   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+      block = true;
+      Clause & c = _s1->ca[_s1->clauses[i]];
+      for ( int j = 0 ; j < c.size() ; ++j ) {
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+            block = false;
+            break;
+         }
+      }
+      if ( block ) ClasInd.push(i);
+   }
+   for ( int i = 0 ; i < ClasInd.size() ; ++i ) {
+      if ( fSub && checkSubsume( ClasInd , i ) ) continue;
+      Clause & c = _s1->ca[_s1->clauses[ClasInd[i]]];
+      for ( int j = 0 ; j < c.size() ; ++j )
+         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 ) sBkCla.push(c[j]);
+   }
+   removeDupLit(sBkCla);
+}
+
+bool
+SsatSolver::checkSubsume( const vec<int> & ClasInd, int i ) const
+{
+   for ( set<int>::iterator it = _subsumeTable[ClasInd[i]].begin() ; it != _subsumeTable[ClasInd[i]].end() ; ++it )
+      for ( int j = 0 ; j < ClasInd.size() ; ++j ) if ( ClasInd[j] == *it ) return true;
+   return false;
+}
+
+void
+SsatSolver::buildSubsumeTable( Solver & S )
+{
+   int numOfClas = S.nClauses();
+   assert( numOfClas > 1 );
+   _subsumeTable.growTo( numOfClas );
+   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
+      Clause &c = S.ca[S.clauses[i]];
+      for ( int j = 0; j < S.nClauses() ; ++j ) {
+         if ( j == i ) continue;
+         if ( subsume ( c , S.ca[S.clauses[j]] ) ) _subsumeTable[i].insert(j);
+      }
+   }
+}
+
+bool
+SsatSolver::subsume( const Clause & c1 , const Clause & c2 ) const
+{
+   // return true iff c2 subsumes c1
+   bool noRVar = true;
+   for ( int i = 0 ; i < c2.size() ; ++i ) {
+      if ( isEVar(var(c2[i])) ) continue;
+      noRVar = false;
+      bool find = false;
+      for ( int j = 0 ; j < c1.size() ; ++j ) {
+         if ( isEVar(var(c1[j])) ) continue;
+         if ( c1[j] == c2[i] ) {
+            find = true;
+            break;
+         }
+      }
+      if ( !find ) return false;
+   }
+   return !noRVar;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Partial assignment pruning.]
+
+  Description [Enable by setting fPart to true.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void
+SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & sBkCla , vec<int> & ClasInd )
+{
+   if ( sBkCla.size() == 0 ) return;
+   abctime clk = 0;
+   // initialize drop vector
+   int dropIndex = sBkCla.size();
+   vec<bool> dropVec( _rootVars[0].size() , false );
+   // set partial lit
+   vec<Lit> parLits;
+   sBkCla.copyTo(parLits);
+   for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
+   // dropping
+   if ( pParams->fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
+   else                                      dropIndex -= 1;
+   while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
+   setDropVec( dropVec , dropIndex );
+   if ( _fTimer ) clk = Abc_Clock();
+   subvalue = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+   if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+   if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
+      while ( true ) {
+         --dropIndex;
+         setDropVec( dropVec , dropIndex );
+         if ( _fTimer ) clk = Abc_Clock();
+         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+         if ( subvalue > _satPb ) break;
+      }
+      ++dropIndex;
+   }
+   else { // fail, undo dropping 1 by 1 
+      while ( true ) {
+         ++dropIndex;
+         setDropVec( dropVec , dropIndex );
+         if ( _fTimer ) clk = Abc_Clock();
+         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
+         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+         if ( subvalue <= _satPb ) break;
+      }
+   }
+   sBkCla.clear();
+   for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
+}
+
+void
+setDropVec( vec<bool> & dropVec , const int & dropIndex )
+{
+   assert( dropIndex >= 0 && dropIndex <= dropVec.size() );
+   for ( int i = 0 ; i < dropIndex ; ++i ) dropVec[i] = false;
+   for ( int i = dropIndex ; i < dropVec.size() ; ++i ) dropVec[i] = true; 
 }
 
 bool
@@ -225,74 +411,64 @@ SsatSolver::dropLit( const vec<Lit>& parLits, vec<int>& ClasInd, int dropIndex, 
 }
 
 void
-SsatSolver::collectParLits( vec<Lit> & parLits, vec<int> & ClasInd )
+SsatSolver::discardAllLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
 {
-   vec<Lit> tmpLits;
-   bool block;
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      block = true;
-      Clause & c = _s1->ca[_s1->clauses[i]];
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
-            block = false;
-            break;
-         }
-      }
-      if ( block ) {
-         ClasInd.push(i);
-         for ( int j = 0 ; j < c.size() ; ++j ) {
-            if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
-               tmpLits.push (~c[j]);
-         }
-      }
+   if ( sBkCla.size() == 0 ) return;
+   abctime clk = 0;
+   double subvalue = 0.0;
+   vec<Lit> eLit;
+   sBkCla.copyTo(eLit);
+   for ( int i = 0 ; i < eLit.size() ; ++i ) eLit[i] = ~eLit[i];
+   vec<bool> dropVec( eLit.size() , false );
+   // try to drop EACH literal
+   for ( int i = 0 ; i < eLit.size() ; ++i ) {
+      dropVec[i] = true;
+      if ( _fTimer ) clk = Abc_Clock();
+      subvalue = clauseToNetwork( eLit , dropVec , pParams->fIncre , pParams->fCkt );
+      if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+      if ( subvalue > _satPb ) dropVec[i] = false;
    }
+   sBkCla.clear();
+   for ( int i = 0 ; i < dropVec.size(); ++i ) if ( !dropVec[i] ) sBkCla.push( ~eLit[i] );
+}
 
-   sort(tmpLits);
-   Lit p; int i, j;
-   int num[500] = {0}, max = -1, maxIndex = -1;
-   for (i = j = 0, p = lit_Undef; i < tmpLits.size(); i++)
-      if (tmpLits[i] != p) {
-         tmpLits[j++] = p = tmpLits[i];
-      }
-      else 
-         num[j-1]++;
-   tmpLits.shrink(i - j);
-   for(;;) {
-      for ( int i = 0 ; i < tmpLits.size() ; ++i )
-      {
-         if ( num[i] > max ) {
-            max = num[i];
-            maxIndex = i;
-         }
-      }
-      if ( max == -1 ) break;
-      parLits.push(tmpLits[ maxIndex ]);
-      num[maxIndex] = -1;
-      max = -1;
-   }
+/**Function*************************************************************
+
+  Synopsis    [Solve ER or ERE type of SSAT.]
+
+  Description [misc helpers.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+Solver*
+SsatSolver::buildERSelector()
+{
+   return buildAllSelector();
 }
 
 void
-SsatSolver::collectBkClaER( vec<Lit> & sBkCla )
+SsatSolver::getExistAssignment( vec<Lit> & eLits ) const
 {
-   bool block;
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      block = true;
-      Clause & c = _s1->ca[_s1->clauses[i]];
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
-            block = false;
-            break;
-         }
-      }
-      if ( block ) {
-         for ( int j = 0 ; j < c.size() ; ++j ) {
-            if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 )
-               sBkCla.push (c[j]);
-         }
-      }
-   }
-   removeDupLit(sBkCla);
+   assert( _s2->okay() );
+   for ( int i = 0 ; i < _rootVars[0].size() ; ++i )
+      eLits[i] = ( _s2->modelValue(_rootVars[0][i]) == l_True ) ? mkLit(_rootVars[0][i]) : ~mkLit(_rootVars[0][i]);
+}
+
+void
+SsatSolver::removeDupLit( vec<Lit> & c ) const
+{
+   Lit p; 
+   int i , j;
+   
+   sort(c);
+   for ( i = j = 0 , p = lit_Undef ; i < c.size() ; i++ )
+      if ( _s1->value(c[i]) != l_False && c[i] != p )
+         c[j++] = p = c[i];
+   c.shrink(i-j);
 }
 
 /**Function*************************************************************
@@ -476,316 +652,6 @@ SsatSolver::toDimacsWeighted( FILE * f , const vec<Lit> & assumps , int dropInde
    }
 
    toDimacsWeighted( f , weights , max );
-}
-
-/**Function*************************************************************
-
-  Synopsis    [Assign pure X literals to be true.]
-
-  Description [If some X literal is pure, always deselect.]
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-
-void
-SsatSolver::assertPureLit()
-{
-   vec<int> phase( _s1->nVars() , -1 ); // -1: default, 0:pos, 1:neg, 2: both
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      CRef     cr = _s1->clauses[i];
-      Clause & c  = _s1->ca[cr];
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( _level[var(c[j])] == 0 && phase[var(c[j])] != 2 ) {
-            if ( phase[var(c[j])] == -1 ) 
-               phase[var(c[j])] = sign(c[j]) ? 1 : 0;
-            else if ( ((bool)phase[var(c[j])]) ^ sign(c[j]) )
-               phase[var(c[j])] = 2;
-         }
-      }
-   }
-   for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
-      if ( phase[_rootVars[0][i]] == 0 || phase[_rootVars[0][i]] == 1 )
-         _s2->addClause( mkLit( _rootVars[0][i] , (bool)phase[_rootVars[0][i]] ) );
-   }
-}
-
-/**Function*************************************************************
-
-  Synopsis    [Select a minimal set of clauses.]
-
-  Description [Enable by setting fGreedy to true.]
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-
-void
-SsatSolver::selectMinClauses( vec<Lit> & eLits )
-{
-   abctime clk = 0;
-   bool sat = false;
-   vec<Lit> block , assump;
-   block.capacity( _claLits.size() );
-   assump.capacity( _claLits.size() );
-   while ( true ) {
-      block.clear();
-      assump.clear();
-      for ( int i = 0 ; i < _claLits.size() ; ++i ) {
-         if ( _claLits[i] == lit_Undef ) continue;
-         ( _s2->modelValue(_claLits[i]) == l_True ) ? block.push(~_claLits[i]) : assump.push(~_claLits[i]);
-      }
-      _s2->addClause( block );
-      if ( _fTimer ) clk = Abc_Clock();
-      sat = _s2->solve(assump);
-      if ( _fTimer ) timer.timeGd += Abc_Clock()-clk;
-      if ( !sat ) break;            // minimal set of clauses obtained
-      if ( _fTimer ) ++timer.nGdsolve;
-      getExistAssignment( eLits );  // update exist assignment 
-   }
-}
-
-/**Function*************************************************************
-
-  Synopsis    [Clause subsumption]
-
-  Description [Enable by setting fSub to true]
-               
-  SideEffects [Cachet: variables ids must be consecutive!]
-
-  SeeAlso     []
-
-***********************************************************************/
-
-void
-SsatSolver::collectBkClaERSub( vec<Lit> & sBkCla , vec<int> & ClasInd , bool fSub )
-{
-   bool block;
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      block = true;
-      Clause & c = _s1->ca[_s1->clauses[i]];
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
-            block = false;
-            break;
-         }
-      }
-      if ( block ) ClasInd.push(i);
-   }
-   for ( int i = 0 ; i < ClasInd.size() ; ++i ) {
-      if (fSub && checkSubsume(ClasInd , i)) continue;
-      Clause & c = _s1->ca[_s1->clauses[ClasInd[i]]];
-      for ( int j = 0 ; j < c.size() ; ++j )
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 ) sBkCla.push (c[j]);
-   }
-   removeDupLit(sBkCla);
-}
-
-bool
-SsatSolver::checkSubsume( const vec<int> & ClasInd, int i ) const
-{
-   for ( set<int>::iterator it = _subsumeTable[ClasInd[i]].begin() ; it != _subsumeTable[ClasInd[i]].end() ; ++it )
-      for ( int j = 0 ; j < ClasInd.size() ; ++j )
-         if ( ClasInd[j] == *it )
-            return true;
-   return false;
-}
-
-void
-SsatSolver::buildSubsumeTable( Solver & S )
-{
-   int numOfClas = S.nClauses();
-   assert( numOfClas > 1 );
-   _subsumeTable.growTo( numOfClas );
-
-   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
-      Clause &c = S.ca[S.clauses[i]];
-      for ( int j = 0; j < S.nClauses() ; ++j ) {
-         if ( j == i ) continue;
-         if ( subsume ( c , S.ca[S.clauses[j]] ) ) _subsumeTable[i].insert(j);
-      }
-   }
-}
-
-bool
-SsatSolver::checkSubsumption( Solver & S ) const
-{
-   vec<int> selClaInd;
-   bool     select;
-   for ( int i = 0 ; i < S.nClauses() ; ++i ) {
-      CRef     cr = S.clauses[i];
-      Clause & c  = S.ca[cr];
-      select      = true;
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && S.modelValue(c[j]) == l_True ) {
-            select = false;
-            break;
-         }
-      }
-      if ( select ) selClaInd.push(i);
-   }
-   vec<bool> sub( selClaInd.size() , false );
-   int lenOld = getLearntClaLen( S , selClaInd , sub );
-   for ( int i = 0 ; i < selClaInd.size() ; ++i ) {
-      CRef     cr  = S.clauses[selClaInd[i]];
-      Clause & c1  = S.ca[cr];
-      for ( int j = 0 ; j < selClaInd.size() ; ++j ) {
-         if ( j == i ) continue;
-         CRef     cr  = S.clauses[selClaInd[j]];
-         Clause & c2  = S.ca[cr];
-         if ( subsume( c1 , c2 ) ) {
-            sub[i] = true;
-            break;
-         }
-      }
-   }
-   int numSub = 0;
-   for ( int i = 0 ; i < sub.size() ; ++i ) if ( sub[i] ) ++numSub;
-   int lenSub = getLearntClaLen( S , selClaInd , sub );
-   //printf( "[INFO] number of subsume = %3d (out of %3d clauses)\n" , numSub , sub.size() );
-   if ( lenSub < lenOld ) {
-      printf( "[INFO] length of learnt  = %3d (original %3d lits)\n" , lenSub , lenOld );
-      fflush(stdout);
-      return true;
-   }
-   return false;
-}
-
-bool
-SsatSolver::subsume( const Clause & c1 , const Clause & c2 ) const
-{
-   // return true iff c2 subsumes c1
-   bool noRVar = true;
-   for ( int i = 0 ; i < c2.size() ; ++i ) {
-      if ( isEVar(var(c2[i])) ) continue;
-      noRVar = false;
-      bool find = false;
-      for ( int j = 0 ; j < c1.size() ; ++j ) {
-         if ( isEVar(var(c1[j])) ) continue;
-         if ( c1[j] == c2[i] ) {
-            find = true;
-            break;
-         }
-      }
-      if ( !find ) return false;
-   }
-   return !noRVar;
-}
-
-int
-SsatSolver::getLearntClaLen( Solver & S , const vec<int>& selClaInd , const vec<bool>& sub ) const
-{
-   vec<Lit> learnt;
-   for ( int i = 0 ; i < selClaInd.size() ; ++i ) {
-      if ( sub[i] ) continue;
-      CRef     cr = S.clauses[selClaInd[i]];
-      Clause & c  = S.ca[cr];
-      fflush(stdout);
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 ) {
-            bool unique = true;
-            for ( int k = 0 ; k < learnt.size() ; ++k ) {
-               if ( learnt[k] == c[j] ) {
-                  unique = false;
-                  break;
-               }
-            }
-            if ( unique ) learnt.push( c[j] );
-         }
-      }
-   }
-   return learnt.size();
-}
-
-/**Function*************************************************************
-
-  Synopsis    [Partial assignment pruning.]
-
-  Description [Enable by setting fPart to true.]
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-
-void
-SsatSolver::discardLit( Ssat_Params_t * pParams , double subvalue , vec<Lit> & sBkCla , vec<int> & ClasInd )
-{
-   if ( sBkCla.size() == 0 ) return;
-   abctime clk = 0;
-   // initialize drop vector
-   int dropIndex = sBkCla.size();
-   vec<bool> dropVec( _rootVars[0].size() , false );
-   // set partial lit
-   vec<Lit> parLits;
-   sBkCla.copyTo(parLits);
-   for ( int i = 0 ; i < parLits.size() ; ++i ) parLits[i] = ~parLits[i];
-   // dropping
-   if ( pParams->fDynamic && timer.avgDone ) dropIndex -= timer.avgDrop;
-   else                                      dropIndex -= 1;
-   while ( !dropLit( parLits , ClasInd , dropIndex , subvalue ) ) --dropIndex;
-   setDropVec( dropVec , dropIndex );
-   if ( _fTimer ) clk = Abc_Clock();
-   subvalue = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-   if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-   if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
-      while ( true ) {
-         --dropIndex;
-         setDropVec( dropVec , dropIndex );
-         if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-         if ( subvalue > _satPb ) break;
-      }
-      ++dropIndex;
-   }
-   else { // fail, undo dropping 1 by 1 
-      while ( true ) {
-         ++dropIndex;
-         setDropVec( dropVec , dropIndex );
-         if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = pParams->fBdd ? clauseToNetwork( parLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( parLits , dropIndex );
-         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-         if ( subvalue <= _satPb ) break;
-      }
-   }
-   sBkCla.clear();
-   for ( int i = 0 ; i < dropIndex; ++i ) sBkCla.push( ~parLits[i] );
-}
-
-void
-SsatSolver::discardAllLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
-{
-   if ( sBkCla.size() == 0 ) return;
-   abctime clk = 0;
-   double subvalue = 0.0;
-   vec<Lit> eLit;
-   sBkCla.copyTo(eLit);
-   for ( int i = 0 ; i < eLit.size() ; ++i ) eLit[i] = ~eLit[i];
-   vec<bool> dropVec( eLit.size() , false );
-   // try to drop EACH literal
-   for ( int i = 0 ; i < eLit.size() ; ++i ) {
-      dropVec[i] = true;
-      if ( _fTimer ) clk = Abc_Clock();
-      subvalue = clauseToNetwork( eLit , dropVec , pParams->fIncre , pParams->fCkt );
-      if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-      if ( subvalue > _satPb ) dropVec[i] = false;
-   }
-   sBkCla.clear();
-   for ( int i = 0 ; i < dropVec.size(); ++i ) if ( !dropVec[i] ) sBkCla.push( ~eLit[i] );
-}
-
-void
-setDropVec( vec<bool> & dropVec , const int & dropIndex )
-{
-   assert( dropIndex >= 0 && dropIndex <= dropVec.size() );
-   for ( int i = 0 ; i < dropIndex ; ++i ) dropVec[i] = false;
-   for ( int i = dropIndex ; i < dropVec.size() ; ++i ) dropVec[i] = true; 
 }
 
 ////////////////////////////////////////////////////////////////////////

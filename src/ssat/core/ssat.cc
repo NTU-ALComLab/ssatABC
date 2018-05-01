@@ -112,9 +112,9 @@ initParams( Ssat_Params_t * pParams )
    pParams->lower    = -1;
    pParams->fGreedy  = true;
    pParams->fSub     = true;
-   pParams->fPart    = false;
+   pParams->fPart    = true;
    pParams->fDynamic = true;
-   pParams->fPart2   = true;
+   pParams->fPart2   = false;
    pParams->fBdd     = true;
    pParams->fIncre   = true;
    pParams->fCkt     = true;
@@ -186,7 +186,6 @@ printTimer( Ssat_Timer_t * pTimer )
    Abc_PrintTime( 1 , "  > Time consumed on build  ckt " , pTimer->timeCk );
    Abc_PrintTime( 1 , "  > Time consumed on strash ckt " , pTimer->timeSt );
    Abc_PrintTime( 1 , "  > Time consumed on build  bdd " , pTimer->timeBd );
-   Abc_PrintTime( 1 , "  > Total elapsed time          " , Abc_Clock()-gloClk );
    Abc_Print( -2 , "\n==== Solving profiling ====\n\n" );
    Abc_Print( -2 , "  > Number of s1 solving (SAT)          = %10d\n" , pTimer->nS1_sat   );
    Abc_Print( -2 , "  > Number of s1 solving (UNSAT)        = %10d\n" , pTimer->nS1_unsat );
