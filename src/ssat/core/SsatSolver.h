@@ -91,9 +91,10 @@ typedef struct Ssat_ParamsStruct_t_
    bool   fSub;      // using clause subsumption
    bool   fPart;     // using partial assignment pruning
    bool   fDynamic;  // using dynamic dropping
-   bool   fPart2;    // using partial pruning version.2
+   bool   fPart2;    // using partial pruning ver.2
    bool   fBdd;      // using BDD or Cachet to compute weight
    bool   fIncre;    // using incremental counting
+   bool   fIncre2;   // using incremental counting ver.2
    bool   fCkt;      // using circuit for counting
    bool   fPure;     // using pure literal assertion
    // misc
@@ -143,6 +144,7 @@ private:
    void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , bool );
    void        discardLit         ( Ssat_Params_t * , vec<Lit>& );
    void        discardAllLit      ( Ssat_Params_t * , vec<Lit>& );
+   double      erSolveWMC         ( Ssat_Params_t * , const vec<Lit>& , const vec<bool>& );
    // branch and bound helpers
    void        ntkBuildPrefix     ( Abc_Ntk_t * );
    Solver *    ntkBuildSolver     ( Abc_Ntk_t * , bool );
@@ -192,6 +194,7 @@ private:
    void        initClauseNetwork  ( bool , bool );
    void        erNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkCreatePo      ( Abc_Ntk_t * );
+   double      bddCountWeight     ( Ssat_Params_t * , const vec<Lit>& , const vec<bool>& );
    double      clauseToNetwork    ( const vec<Lit>& , const vec<bool>& , bool , bool );
    Abc_Obj_t * erNtkCreateNode    ( Abc_Ntk_t * , Vec_Ptr_t * , const vec<Lit>& , const vec<bool>& );
    DdNode *    erNtkCreateBdd     ( DdManager * , Vec_Ptr_t * , const vec<Lit>& , const vec<bool>& , int ,int );

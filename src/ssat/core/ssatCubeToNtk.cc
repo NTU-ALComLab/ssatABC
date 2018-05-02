@@ -442,6 +442,17 @@ SsatSolver::erNtkCreatePo( Abc_Ntk_t * pNtkClause )
 }
 
 double
+SsatSolver::bddCountWeight( Ssat_Params_t * pParams , const vec<Lit> & eLits , const vec<bool> & dropVec )
+{
+   if ( !pParams->fIncre2 ) 
+      return clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt );
+   else {
+      Abc_Print( 0 , "Incre2 under construction ...\n" );
+      exit(1);
+   }
+}
+
+double
 SsatSolver::clauseToNetwork( const vec<Lit> & eLits , const vec<bool> & drop , bool fIncre , bool fCkt )
 {
    Abc_Obj_t * pObj;
@@ -540,8 +551,6 @@ SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Li
    DdNode * bCla , * bCnf , * bFunc0 , * bFunc1;
    bool select;
 
-   bCnf = Cudd_ReadOne( dd );
-   Cudd_Ref( bCnf );
    for ( int i = 0 ; i < eLits.size() ; ++i ) if ( dropVec[i] ) drop[var(eLits[i])] = true;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
       select = true;
@@ -564,20 +573,12 @@ SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Li
                Cudd_RecursiveDeref( dd , bFunc0 );
             }
          }
-// better practice with bdd: create all OR first
-#if 0
-         bFunc0 = bCnf;
-         bFunc1 = bCla;
-         bCnf = Cudd_bddAnd( dd , bFunc0 , bFunc1 );
-         Cudd_Ref( bCnf );
-         Cudd_RecursiveDeref( dd , bFunc0 );
-         Cudd_RecursiveDeref( dd , bFunc1 );
-#else
-         claNodes.push( bCla );
-#endif
+         claNodes.push( bCla ); // create all clauses first
       }
    }
-#if 1
+   //AND all clauses
+   bCnf = Cudd_ReadOne( dd );
+   Cudd_Ref( bCnf );
    for ( int i = 0 ; i < claNodes.size() ; ++i ) {
       bFunc0 = bCnf;
       bFunc1 = claNodes[i];
@@ -586,7 +587,6 @@ SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Li
       Cudd_RecursiveDeref( dd , bFunc0 );
       Cudd_RecursiveDeref( dd , bFunc1 );
    }
-#endif
    // check random/exist variables are correctly ordered
    if ( numRand < numPi && Cudd_ReadInvPerm( dd , 0 ) > numRand-1 ) {
       if ( Pb_BddShuffleGroup( dd , numRand , numPi-numRand ) == 0 ) {

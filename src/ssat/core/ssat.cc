@@ -117,6 +117,7 @@ initParams( Ssat_Params_t * pParams )
    pParams->fPart2   = false;
    pParams->fBdd     = true;
    pParams->fIncre   = true;
+   pParams->fIncre2  = false;
    pParams->fCkt     = true;
    pParams->fPure    = true;
    pParams->fAll     = true;
@@ -128,7 +129,7 @@ initParams( Ssat_Params_t * pParams )
 void
 printParams( Ssat_Params_t * pParams )
 {
-   printf( "  > Using %s for counting, greedy=%s, subsume=%s, partial=%s, dynamic=%s, partial-2=%s, incremental=%s, circuit=%s, pure=%s\n", 
+   printf( "  > Using %s for counting, greedy=%s, subsume=%s, partial=%s, dynamic=%s, partial-2=%s, incre=%s, incre-2=%s, circuit=%s, pure=%s\n", 
             pParams->fBdd          ? "bdd":"cachet" , 
             pParams->fGreedy       ? "yes":"no" , 
             pParams->fSub          ? "yes":"no" , 
@@ -136,6 +137,7 @@ printParams( Ssat_Params_t * pParams )
             pParams->fDynamic      ? "yes":"no" , 
             pParams->fPart2        ? "yes":"no" , 
             pParams->fIncre        ? "yes":"no" , 
+            pParams->fIncre2       ? "yes":"no" , 
             pParams->fCkt          ? "yes":"no" , 
             pParams->fPure         ? "yes":"no" );
 }
@@ -243,7 +245,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    Ssat_Params_t Params , * pParams = &Params;
    initParams( pParams );
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "RULgspdqbicramtvh" ) ) != EOF )
+   while ( ( c = Extra_UtilGetopt( argc, argv, "RULgspdqbijcramtvh" ) ) != EOF )
    {
       switch ( c )
       {
@@ -295,6 +297,9 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
          case 'i':
             pParams->fIncre ^= 1;
             break;
+         case 'j':
+            pParams->fIncre2 ^= 1;
+            break;
          case 'c':
             pParams->fCkt ^= 1;
             break;
@@ -345,7 +350,7 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
    return 0;
 
 usage:
-   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-gspdqbicramtvh] <file>\n" );
+   Abc_Print( -2 , "usage: ssat [-R <num>] [-U <num>] [-L <num>] [-gspdqbijcramtvh] <file>\n" );
    Abc_Print( -2 , "\t        Solve 2SSAT by Qesto and model counting / bdd signal prob\n" );
    Abc_Print( -2 , "\t-R <num>  : gap between upper and lower bounds, default=%f\n" , pParams->range );
    Abc_Print( -2 , "\t-U <num>  : number of UNSAT cubes for upper bound, default=%d (-1: construct only once)\n" , pParams->upper );
@@ -354,9 +359,10 @@ usage:
    Abc_Print( -2 , "\t-s        : toggles using subsumption simplify technique, default=%s\n" , pParams->fSub ? "yes" : "no" );
    Abc_Print( -2 , "\t-p        : toggles using partial assignment technique, default=%s\n" , pParams->fPart ? "yes" : "no" );
    Abc_Print( -2 , "\t-d        : toggles using dynamic dropping, default=%s\n" , pParams->fDynamic ? "yes" : "no" );
-   Abc_Print( -2 , "\t-q        : toggles using partial pruning version.2, default=%s\n" , pParams->fPart2 ? "yes" : "no" );
+   Abc_Print( -2 , "\t-q        : toggles using partial pruning ver.2, default=%s\n" , pParams->fPart2 ? "yes" : "no" );
    Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=%s\n" , pParams->fBdd ? "bdd" : "cachet" );
    Abc_Print( -2 , "\t-i        : toggles using incremental counting, default=%s\n" , pParams->fIncre ? "yes" : "no" );
+   Abc_Print( -2 , "\t-j        : toggles using incremental counting ver.2, default=%s\n" , pParams->fIncre2 ? "yes" : "no" );
    Abc_Print( -2 , "\t-c        : toggles using circuit for counting, default=%s\n" , pParams->fCkt ? "yes" : "no" );
    Abc_Print( -2 , "\t-r        : toggles using pure literal, default=%s\n" , pParams->fPure ? "yes" : "no" );
    Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=%s\n" , pParams->fAll ? "yes" : "no" );

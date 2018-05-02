@@ -111,7 +111,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             exit(1);
          }
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , eLits.size() );
+         subvalue = erSolveWMC( pParams , eLits , dropVec );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue == 1 ) { // early termination
             _satPb = subvalue;
@@ -333,14 +333,14 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
    else                                      dropIndex -= 1;
    setDropVec( dropVec , dropIndex );
    if ( _fTimer ) clk = Abc_Clock();
-   subvalue = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , dropIndex );
+   subvalue = erSolveWMC( pParams , eLits , dropVec );
    if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
    if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
       while ( true ) {
          --dropIndex;
          setDropVec( dropVec , dropIndex );
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , dropIndex );
+         subvalue = erSolveWMC( pParams , eLits , dropVec );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue > _satPb ) break;
       }
@@ -351,7 +351,7 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
          ++dropIndex;
          setDropVec( dropVec , dropIndex );
          if ( _fTimer ) clk = Abc_Clock();
-         subvalue  = pParams->fBdd ? clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt ) : countModels( eLits , dropIndex );
+         subvalue = erSolveWMC( pParams , eLits , dropVec );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
          if ( subvalue <= _satPb ) break;
       }
@@ -387,7 +387,7 @@ SsatSolver::discardAllLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
    for ( int i = 0 ; i < eLits.size() ; ++i ) {
       dropVec[i] = true;
       if ( _fTimer ) clk = Abc_Clock();
-      subvalue = clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt );
+      subvalue = erSolveWMC( pParams , eLits , dropVec );
       if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
       if ( subvalue > _satPb ) dropVec[i] = false;
    }
@@ -445,6 +445,12 @@ SsatSolver::removeDupLit( vec<Lit> & c ) const
   SeeAlso     []
 
 ***********************************************************************/
+
+double
+SsatSolver::erSolveWMC( Ssat_Params_t * pParams , const vec<Lit> & eLits , const vec<bool> & dropVec )
+{
+   return pParams->fBdd ? bddCountWeight( pParams , eLits , dropVec ) : countModels( eLits , eLits.size() );
+}
 
 double
 SsatSolver::countModels( const vec<Lit> & sBkCla , int dropIndex )
