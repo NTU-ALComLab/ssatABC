@@ -64,7 +64,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    if ( _fVerbose ) printParams(pParams);
    _s1->simplify();
    _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
-   if ( pParams->fBdd  ) initClauseNetwork( pParams->fIncre , pParams->fCkt );
+   if ( pParams->fBdd  ) initERBddCount( pParams );
    if ( pParams->fSub  ) buildSubsumeTable( *_s1 );
    if ( pParams->fPure ) assertPureLit();
 

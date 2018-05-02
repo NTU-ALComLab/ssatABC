@@ -388,6 +388,51 @@ Ssat_DumpCubeNtk( Abc_Ntk_t * pNtk )
 ***********************************************************************/
 
 void
+SsatSolver::initERBddCount( Ssat_Params_t * pParams )
+{
+   if ( !pParams->fIncre2 )
+      initClauseNetwork( pParams->fIncre , pParams->fCkt );
+   else {
+      char name[32];
+      _pNtkCube = Abc_NtkAlloc( ABC_NTK_LOGIC , ABC_FUNC_SOP , 1 );
+      sprintf( name , "er_clauses_network" );
+      _pNtkCube->pName = Extra_UtilStrsav( name );
+      _vMapVars = Vec_PtrStart( _s1->nVars() );
+      erNtkCreatePi( _pNtkCube , _vMapVars ); 
+      if ( pParams->fCkt ) {
+         Abc_Print( 0 , "Incre2 circuit version under construction ...\n" );
+         exit(1);
+      }
+      else {
+         printf( "[INFO] Building DdNodes for clauses ...\n" );
+         _dd = erInitCudd( Abc_NtkPiNum(_pNtkCube) , _rootVars[1].size() , 1 );
+         Vec_PtrFill( _vMapVars , Vec_PtrSize(_vMapVars) , NULL );
+         for ( int i = 1 , k = 0 ; i < _rootVars.size() ; ++i )
+            for ( int j = 0 ; j < _rootVars[i].size() ; ++j , ++k )
+               Vec_PtrWriteEntry( _vMapVars , _rootVars[i][j] , _dd->vars[k] );
+         _claNodes.growTo( _s1->nClauses() , NULL );
+         DdNode * bCla , * bFunc0 , * bFunc1;
+         for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+            Clause & c = _s1->ca[_s1->clauses[i]];
+            bCla = Cudd_ReadLogicZero( _dd );
+            Cudd_Ref( bCla );
+            for ( int j = 0 ; j < c.size() ; ++j ) {
+               if ( _level[var(c[j])] ) {
+                  bFunc0 = bCla;
+                  bFunc1 = Cudd_NotCond( (DdNode*)Vec_PtrEntry(_vMapVars,var(c[j])) , sign(c[j]) );
+                  bCla   = Cudd_bddOr( _dd , bFunc0 , bFunc1 );
+                  Cudd_Ref(bCla);
+                  Cudd_RecursiveDeref( _dd , bFunc0 );
+               }
+            }
+            _claNodes[i] = bCla;
+         }
+         printf( "[INFO] Done!\n" );
+      }
+   }
+}
+
+void
 SsatSolver::initClauseNetwork( bool fIncre , bool fCkt )
 {
    char name[32];
@@ -447,8 +492,63 @@ SsatSolver::bddCountWeight( Ssat_Params_t * pParams , const vec<Lit> & eLits , c
    if ( !pParams->fIncre2 ) 
       return clauseToNetwork( eLits , dropVec , pParams->fIncre , pParams->fCkt );
    else {
-      Abc_Print( 0 , "Incre2 under construction ...\n" );
-      exit(1);
+      if ( pParams->fCkt ) {
+         Abc_Print( 0 , "Incre2 circuit version under construction ...\n" );
+         exit(1);
+      }
+      else {
+         abctime clk = 0;
+         // construct bdd
+         printf( "[INFO] Constructing DdNode for cnf ...\n" );
+         if ( _fTimer ) clk = Abc_Clock();
+         vec<bool> drop( _s1->nVars() , false );
+         DdNode * bCnf;
+         bool select;
+         for ( int i = 0 ; i < eLits.size() ; ++i ) if ( dropVec[i] ) drop[var(eLits[i])] = true;
+         bCnf = Cudd_ReadOne( _dd );
+         Cudd_Ref( bCnf );
+         for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+            select = true;
+            Clause & c = _s1->ca[_s1->clauses[i]];
+            for ( int j = 0 ; j < c.size() ; ++j ) {
+               if ( drop[var(c[j])] || isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+                  select = false;
+                  break;
+               }
+            }
+            if ( select ) {
+               Cudd_Ref( _claNodes[i] );
+               bCnf = Cudd_bddAnd( _dd , bCnf , _claNodes[i] );
+               Cudd_Ref( bCnf );
+            }
+         }
+         int numRand = _rootVars[1].size();
+         int numPi   = Abc_NtkPiNum( _pNtkCube );
+         // check random/exist variables are correctly ordered
+         if ( numRand < numPi && Cudd_ReadInvPerm( _dd , 0 ) > numRand-1 ) {
+            if ( Pb_BddShuffleGroup( _dd , numRand , numPi-numRand ) == 0 ) {
+               Abc_Print( -1 , "Bdd Shuffle has failed.\n" );
+	            exit(1);
+            }
+         }
+         if ( _fTimer ) timer.timeBd += Abc_Clock()-clk;
+         printf( "[INFO] Done!\n" );
+         // set probabilities
+         Abc_Obj_t * pObj;
+         int i;
+         Abc_NtkForEachPi( _pNtkCube , pObj , i )
+            pObj->dTemp = ( i < _rootVars[1].size() ) ? (float)_quan[_rootVars[1][i]] : -1.0;
+         // count weight
+         double prob;
+         if ( Cudd_IsConstant( bCnf ) ) prob = 1.0;
+         else {
+            Pb_BddResetProb( _dd , bCnf );
+            BddComputeSsat_rec( _pNtkCube , bCnf );
+            prob = Cudd_IsComplement( bCnf ) ? 1.0-Cudd_Regular(bCnf)->pMin : Cudd_Regular(bCnf)->pMax;
+         }
+         Cudd_RecursiveDeref( _dd , bCnf );
+         return prob;
+      }
    }
 }
 
@@ -663,22 +763,18 @@ SsatSolver::erNtkBddComputeSp( Abc_Ntk_t * pNtkClause , bool fIncre )
 DdManager*
 SsatSolver::erInitCudd( int numPi , int numRand , int fGrp )
 {
-    DdManager * dd;
-    int fReorder;
-
-	 fReorder = ( numRand < numPi ) ? 0 : 1;
-    dd = Cudd_Init( numPi , 0 , CUDD_UNIQUE_SLOTS , CUDD_CACHE_SLOTS , 0 );
-    if ( numRand < numPi && fGrp ) {
-       if ( _numLv != 3 ) {
-          Abc_Print( -1 , "Unexpected levels (%d)\n" , _numLv );
-          exit(1);
-       }
-       Cudd_MakeTreeNode( dd , 0 , numRand , MTR_DEFAULT );
-       Cudd_MakeTreeNode( dd , numRand , numPi-numRand , MTR_DEFAULT );
-       fReorder = 1;
-    }
-    if ( fReorder ) Cudd_AutodynEnable( dd , CUDD_REORDER_SYMM_SIFT );
-    return dd;
+   // prefix: E X R Y E Z. --> numPi = Y+Z
+   DdManager * dd = Cudd_Init( numPi , 0 , CUDD_UNIQUE_SLOTS , CUDD_CACHE_SLOTS , 0 );
+   if ( fGrp && (numPi != numRand) ) {
+      if ( _numLv != 3 ) {
+         Abc_Print( -1 , "Unexpected levels (%d)\n" , _numLv );
+         exit(1);
+      }
+      Cudd_MakeTreeNode( dd , 0 , numRand , MTR_DEFAULT );
+      Cudd_MakeTreeNode( dd , numRand , numPi-numRand , MTR_DEFAULT );
+   }
+   Cudd_AutodynEnable( dd , CUDD_REORDER_SYMM_SIFT );
+   return dd;
 }
 
 ////////////////////////////////////////////////////////////////////////

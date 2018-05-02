@@ -191,6 +191,7 @@ private:
    void        ntkWriteWcnf       ( Abc_Ntk_t * );
    double      ntkBddComputeSp    ( Abc_Ntk_t * , bool );
    // construct circuits from clauses for ER-2SSAT
+   void        initERBddCount     ( Ssat_Params_t * );
    void        initClauseNetwork  ( bool , bool );
    void        erNtkCreatePi      ( Abc_Ntk_t * , Vec_Ptr_t * );
    void        erNtkCreatePo      ( Abc_Ntk_t * );
@@ -255,6 +256,8 @@ private:
    Abc_Ntk_t       * _pNtkCnf;         // ckt from cnf
    DdManager       * _dd;              // bdd from ckt
    vec<int>          _varToPi;         // Var --> Pi id
+   // data members for incremental ver.2
+   vec<DdNode*>      _claNodes;        // clause id --> DdNode*
 };
 
 // Implementation of inline methods:
