@@ -120,7 +120,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             dumpCla(_erModel);
             break;
          }
-         if ( subvalue > _satPb ) { // update current solution
+         if ( subvalue >= _satPb ) { // update current solution
             if ( _fVerbose ) {
                printf( "  > find a better solution , value = %f\n" , subvalue );
                Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk1 );
@@ -336,24 +336,26 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
    subvalue = erSolveWMC( pParams , eLits , dropVec );
    if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
    if ( subvalue <= _satPb ) { // success, keep dropping 1 by 1
-      while ( true ) {
+      while ( dropIndex > 0 ) {
          --dropIndex;
          setDropVec( dropVec , dropIndex );
          if ( _fTimer ) clk = Abc_Clock();
          subvalue = erSolveWMC( pParams , eLits , dropVec );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-         if ( subvalue > _satPb ) break;
+         if ( subvalue > _satPb ) { ++dropIndex; break; }
       }
-      ++dropIndex;
    }
    else { // fail, undo dropping 1 by 1 
-      while ( true ) {
-         ++dropIndex;
-         setDropVec( dropVec , dropIndex );
-         if ( _fTimer ) clk = Abc_Clock();
-         subvalue = erSolveWMC( pParams , eLits , dropVec );
-         if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-         if ( subvalue <= _satPb ) break;
+      if ( !pParams->fDynamic ) ++dropIndex;
+      else {
+         while ( true ) {
+            ++dropIndex;
+            setDropVec( dropVec , dropIndex );
+            if ( _fTimer ) clk = Abc_Clock();
+            subvalue = erSolveWMC( pParams , eLits , dropVec );
+            if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
+            if ( subvalue <= _satPb ) break;
+         }
       }
    }
    sBkCla.clear();
