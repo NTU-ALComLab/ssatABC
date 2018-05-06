@@ -64,6 +64,7 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    if ( _fVerbose ) printParams(pParams);
    _s1->simplify();
    _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
+   _selClaId.capacity( _s1->nClauses() );
    if ( pParams->fBdd  ) initERBddCount( pParams );
    if ( pParams->fSub  ) buildSubsumeTable( *_s1 );
    if ( pParams->fPure ) assertPureLit();
@@ -72,7 +73,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    // declare and initialize temp variables
    vec<Lit>  eLits( _rootVars[0].size() ) , sBkCla;
    vec<bool> dropVec( _rootVars[0].size() , false );
-   vec<int>  ClasInd;
    int lenBeforeDrop = 0;
    double subvalue;
    bool sat;
@@ -110,6 +110,12 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             Abc_Print( 0  , "  > Under construction ...\n" );
             exit(1);
          }
+         collectBkClaERSub( sBkCla , pParams->fSub ); // clause containment learning + subsumption: line08,10
+         if ( _fTimer ) {
+            if ( pParams->fSub ) timer.lenSubsume += sBkCla.size();
+            else                 timer.lenBase    += sBkCla.size();
+            if ( pParams->fDynamic ) lenBeforeDrop = sBkCla.size();
+         }
          if ( _fTimer ) clk = Abc_Clock();
          subvalue = erSolveWMC( pParams , eLits , dropVec );
          if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
@@ -130,14 +136,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
             }
             _satPb = subvalue;
             eLits.copyTo(_erModel);
-         }
-         sBkCla.clear();
-         ClasInd.clear();
-         collectBkClaERSub( sBkCla , ClasInd , pParams->fSub ); // clause containment learning + subsumption: line08,10
-         if ( _fTimer ) {
-            if ( pParams->fSub ) timer.lenSubsume += sBkCla.size();
-            else                 timer.lenBase    += sBkCla.size();
-            if ( pParams->fDynamic ) lenBeforeDrop = sBkCla.size();
          }
          if      ( pParams->fPart  ) discardLit( pParams , sBkCla ); // partial assignment pruning: line11
          else if ( pParams->fPart2 ) discardAllLit( pParams , sBkCla );
@@ -241,23 +239,25 @@ SsatSolver::selectMinClauses( vec<Lit> & eLits )
 ***********************************************************************/
 
 void
-SsatSolver::collectBkClaERSub( vec<Lit> & sBkCla , vec<int> & ClasInd , bool fSub )
+SsatSolver::collectBkClaERSub( vec<Lit> & sBkCla , bool fSub )
 {
-   bool block;
+   sBkCla.clear();
+   _selClaId.clear();
+   bool select;
    for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      block = true;
+      select = true;
       Clause & c = _s1->ca[_s1->clauses[i]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
          if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
-            block = false;
+            select = false;
             break;
          }
       }
-      if ( block ) ClasInd.push(i);
+      if ( select ) _selClaId.push(i);
    }
-   for ( int i = 0 ; i < ClasInd.size() ; ++i ) {
-      if ( fSub && checkSubsume( ClasInd , i ) ) continue;
-      Clause & c = _s1->ca[_s1->clauses[ClasInd[i]]];
+   for ( int i = 0 ; i < _selClaId.size() ; ++i ) {
+      if ( fSub && checkSubsume( _selClaId , i ) ) continue;
+      Clause & c = _s1->ca[_s1->clauses[_selClaId[i]]];
       for ( int j = 0 ; j < c.size() ; ++j )
          if ( isEVar(var(c[j])) && _level[var(c[j])] == 0 ) sBkCla.push(c[j]);
    }

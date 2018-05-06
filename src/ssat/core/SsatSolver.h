@@ -141,7 +141,7 @@ private:
    // erSolve helpers
    void        assertPureLit      ();
    void        selectMinClauses   ( vec<Lit>& );
-   void        collectBkClaERSub  ( vec<Lit>& , vec<int>& , bool );
+   void        collectBkClaERSub  ( vec<Lit>& , bool );
    void        discardLit         ( Ssat_Params_t * , vec<Lit>& );
    void        discardAllLit      ( Ssat_Params_t * , vec<Lit>& );
    double      erSolveWMC         ( Ssat_Params_t * , const vec<Lit>& , const vec<bool>& );
@@ -240,6 +240,7 @@ private:
    vec< vec<Lit> >   _unsatClause;     // added clauses during solving, used in model counting
    vec< vec<Lit> >   _satClause;       // added clauses during solving, used in model counting
    SubTbl            _subsumeTable;    // clause subsumption table
+   vec<int>          _selClaId;        // ids of selected clauses
    Abc_Ntk_t       * _pNtkCube;        // network of SAT/UNSAT cubes
    Vec_Ptr_t       * _vMapVars;        // mapping Var to Abc_Obj_t
    Abc_Obj_t       * _pConst0;         // network Const0 node

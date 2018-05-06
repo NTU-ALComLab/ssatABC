@@ -599,11 +599,11 @@ SsatSolver::erNtkCreateNode( Abc_Ntk_t * pNtkClause , Vec_Ptr_t * vMapVars , con
    bool select;
 
    for ( int i = 0 ; i < eLits.size() ; ++i ) if ( dropVec[i] ) drop[var(eLits[i])] = true;
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+   for ( int i = 0 ; i < _selClaId.size() ; ++i ) {
       select = true;
-      Clause & c = _s1->ca[_s1->clauses[i]];
+      Clause & c = _s1->ca[_s1->clauses[_selClaId[i]]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( drop[var(c[j])] || isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+         if ( drop[var(c[j])] ) {
             select = false;
             break;
          }
@@ -652,11 +652,11 @@ SsatSolver::erNtkCreateBdd( DdManager * dd , Vec_Ptr_t * vMapVars , const vec<Li
    bool select;
 
    for ( int i = 0 ; i < eLits.size() ; ++i ) if ( dropVec[i] ) drop[var(eLits[i])] = true;
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
+   for ( int i = 0 ; i < _selClaId.size() ; ++i ) {
       select = true;
-      Clause & c = _s1->ca[_s1->clauses[i]];
+      Clause & c = _s1->ca[_s1->clauses[_selClaId[i]]];
       for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( drop[var(c[j])] || isEVar(var(c[j])) && _level[var(c[j])] == 0 && _s1->modelValue(c[j]) == l_True ) {
+         if ( drop[var(c[j])] ) {
             select = false;
             break;
          }

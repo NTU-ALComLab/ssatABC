@@ -324,6 +324,10 @@ SsatCommandSSAT( Abc_Frame_t * pAbc , int argc , char ** argv )
             goto usage;
       }
    }
+   if ( pParams->fIncre2 ) {
+      Abc_Print( 0 , "option \"j\" Incre-2 is currently under construction ...\n" );
+      goto usage;
+   }
    if ( argc != globalUtilOptind + 1 ) {
       Abc_Print( -1 , "Missing ssat file!\n" );
       goto usage;
@@ -362,7 +366,7 @@ usage:
    Abc_Print( -2 , "\t-q        : toggles using partial pruning ver.2, default=%s\n" , pParams->fPart2 ? "yes" : "no" );
    Abc_Print( -2 , "\t-b        : toggles using BDD or Cachet to compute weight, default=%s\n" , pParams->fBdd ? "bdd" : "cachet" );
    Abc_Print( -2 , "\t-i        : toggles using incremental counting, default=%s\n" , pParams->fIncre ? "yes" : "no" );
-   Abc_Print( -2 , "\t-j        : toggles using incremental counting ver.2, default=%s\n" , pParams->fIncre2 ? "yes" : "no" );
+   Abc_Print( -2 , "\t-j        : toggles using incremental counting ver.2, default=%s (WARNING: under construction, do NOT use)\n" , pParams->fIncre2 ? "yes" : "no" );
    Abc_Print( -2 , "\t-c        : toggles using circuit for counting, default=%s\n" , pParams->fCkt ? "yes" : "no" );
    Abc_Print( -2 , "\t-r        : toggles using pure literal, default=%s\n" , pParams->fPure ? "yes" : "no" );
    Abc_Print( -2 , "\t-a        : toggles using All-SAT enumeration solve, default=%s\n" , pParams->fAll ? "yes" : "no" );
