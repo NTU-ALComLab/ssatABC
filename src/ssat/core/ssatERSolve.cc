@@ -122,9 +122,11 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
          }
          if ( subvalue >= _satPb ) { // update current solution
             if ( _fVerbose ) {
-               printf( "  > find a better solution , value = %f\n" , subvalue );
-               Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk1 );
-               fflush(stdout);
+               if ( subvalue > _satPb ) {
+                  printf( "  > find a better solution , value = %f\n" , subvalue );
+                  Abc_PrintTime( 1, "  > Time consumed" , Abc_Clock() - clk1 );
+                  fflush(stdout);
+               }
             }
             _satPb = subvalue;
             eLits.copyTo(_erModel);
