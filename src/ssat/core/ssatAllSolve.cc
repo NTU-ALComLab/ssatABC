@@ -137,9 +137,10 @@ SsatSolver::aSolve2SSAT( Ssat_Params_t * pParams )
          printf( "[INFO] # of UNSAT cubes: %d\n" , _unsatClause.size() );
          printf( "[INFO] # of   SAT cubes: %d\n" ,   _satClause.size() );
          //if ( _unsatClause.size() < _satClause.size() )
-            _unsatPb = pParams->fBdd ? cubeToNetwork(false) : cachetCount(false);
+         printf( "[INFO] Exactly solve the instance: upper bound is tight\n" );
+         _unsatPb = pParams->fBdd ? cubeToNetwork(false) : cachetCount(false);
          //else
-            //_satPb   = fBdd ? cubeToNetwork(true)  : cachetCount(true);
+            //_satPb   = pParams->fBdd ? cubeToNetwork(true)  : cachetCount(true);
          if ( _fTimer ) {
             timer.timeCt += Abc_Clock()-clk;
             ++timer.nCount;
