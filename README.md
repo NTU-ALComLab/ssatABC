@@ -13,7 +13,7 @@ Type `make` to complie and the executable is `bin/abc`
 ```
 make
 ```
-It has been tested successful under CentOS 7.3.1611 with GCC\_VERSION=4.8.5
+It has been tested successfully under CentOS 7.3.1611 with GCC\_VERSION=4.8.5
 
 ### How to Run
 Run `./bin/abc` from your console and execute command `ssat` to solve both RE-SSAT and ER-SSAT formulas. `ssat -h` shows detailed argument lists of the command.
