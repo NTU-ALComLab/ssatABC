@@ -9,7 +9,7 @@ This is a C++ implemantation of the algorithms proposed in [Solving Stochastic B
 3. [Benchmarks](#benchmarks)
 
 ### Installation
-Type `make` to complie and the executable will be in `bin/abc`
+Type `make` to complie and the executable is `bin/abc`
 ```
 make
 ```
