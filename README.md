@@ -17,6 +17,8 @@ It has been tested successfully under CentOS 7.3.1611 with GCC\_VERSION=4.8.5
 
 ### How to Run
 Run `./bin/abc` from your console and execute command `ssat` to solve both RE-SSAT and ER-SSAT formulas. `ssat -h` shows detailed argument lists of the command.
+You can also run the `ssat` command from the console as follows.
+
 1. RE-SSAT
 ```
 ./bin/abc -c "ssat ./expSsat/ssatRE/random/3CNF/sdimacs/rand-3-40-120-20.165.sdimacs"
