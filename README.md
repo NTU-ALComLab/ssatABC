@@ -1,7 +1,7 @@
 # SSAT Solver: Stochastic Boolean Satisfiability Solver
 
 ## Introduction
-This is a C++ implemantation of the algorithms proposed in [Solving Stochastic Boolean Satisfiability under Random-Exist Quantification](https://www.ijcai.org/proceedings/2017/0096.pdf) and [Solving Exist-Random Quantified Stochastic Boolean Satisfiability via Clause Selection](#).
+This is a C++ implemantation of the algorithms proposed in [Solving Stochastic Boolean Satisfiability under Random-Exist Quantification](https://www.ijcai.org/proceedings/2017/0096.pdf) and [Solving Exist-Random Quantified Stochastic Boolean Satisfiability via Clause Selection](https://www.ijcai.org/proceedings/2018/0186.pdf).
 
 ## Contents
 1. [Installation](#installation)
