@@ -13,13 +13,11 @@ It has been tested successfully under CentOS 7.3.1611 with GCC\_VERSION=4.8.5
 ## Execution
 Run `./bin/abc` from your console and execute command `ssat` to solve both RE-SSAT and ER-SSAT formulas. `ssat -h` shows detailed arguments of the command.
 You can also run the `ssat` command from the console, as the following examples show.
-
-1. RE-SSAT
+### random-exist SSAT
 ```
 ./bin/abc -c "ssat ./expSsat/ssatRE/random/3CNF/sdimacs/rand-3-40-120-20.165.sdimacs"
 ```
-
-2. ER-SSAT
+### exist-random SSAT
 ```
 ./bin/abc -c "ssat ./expSsat/ssatER/planning/ToiletA/sdimacs/toilet_a_02_01.2.sdimacs"
 ```
