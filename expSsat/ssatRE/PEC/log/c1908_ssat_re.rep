@@ -1,9 +1,0 @@
-  > On file c1908.ssat
-
-
-solve time:              =    228.242
-rebuild/print time:      = 6.50883e-05
-   total time:           =    228.242
-
-Pr[SAT]                  = 0.00073799
-
