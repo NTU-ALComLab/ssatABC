@@ -259,6 +259,8 @@ private:
    vec<int>          _varToPi;         // Var --> Pi id
    // data members for incremental ver.2
    vec<DdNode*>      _claNodes;        // clause id --> DdNode*
+   vec<vec<Lit>> _unitClause; // unit clause literals
+   vec<vec<Lit>> _dupClause;  // copy of s1 clauses
 };
 
 // Implementation of inline methods:

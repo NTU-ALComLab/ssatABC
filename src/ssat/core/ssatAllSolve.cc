@@ -126,6 +126,34 @@ SsatSolver::aSolve2SSAT( Ssat_Params_t * pParams )
    if ( pParams->fBdd ) initCubeNetwork( true );
    sBkCla.capacity(_rootVars[0].size());
    if ( _fVerbose ) printf( "  > Start sat/unsat cube collection\n\n" );
+
+   // Learn the unit clause of randomized varaible first
+   for (int i = 0; i < _unitClause.size(); i++)
+   {
+      Lit p = _unitClause[i][0];
+      if (isRVar(var(p)))
+      {
+         _unsatClause.push();
+         _unitClause[i].copyTo(_unsatClause.last());
+         _s2->addClause(_unitClause[i]);
+      }
+   }
+
+   // copy the original clauses
+   vec<Lit> cl;
+   for (int i = 0; i < _s1->nClauses(); ++i)
+   {
+      Clause &c = _s1->ca[_s1->clauses[i]];
+      cl.clear();
+      for (int j = 0; j < c.size(); j++)
+      {
+         cl.push(c[j]);
+      }
+      _dupClause.push();
+      cl.copyTo(_dupClause.last());
+   }
+
+
    while ( 1.0 - _unsatPb - _satPb > pParams->range ) {
       if ( _fTimer ) clk = Abc_Clock();
       if ( !_s2->solve() ) {
@@ -336,18 +364,18 @@ void
 SsatSolver::miniHitOneHotLit( vec<Lit> & sBkCla , vec<bool> & pick ) const
 {
    Lit lit;
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      Clause & c  = _s1->ca[_s1->clauses[i]];
+   for ( int i = 0 ; i < _dupClause.size() ; ++i ) {
+      // Clause & c  = _s1->ca[_s1->clauses[i]];
       short find  = 0;
       bool claSat = false;
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( _s1->modelValue(c[j]) == l_True ) {
-            if ( pick[var(c[j])] ) {
+      for ( int j = 0 ; j < _dupClause[i].size() ; ++j ) {
+         if ( _s1->modelValue(_dupClause[i][j]) == l_True ) {
+            if ( pick[var(_dupClause[i][j])] ) {
                claSat = true;
                break;
             }
             ++find;
-            if ( find == 1 ) lit = c[j];
+            if ( find == 1 ) lit = _dupClause[i][j];
             else break;
          }
       }
@@ -364,17 +392,17 @@ SsatSolver::miniHitCollectLit( vec<Lit> & sBkCla , vec<Lit> & minterm , vec<bool
 {
    vec<Lit> rLits , eLits;
    rLits.capacity(8) , eLits.capacity(8);
-   for ( int i = 0 ; i < _s1->nClauses() ; ++i ) {
-      Clause & c  = _s1->ca[_s1->clauses[i]];
+   for ( int i = 0 ; i < _dupClause.size() ; ++i ) {
+      // Clause & c  = _s1->ca[_s1->clauses[i]];
       bool claSat = false;
       rLits.clear() , eLits.clear();
-      for ( int j = 0 ; j < c.size() ; ++j ) {
-         if ( _s1->modelValue(c[j]) == l_True ) {
-            if ( pick[var(c[j])] ) {
+      for ( int j = 0 ; j < _dupClause[i].size() ; ++j ) {
+         if ( _s1->modelValue(_dupClause[i][j]) == l_True ) {
+            if ( pick[var(_dupClause[i][j])] ) {
                claSat = true;
                break;
             }
-            isRVar(var(c[j])) ? rLits.push(c[j]) : eLits.push(c[j]);
+            isRVar(var(_dupClause[i][j])) ? rLits.push(_dupClause[i][j]) : eLits.push(_dupClause[i][j]);
          }
       }
       if ( !claSat ) {
@@ -398,11 +426,11 @@ SsatSolver::miniHitDropLit( vec<Lit> & sBkCla , vec<Lit> & minterm , vec<bool> &
    for ( int i = 0 ; i < minterm.size() ; ++i ) {
       pick[var(minterm[i])] = false;
       bool cnfSat = true;
-      for ( int j = 0 ; j < _s1->nClauses() ; ++j ) {
-         Clause & c  = _s1->ca[_s1->clauses[j]];
+      for ( int j = 0 ; j < _dupClause.size() ; ++j ) {
+         // Clause & c  = _s1->ca[_s1->clauses[j]];
          bool claSat = false;
-         for ( int k = 0 ; k < c.size() ; ++k ) {
-            if ( pick[var(c[k])] && _s1->modelValue(c[k]) == l_True ) {
+         for ( int k = 0 ; k < _dupClause[j].size() ; ++k ) {
+            if ( pick[var(_dupClause[j][k])] && _s1->modelValue(_dupClause[j][k]) == l_True ) {
                claSat = true;
                break;
             }

@@ -159,7 +159,14 @@ SsatSolver::parse_SDIMACS( gzFile & input_stream )
           else {
              cnt++;
              readClause(in, S, lits);
-             S.addClause_(lits); 
+             S.addClause_(lits);
+
+             // save unit clauses
+             if (lits.size() == 1)
+             {
+              _unitClause.push();
+              lits.copyTo(_unitClause.last());
+             } 
           }
        }
     }
