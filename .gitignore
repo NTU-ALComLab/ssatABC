@@ -33,7 +33,6 @@ tags
 *.app
 bin/*
 lib/*
-./abc
 arch_flags
 arch_flags.c
 core/minisat
