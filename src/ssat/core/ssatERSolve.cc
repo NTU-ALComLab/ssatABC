@@ -63,6 +63,23 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
 {
    if ( _fVerbose ) printParams(pParams);
    _s1->simplify();
+   if (_s1->nClauses() == 0) {
+	  _satPb = 1;
+	  for ( int i = 0 ; i < _rootVars[1].size() ; ++i ) {
+		 _satPb = (_s1->value(_rootVars[1][i]) == l_True) ? 
+			      _satPb = _satPb * _quan[_rootVars[1][i]] :
+				  _satPb = _satPb * (1-_quan[_rootVars[1][i]]);
+	  }
+	  _erModel.growTo( _rootVars[0].size() );
+	  for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
+		 _erModel[i] = ( _s1->value(_rootVars[0][i]) == l_True ) ? 
+			           mkLit(_rootVars[0][i]) : 
+					   ~mkLit(_rootVars[0][i]);
+	  }
+	  printf( "\n  > optimizing assignment to exist vars:\n\t" );
+	  dumpCla(_erModel);
+	  return;
+   }
    _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
    _selClaId.capacity( _s1->nClauses() );
    if ( pParams->fBdd  ) initERBddCount( pParams );
