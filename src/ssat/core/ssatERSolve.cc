@@ -459,8 +459,8 @@ SsatSolver::erSolveWMC( Ssat_Params_t * pParams , const vec<Lit> & eLits , const
 	  double satisfyProb = 1;
 	  for (int i = 0; i < _rootVars[1].size(); ++i) {
 		 satisfyProb = (_s1->modelValue(_rootVars[1][i]) == l_True) ? 
-			           satisfyProb = satisfyProb * _quan[_rootVars[1][i]] :
-				       satisfyProb = satisfyProb * (1-_quan[_rootVars[1][i]]);
+			           satisfyProb * _quan[_rootVars[1][i]] :
+				       satisfyProb * (1-_quan[_rootVars[1][i]]);
 	  }
 	  return satisfyProb;
    }
