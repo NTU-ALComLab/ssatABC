@@ -66,7 +66,15 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
    _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
    _selClaId.capacity( _s1->nClauses() );
    if ( pParams->fBdd  ) initERBddCount( pParams );
-   if ( pParams->fSub  ) buildSubsumeTable( *_s1 );
+   if ( pParams->fSub  ) {
+	  if (_s1->nClauses() < 2) {
+		 Abc_Print(0, "Disable subsumption, as there are less than 2 clauses\n");
+		 pParams->fSub = false;
+	  }
+	  else {
+		 buildSubsumeTable( *_s1 );
+	  }
+   }
    if ( pParams->fPure ) assertPureLit();
 
    cout << "--------------------------------------\n";
