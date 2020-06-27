@@ -63,23 +63,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
 {
    if ( _fVerbose ) printParams(pParams);
    _s1->simplify();
-   if (_s1->nClauses() == 0) {
-	  _satPb = 1;
-	  for ( int i = 0 ; i < _rootVars[1].size() ; ++i ) {
-		 _satPb = (_s1->value(_rootVars[1][i]) == l_True) ? 
-			      _satPb = _satPb * _quan[_rootVars[1][i]] :
-				  _satPb = _satPb * (1-_quan[_rootVars[1][i]]);
-	  }
-	  _erModel.growTo( _rootVars[0].size() );
-	  for ( int i = 0 ; i < _rootVars[0].size() ; ++i ) {
-		 _erModel[i] = ( _s1->value(_rootVars[0][i]) == l_True ) ? 
-			           mkLit(_rootVars[0][i]) : 
-					   ~mkLit(_rootVars[0][i]);
-	  }
-	  printf( "\n  > optimizing assignment to exist vars:\n\t" );
-	  dumpCla(_erModel);
-	  return;
-   }
    _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
    _selClaId.capacity( _s1->nClauses() );
    if ( pParams->fBdd  ) initERBddCount( pParams );
@@ -129,12 +112,6 @@ SsatSolver::erSolve2SSAT( Ssat_Params_t * pParams )
       }
       else { // SAT case
          if ( _fTimer ) ++timer.nS1_sat;
-         if ( _s1->nClauses() == 0 ) {
-            Abc_Print( -1 , "  > There is no clause left ...\n" );
-            Abc_Print( -1 , "  > Should look at unit assumption to compute value ...\n" );
-            Abc_Print( 0  , "  > Under construction ...\n" );
-            exit(1);
-         }
          collectBkClaERSub( sBkCla , pParams->fSub ); // clause containment learning + subsumption: line08,10
          if ( _fTimer ) {
             if ( pParams->fSub ) timer.lenSubsume += sBkCla.size();
@@ -478,7 +455,18 @@ SsatSolver::removeDupLit( vec<Lit> & c ) const
 double
 SsatSolver::erSolveWMC( Ssat_Params_t * pParams , const vec<Lit> & eLits , const vec<bool> & dropVec )
 {
-   return pParams->fBdd ? bddCountWeight( pParams , eLits , dropVec ) : countModels( eLits , eLits.size() );
+   if (_s1->nClauses() == 0) {
+	  double satisfyProb = 1;
+	  for (int i = 0; i < _rootVars[1].size(); ++i) {
+		 satisfyProb = (_s1->modelValue(_rootVars[1][i]) == l_True) ? 
+			           satisfyProb = satisfyProb * _quan[_rootVars[1][i]] :
+				       satisfyProb = satisfyProb * (1-_quan[_rootVars[1][i]]);
+	  }
+	  return satisfyProb;
+   }
+   else {
+	  return pParams->fBdd ? bddCountWeight( pParams , eLits , dropVec ) : countModels( eLits , eLits.size() );
+   }
 }
 
 double
