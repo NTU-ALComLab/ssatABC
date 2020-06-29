@@ -1,0 +1,6 @@
+.model or3
+.inputs 1 2 3
+.outputs 4
+.names 1 2 3 4
+000 0
+.end

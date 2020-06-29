@@ -427,17 +427,18 @@ int
 Pb_CommandBddSp( Abc_Frame_t * pAbc , int argc , char ** argv )
 {
    Abc_Ntk_t * pNtk;
-	int fAll , fGrp , fVerbose , numPo , numExist , c;
+   int fAll , fGrp , fUniform , fVerbose , numPo , numExist , c;
 
-	pNtk     = Abc_FrameReadNtk( pAbc );
-	numPo    = 0;
-	numExist = 0;
-	fAll     = 0;
-	fGrp     = 1;
+   pNtk     = Abc_FrameReadNtk( pAbc );
+   numPo    = 0;
+   numExist = 0;
+   fAll     = 0;
+   fGrp     = 1;
+   fUniform = 0;
    fVerbose = 1;
 
    Extra_UtilGetoptReset();
-   while ( ( c = Extra_UtilGetopt( argc, argv, "OEagvh" ) ) != EOF ) {
+   while ( ( c = Extra_UtilGetopt( argc, argv, "OEaguvh" ) ) != EOF ) {
       switch ( c )
       {
          case 'O':
@@ -463,6 +464,9 @@ Pb_CommandBddSp( Abc_Frame_t * pAbc , int argc , char ** argv )
 			   break;
 			case 'g':
 				fGrp ^= 1;
+			   break;
+			case 'u':
+				fUniform ^= 1;
 			   break;
 			case 'v':
 				fVerbose ^= 1;
@@ -490,17 +494,23 @@ Pb_CommandBddSp( Abc_Frame_t * pAbc , int argc , char ** argv )
 		Abc_Print( -1 , "Only support strashed networks for now.\n" );
 		return 1;
 	}
-   if ( fAll ) Pb_BddComputeAllSp( pNtk , numExist , fGrp , fVerbose );
+	if (fUniform) {
+	   Abc_Obj_t * pObj;
+	   int i;
+	   Abc_NtkForEachPi( pNtk , pObj , i ) pObj->dTemp = 0.5;
+	}
+    if ( fAll ) Pb_BddComputeAllSp( pNtk , numExist , fGrp , fVerbose );
 	else        Pb_BddComputeSp( pNtk , numPo , numExist , fGrp , fVerbose );
 
    return 0;
 usage:
-    Abc_Print( -2 , "usage    : bddsp [-O <num>] [-E <num>] [-agvh]\n" );
+    Abc_Print( -2 , "usage    : bddsp [-O <num>] [-E <num>] [-aguvh]\n" );
     Abc_Print( -2 , "\t         compute signal probability by bdd\n" );
     Abc_Print( -2 , "\t-O num : specify num-th Po to calculate [default = %d]\n" , 0 );
     Abc_Print( -2 , "\t-E num : specify the number of exist variables [default = %d]\n" , 0 );
     Abc_Print( -2 , "\t-a     : toggles calculating all Po [default = %s]\n" , "no" );
     Abc_Print( -2 , "\t-g     : toggles grouping PI and AI variables [default = %s]\n" , "yes" );
+    Abc_Print( -2 , "\t-u     : toggles uniform distribution of PI variables [default = %s]\n" , "no" );
     Abc_Print( -2 , "\t-v     : toggles printing verbose information [default = %s]\n" , "yes" );
     Abc_Print( -2 , "\t-h     : print the command usage\n");
     return 1;
