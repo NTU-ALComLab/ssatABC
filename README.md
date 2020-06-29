@@ -90,7 +90,7 @@ abc 02> quit
 ```
 
 #### Example 2
-Note that the miter can be simplified before the analysis.
+Note that the miter can be simplified before the analysis to enhance the efficiency.
 ```
 UC Berkeley, ABC 1.01 (compiled Jun 27 2020 14:34:38)
 abc 01> miter benchmarks/probverify/c17.bench benchmarks/probverify/c17-approx.bench 
