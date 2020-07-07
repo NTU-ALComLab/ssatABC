@@ -275,6 +275,16 @@ SsatSolver::buildQestoSelector()
       else if ( sLits.size() == 1 ) // reuse the lv.0 var as selection var
          _claLits[i] = ~sLits[0];
    }
+   for (int i = 0; i < _unitClause.size(); ++i) {
+      Lit p = _unitClause[i][0];
+	  if (_level[var(p)] == 0 && isEVar(var(p))) {
+		 S->addClause(p);
+	  }
+	  if (isRVar(var(p))) {
+		 _unitClauseMultiplier = !sign(p) ? _unitClauseMultiplier * _quan[var(p)] : 
+			                                _unitClauseMultiplier * (1-_quan[var(p)]);
+	  }
+   }
    return S;
 }
 

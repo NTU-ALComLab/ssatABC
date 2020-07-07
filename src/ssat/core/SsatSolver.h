@@ -111,7 +111,7 @@ class SsatSolver {
 
 public:
    // Constructor/Destructor:
-   SsatSolver( bool fTimer = false , bool fVerbose = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0) 
+   SsatSolver( bool fTimer = false , bool fVerbose = false ) : _s1(NULL) , _s2(NULL) , _pNtkCube(NULL) , _vMapVars(NULL) , _unsatPb(0.0) , _satPb(0.0), _unitClauseMultiplier(1.0) 
    { _fTimer = fTimer; _fVerbose = fVerbose; _pNtkCnf = NULL; _dd = NULL; }
    ~SsatSolver();
    // Problem specification:
@@ -261,6 +261,7 @@ private:
    vec<DdNode*>      _claNodes;        // clause id --> DdNode*
    vec<vec<Lit>> _unitClause; // unit clause literals
    vec<vec<Lit>> _dupClause;  // copy of s1 clauses
+   double _unitClauseMultiplier; // The multiplier induced by unit clauses with random variables
 };
 
 // Implementation of inline methods:

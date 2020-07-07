@@ -465,7 +465,8 @@ SsatSolver::erSolveWMC( Ssat_Params_t * pParams , const vec<Lit> & eLits , const
 	  return satisfyProb;
    }
    else {
-	  return pParams->fBdd ? bddCountWeight( pParams , eLits , dropVec ) : countModels( eLits , eLits.size() );
+	  double satisfyProb = pParams->fBdd ? bddCountWeight( pParams , eLits , dropVec ) : countModels( eLits , eLits.size() );
+	  return satisfyProb * _unitClauseMultiplier;
    }
 }
 
