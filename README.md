@@ -114,7 +114,7 @@ abc 03> quit
 ```
 
 ## Suggestions, Questions, Bugs, etc
-You are welcome to [create an issue](https://github.com/nianzelee/ssatABC/issues) for to make suggestions, ask questions, or report bugs, etc.
+You are welcome to [create an issue](https://github.com/nianzelee/ssatABC/issues) to make suggestions, ask questions, or report bugs, etc.
 
 ## Contact
 Nian-Ze Lee: nianzelee@gmail.com
