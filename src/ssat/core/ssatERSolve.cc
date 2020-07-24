@@ -350,7 +350,7 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
       }
    }
    else { // fail, undo dropping 1 by 1 
-      if ( !pParams->fDynamic ) ++dropIndex;
+      if ( !pParams->fDynamic || !timer.avgDone ) ++dropIndex;
       else {
          while ( true ) {
             ++dropIndex;
@@ -358,7 +358,7 @@ SsatSolver::discardLit( Ssat_Params_t * pParams , vec<Lit> & sBkCla )
             if ( _fTimer ) clk = Abc_Clock();
             subvalue = erSolveWMC( pParams , eLits , dropVec );
             if ( _fTimer ) { timer.timeCt += Abc_Clock()-clk; ++timer.nCount; }
-            if ( subvalue <= _satPb ) break;
+            if ( subvalue <= _satPb || dropIndex == eLits.size() ) break;
          }
       }
    }
