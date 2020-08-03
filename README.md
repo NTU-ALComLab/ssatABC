@@ -15,11 +15,11 @@ Run `./bin/abc` from your console and execute command `ssat` to solve both RE-SS
 You can also run the `ssat` command from the console, as the following examples show.
 ### RE-SSAT
 ```
-./bin/abc -c "ssat ./expSsat/ssatRE/random/3CNF/sdimacs/rand-3-40-120-20.165.sdimacs"
+./bin/abc -c "ssat ./benchmarks/ssatRE/random/3CNF/sdimacs/rand-3-40-120-20.165.sdimacs"
 ```
 ### ER-SSAT
 ```
-./bin/abc -c "ssat ./expSsat/ssatER/planning/ToiletA/sdimacs/toilet_a_02_01.2.sdimacs"
+./bin/abc -c "ssat ./benchmarks/ssatER/planning/ToiletA/sdimacs/toilet_a_02_01.2.sdimacs"
 ```
 ### Early Termination
 Due to the high computational complexity of SSAT solving, early termination is supported. The solver can be stopped via signals `SIGINT` or `SIGTERM`, and the already-obtained results will still be output. This way, the spent resource will not be lost and a pair of upper and lower bounds of the exact answer can be derived.
