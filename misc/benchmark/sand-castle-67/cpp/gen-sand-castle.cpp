@@ -16,7 +16,7 @@ int main( int argc , char ** argv )
   FILE * file;
 
   if( argc != 4 ) {
-    cout << "./gen <format> <# of frames> <prefix type>" << '\n';
+    cout << "./gen <sdimacs|ssat|blif> <# of frames> <multi|single>" << '\n';
     return 1;
   }
   if      ( !strcmp( argv[1] , "sdimacs" ) ) sdimacs = true;
@@ -116,34 +116,55 @@ int main( int argc , char ** argv )
     else           fprintf( file , "%d\n%d\n" , vars , clauses );
 
     if ( sdimacs ) {
-      fprintf( file , "e " );
-      for ( int i = 0 ; i < frames ; ++i )
-        fprintf( file , "%d %d " , i * 9 + 3 , i * 9 + 4 );
-      fprintf( file , "0\n" );
-
-      for ( int i = 0 ; i < frames ; ++i )
-        for ( int j = 0 ; j < 5 ; ++j )
-          fprintf( file , "r %f %d 0\n" , pro[j] , i * 9 + 5 + j );
-
-      fprintf( file , "e 1 2 " );
-      for ( int i = 0 ; i < frames ; ++i )
-        fprintf( file , "%d %d " , i * 9 + 10 , i * 9 + 11 );
-      fprintf( file , "0\n" );
+	   if (multi) {
+		  for ( int i = 0 ; i < frames ; ++i ) {
+			 fprintf(file, "e %d %d 0\n", i*9+3, i*9+4);
+			 for ( int j = 0 ; j < 5 ; ++j ) {
+				fprintf( file , "r %f %d 0\n" , pro[j] , i*9+5+j );
+			 }
+		  }
+	   }
+	   else {
+		  fprintf( file , "e " );
+		  for ( int i = 0 ; i < frames ; ++i ) {
+			 fprintf( file , "%d %d " , i * 9 + 3 , i * 9 + 4 );
+		  }
+		  fprintf( file , "0\n" );
+		  for ( int i = 0 ; i < frames ; ++i ) {
+			 for ( int j = 0 ; j < 5 ; ++j ) {
+				fprintf( file , "r %f %d 0\n" , pro[j] , i * 9 + 5 + j );
+			 }
+		  }
+	   }
+	   fprintf( file , "e 1 2 " );
+	   for ( int i = 0 ; i < frames ; ++i ) {
+		  fprintf( file , "%d %d " , i * 9 + 10 , i * 9 + 11 );
+	   }
+	   fprintf( file , "0\n" );
     }
     else {
-      // with multi frames ordering !
-      for ( int i = 0 ; i < frames ; ++i )
-      { // <--
-        fprintf( file , "%d x%d E\n%d x%d E\n" , i*9+3 , i*9+3 , i*9+4 , i*9+4 );
-
-      // for ( int i = 0 ; i < frames ; ++i )
-        for ( int j = 0 ; j < 5 ; ++j )
-          fprintf( file , "%d x%d R %f\n" , i * 9 + 5 + j , i*9+5+j , pro[j] );
-      } // <--
-
-      fprintf( file , "1 x1 E\n2 x2 E\n" );
-      for ( int i = 0 ; i < frames ; ++i )
-        fprintf( file , "%d x%d E\n%d x%d E\n" , i * 9 + 10 , i*9+10, i * 9 + 11 , i*9+11 );
+	   if (multi) {
+		  for ( int i = 0 ; i < frames ; ++i ) {
+			 fprintf( file , "%d x%d E\n%d x%d E\n" , i*9+3 , i*9+3 , i*9+4 , i*9+4 );
+			 for ( int j = 0 ; j < 5 ; ++j ) {
+				fprintf( file , "%d x%d R %f\n" , i * 9 + 5 + j , i*9+5+j , pro[j] );
+			 }
+		  }
+	   }
+	   else {
+		  for ( int i = 0 ; i < frames ; ++i ) {
+			 fprintf( file , "%d x%d E\n%d x%d E\n" , i*9+3 , i*9+3 , i*9+4 , i*9+4 );
+		  }
+		  for ( int i = 0 ; i < frames ; ++i ) {
+			 for ( int j = 0 ; j < 5 ; ++j ) {
+				fprintf( file , "%d x%d R %f\n" , i * 9 + 5 + j , i*9+5+j , pro[j] );
+			 }
+		  }
+	   }
+	   fprintf( file , "1 x1 E\n2 x2 E\n" );
+	   for ( int i = 0 ; i < frames ; ++i ) {
+		  fprintf( file , "%d x%d E\n%d x%d E\n" , i * 9 + 10 , i*9+10, i * 9 + 11 , i*9+11 );
+	   }
     }
     // Initial conditions & Goal.
     fprintf( file , "-1 0\n-2 0\n%d 0\n", vars );
