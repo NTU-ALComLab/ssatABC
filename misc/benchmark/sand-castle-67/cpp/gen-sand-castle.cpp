@@ -8,15 +8,15 @@ using namespace std;
 
 int main( int argc , char ** argv )
 {
-  bool sdimacs = false , blif = false , multi = false;;
+  bool sdimacs = false , blif = false , multi = false;
   int frames;
   int vars, clauses;
   char name[128];
   double pro[5] = { 0.5 , 0.67 , 0.25 , 0.75 , 0.5 };
   FILE * file;
 
-  if( argc != 4 ) {
-    cout << "./gen <sdimacs|ssat|blif> <# of frames> <multi|single>" << '\n';
+  if ( argc != 4 ) {
+    cout << "./gen-sand-castle <sdimacs|ssat|blif> <# of frames> <multi|single>" << endl;
     return 1;
   }
   if      ( !strcmp( argv[1] , "sdimacs" ) ) sdimacs = true;
@@ -37,7 +37,7 @@ int main( int argc , char ** argv )
        << " , multi = " << (multi ? "true" : "false") << endl;
 
   if( frames < 1 ) {
-    cout << "  > # of frames must be greater than 0." << '\n';
+    cout << "  > # of frames must be greater than 0." << endl;
     return 1;
   }
 
