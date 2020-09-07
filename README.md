@@ -28,7 +28,7 @@ Due to the high computational complexity of SSAT solving, early termination is s
 All benchmarks are in directory `expSsat/`. There are two formats (sdimacs and ssat) for RE-SSAT and three formats (sdimacs, ssat, and maxcount) for ER-SSAT. A brief description for each file format and benchmark family is as follows.
 ### Format
 #### sdimacs
-The input file format for the implementation in this repository. It adapts the qdimacs format for quantified Boolean formulas and encodes a randomly quantified (with probability `p`) variable `x` as `r p x 0`. For example, the SSAT query `exist x1, exist x2, random p=0.5 x3, random p=0.5 x4. (x1 or x3) and (x2 != x4).` is encoded as follows.
+The input file format for the implementation in this repository. It adapts the qdimacs format for quantified Boolean formulas and encodes a randomly quantified (with probability* `p`) variable `x` as `r p x 0`. For example, the SSAT query `exist x1, exist x2, random p=0.5 x3, random p=0.5 x4. (x1 or x3) and (x2 != x4).` is encoded as follows.
 ```
 p cnf 4 3
 e 1 0
@@ -39,6 +39,7 @@ r 0.5 4 0
 2 4 0
 -2 -4 0
 ```
+*Note: the current parsing implementaion only supports floating-point numbers up to six digits after the decimal point.*
 #### ssat
 The input file format for the software implementing the algorithm proposed in "DC-SSAT: A Divide-and-conquer Approach to Solving Stochastic Satisfiability Problems Efficiently" by Stephen M. Majercik and Byron Boots. The SSAT query mentioned above is encoded as follows.
 ```
