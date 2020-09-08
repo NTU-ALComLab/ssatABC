@@ -143,6 +143,9 @@ SsatSolver::parse_SDIMACS( gzFile & input_stream )
        else if ( *in == 'r' ) { // r p x_i  <-- randomly quantified variable x_i w.p. p 
           ++in;
           parsed_prob = parseFloat(in);
+          if (parsed_prob > 1.0) {
+             fprintf( stderr , "PARSE ERROR! Probability for a random quantifier not in range of [0, 1], got %lf\n", parsed_prob ) , exit(3);
+          }
           readPrefix( in , S , parsed_prob , 1 , quan , level );
        }
        else if ( *in == 'e' ) { // e y_j    <-- existentially quantified variable y_j

@@ -25,6 +25,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include <stdio.h>
 
 #include <zlib.h>
+#include <string>
 
 namespace Minisat {
 
@@ -95,24 +96,29 @@ static int parseInt(B& in) {
 // parse float for SSAT solving
 template<class B>
 static double parseFloat(B& in) {
-    int     val = 0;
-    int     deg = 0;
-    double  flt;
     skipWhitespace(in);
-    if ( *in != '0' ) fprintf( stderr , "PARSE ERROR! Unexpected char: %c\n", *in ) , exit(3);
-    else {
+
+    std::string sbuf;
+    int cnt = 0;
+    bool has_dot = false;
+    while ( (*in >= '0' && *in <= '9') || *in == '.' ) {
+       sbuf += *in;
        ++in;
-       if ( *in != char(46) ) fprintf( stderr , "PARSE ERROR! Unexpected char: %c\n", *in ) , exit(3);
+       ++cnt;
+       if (*in == '.') {
+          if ( has_dot ) {
+             fprintf( stderr , "PARSE ERROR! Got 2 decimal points in one number\n" ) , exit(3);
+          }
+          has_dot = true;
+       }
     }
-    ++in;
-    while ( *in >= '0' && *in <= '9' ) {
-       val = val*10 + (*in - '0');
-       ++in;
-       ++deg;
+    if (sbuf.empty()) {
+       fprintf(stderr, "PARSE ERROR! Unexpected char: %c\n", *in), exit(3);
     }
-    flt = (double)val;
-    for ( int i = 0 ; i < deg ; ++i ) flt *= 0.1;
-    return flt; 
+    if (cnt > 15) {
+       fprintf( stderr , "PARSE WARNING! Precision of floating-point number is only up to 15th digit, got %d\n", cnt);
+    }
+    return std::stod(sbuf);
 }
 
 // String matching: in case of a match the input iterator will be advanced the corresponding
