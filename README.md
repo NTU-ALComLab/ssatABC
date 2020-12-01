@@ -25,7 +25,7 @@ You can also run the `ssat` command from the console, as the following examples 
 Due to the high computational complexity of SSAT solving, early termination is supported. The solver can be stopped via signals `SIGINT` or `SIGTERM`, and the already-obtained results will still be output. This way, the spent resource will not be lost and a pair of upper and lower bounds of the exact answer can be derived.
 
 ## Benchmarks
-All benchmarks are in directory `expSsat/`. There are two formats (sdimacs and ssat) for RE-SSAT and three formats (sdimacs, ssat, and maxcount) for ER-SSAT. A brief description for each file format and benchmark family is as follows.
+All benchmarks are in directory `benchmarks/`. There are two formats (sdimacs and ssat) for RE-SSAT and three formats (sdimacs, ssat, and maxcount) for ER-SSAT. A brief description for each file format and benchmark family is as follows.
 ### Format
 #### sdimacs
 The input file format for the implementation in this repository. It adapts the qdimacs format for quantified Boolean formulas and encodes a randomly quantified (with probability* `p`) variable `x` as `r p x 0`. For example, the SSAT query `exist x1, exist x2, random p=0.5 x3, random p=0.5 x4. (x1 or x3) and (x2 != x4).` is encoded as follows.
