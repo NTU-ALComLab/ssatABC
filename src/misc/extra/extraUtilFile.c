@@ -122,7 +122,7 @@ char * Extra_FileGetSimilarName( char * pFileNameWrong, char * pS1, char * pS2, 
   SeeAlso     []
 
 ***********************************************************************/
-char * Extra_FileNameExtension( char * FileName )
+char * Extra_FileNameExtension( const char * FileName )
 {
     char * pDot;
     // find the last "dot" in the file name, if it is present

@@ -99,7 +99,7 @@ extern int          Extra_BitMatrixIsClique( Extra_BitMat_t * p );
 /*=== extraUtilFile.c ========================================================*/
 
 extern char *       Extra_FileGetSimilarName( char * pFileNameWrong, char * pS1, char * pS2, char * pS3, char * pS4, char * pS5 );
-extern char *       Extra_FileNameExtension( char * FileName );
+extern char *       Extra_FileNameExtension( const char * FileName );
 extern char *       Extra_FileNameAppend( char * pBase, char * pSuffix );
 extern char *       Extra_FileNameGeneric( char * FileName );
 extern char *       Extra_FileNameGenericAppend( char * pBase, char * pSuffix );
