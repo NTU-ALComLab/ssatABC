@@ -279,8 +279,9 @@ int Abc_RealMain( int argc, char * argv[] )
             Abc_UtilsSource( pAbc );
         }
 
+        int fInFileIsNotSdimacs = strcmp(Extra_FileNameExtension(sInFile), "sdimacs");
         fStatus = 0;
-        if ( fInitRead && sInFile )
+        if ( fInitRead && sInFile && fInFileIsNotSdimacs )
         {
             sprintf( sCommandTmp, "%s %s", sReadCmd, sInFile );
             fStatus = Cmd_CommandExecute( pAbc, sCommandTmp );
@@ -288,6 +289,12 @@ int Abc_RealMain( int argc, char * argv[] )
 
         if ( fStatus == 0 )
         {
+            if (fInFileIsNotSdimacs == 0) {
+                Vec_StrPop(sCommandUsr);
+                Vec_StrPush(sCommandUsr, ' ');
+                Vec_StrAppend(sCommandUsr, sInFile);
+                Vec_StrPush(sCommandUsr, '\0');
+            }
             /* cmd line contains `source <file>' */
             fStatus = Cmd_CommandExecute( pAbc, Vec_StrArray(sCommandUsr) );
             if ( (fStatus == 0 || fStatus == -1) && fFinalWrite && sOutFile )
