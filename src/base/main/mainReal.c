@@ -279,7 +279,7 @@ int Abc_RealMain( int argc, char * argv[] )
             Abc_UtilsSource( pAbc );
         }
 
-        int fInFileIsNotSdimacs = strcmp(Extra_FileNameExtension(sInFile), "sdimacs");
+        int fInFileIsNotSdimacs = sInFile ? strcmp(Extra_FileNameExtension(sInFile), "sdimacs") : 1;
         fStatus = 0;
         if ( fInitRead && sInFile && fInFileIsNotSdimacs )
         {
