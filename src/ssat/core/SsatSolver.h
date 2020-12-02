@@ -87,7 +87,7 @@ typedef struct Ssat_ParamsStruct_t_ {
   int upper;     // #UNSAT cubes to compute upper bounds (-1: compute only once)
   int lower;     // #SAT   cubes to compute lower bounds (-1: compute only once)
   // erSSAT
-  bool fGreedy;   // using minimal clasue selection
+  bool fGreedy;   // using minimal clause selection
   bool fSub;      // using clause subsumption
   bool fPart;     // using partial assignment pruning
   bool fDynamic;  // using dynamic dropping
