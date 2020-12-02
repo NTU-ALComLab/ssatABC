@@ -154,7 +154,17 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
     cl.copyTo(_dupClause.last());
   }
 
-  while (1.0 - _unsatPb - _satPb > pParams->range) {
+  while (true) {
+    if (1.0 - _unsatPb - _satPb <= pParams->range) {
+      printf("[INFO] Stopping analysis ...\n");
+      printf("[INFO] # of UNSAT cubes: %d\n", _unsatClause.size());
+      printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
+      if (pParams->range == 0.0) {
+        _fExactlySolved = true;
+        _exactProb = upperBound();
+      }
+      return;
+    }
     if (_fTimer) clk = Abc_Clock();
     if (!_s2->solve()) {
       if (_fTimer) {
