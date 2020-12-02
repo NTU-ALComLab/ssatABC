@@ -484,6 +484,28 @@ void SsatSolver::dumpCla(const Clause& c) const {
 
 /**Function*************************************************************
 
+  Synopsis    [SsatSolve reporting solving results]
+
+  Description []
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void SsatSolver::reportSolvingResults() const {
+  Abc_Print(-2, "\n==== Solving results ====\n\n");
+  if (_fExactlySolved) {
+    Abc_Print(-2, "  > Satisfying probability: %e\n", _exactProb);
+  } else {
+    Abc_Print(-2, "  > Best upper bound: %e\n", upperBound());
+    Abc_Print(-2, "  > Best lower bound: %e\n", lowerBound());
+  }
+}
+
+/**Function*************************************************************
+
   Synopsis    [SsatSolve testing interface]
 
   Description []

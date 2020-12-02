@@ -360,13 +360,11 @@ int SsatCommandSSAT(Abc_Frame_t* pAbc, int argc, char** argv) {
   initTimer(&timer);
   pSsat->readSSAT(in);
   gzclose(in);
+  Abc_Print(-2, "[INFO] Input sdimacs file: %s\n", argv[globalUtilOptind]);
   gloClk = Abc_Clock();
-  Abc_Print(-2, "\n==== SSAT solving process ====\n");
   pSsat->solveSsat(pParams);
-  Abc_Print(-2, "\n==== SSAT solving result ====\n");
-  Abc_Print(-2, "\n  > Upper bound = %e\n", pSsat->upperBound());
-  Abc_Print(-2, "  > Lower bound = %e\n", pSsat->lowerBound());
-  Abc_PrintTime(1, "  > Time       ", Abc_Clock() - gloClk);
+  pSsat->reportSolvingResults();
+  Abc_PrintTime(1, "  > Time", Abc_Clock() - gloClk);
   delete pSsat;
   gloSsat = NULL;
   if (pParams->fTimer) {

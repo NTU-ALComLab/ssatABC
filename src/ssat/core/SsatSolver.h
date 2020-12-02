@@ -115,6 +115,8 @@ class SsatSolver {
         _s2(NULL),
         _pNtkCube(NULL),
         _vMapVars(NULL),
+        _fExactlySolved(false),
+        _exactProb(0.0),
         _unsatPb(0.0),
         _satPb(0.0),
         _unitClauseMultiplier(1.0) {
@@ -131,6 +133,8 @@ class SsatSolver {
   void bddSolveSsat(bool, bool);   // Solve SSAT by bdd
   void solveBranchBound(
       Abc_Ntk_t*);  // ER-2SSAT solving by branch and bound method
+  // Results reporting
+  void reportSolvingResults() const;
   // get statistics
   double upperBound() const { return 1.0 - _unsatPb; }
   double lowerBound() const { return _satPb; }
@@ -268,6 +272,8 @@ class SsatSolver {
   Vec_Ptr_t* _vMapVars;  // mapping Var to Abc_Obj_t
   Abc_Obj_t* _pConst0;   // network Const0 node
   Abc_Obj_t* _pConst1;   // network Const1 node
+  double _exactProb;     // satisfying probability when input is exactly solved
+  bool _fExactlySolved;  // flag indicating exact solution exists
   double _unsatPb;       // current UNSAT pb, uppper bound
   double _satPb;         // current SAT pb, lower bound
   int _nSatCube;         // number of collected SAT cubes
