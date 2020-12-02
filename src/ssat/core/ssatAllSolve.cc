@@ -130,7 +130,7 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
     initCubeNetwork(true);
   }
   sBkCla.capacity(_rootVars[0].size());
-  if (_fVerbose) printf("  > Start sat/unsat cube collection\n\n");
+  printf("[INFO] Starting analysis ...\n");
 
   // Learn the unit clause of randomized variable first
   for (int i = 0; i < _unitClause.size(); i++) {
@@ -162,13 +162,15 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
         ++timer.nS2solve;
         clk = Abc_Clock();
       }
+      printf("[INFO] Stopping analysis ...\n");
       printf("[INFO] # of UNSAT cubes: %d\n", _unsatClause.size());
       printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
       // if ( _unsatClause.size() < _satClause.size() )
-      printf("[INFO] Exactly solve the instance: upper bound is tight\n");
-      _unsatPb = pParams->fBdd ? cubeToNetwork(false) : cachetCount(false);
+      _fExactlySolved = true;
+      _exactProb =
+          pParams->fBdd ? 1.0 - cubeToNetwork(false) : 1.0 - cachetCount(false);
       // else
-      //_satPb   = pParams->fBdd ? cubeToNetwork(true)  : cachetCount(true);
+      //_exactProb = pParams->fBdd ? cubeToNetwork(true)  : cachetCount(true);
       if (_fTimer) {
         timer.timeCt += Abc_Clock() - clk;
         ++timer.nCount;
