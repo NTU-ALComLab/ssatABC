@@ -40,7 +40,9 @@ static void sig_handler(int);
 void initTimer(Ssat_Timer_t*);
 void printTimer(Ssat_Timer_t*);
 void initParams(Ssat_Params_t*);
-void printParams(Ssat_Params_t*);
+static void printCommonParams(Ssat_Params_t*);
+void printREParams(Ssat_Params_t*);
+void printERParams(Ssat_Params_t*);
 
 ////////////////////////////////////////////////////////////////////////
 ///                        VARIABLES DECLARATIONS                    ///
@@ -120,15 +122,38 @@ void initParams(Ssat_Params_t* pParams) {
   pParams->fVerbose = false;
 }
 
-void printParams(Ssat_Params_t* pParams) {
-  printf(
+void printCommonParams(Ssat_Params_t* pParams) {
+  printf("  > Counting engine: %s\n", pParams->fBdd ? "BDD" : "Cachet");
+}
+
+void printREParams(Ssat_Params_t* pParams) {
+  printCommonParams(pParams);
+  printf("  > Tolerable gap between the derived upper and lower bounds: %f\n",
+         pParams->range);
+  printf("  > Number of UNSAT cubes to update upper bounds: %d\n",
+         pParams->upper);
+  printf("  > Number of SAT cubes to update lower bounds: %d\n",
+         pParams->lower);
+}
+
+void printERParams(Ssat_Params_t* pParams) {
+  printCommonParams(pParams);
+  printf("  > Minimal clause selection (greedy): %s\n",
+         pParams->fGreedy ? "yes" : "no");
+  printf("  > Clause subsumption (subsume): %s\n",
+         pParams->fSub ? "yes" : "no");
+  printf("  > Partial assignment pruning (partial): %s\n",
+         pParams->fPart ? "yes" : "no");
+  // Original printing function is below
+  // More options will be added to the above when they become relevant
+  /*printf(
       "  > Using %s for counting, greedy=%s, subsume=%s, partial=%s, "
       "dynamic=%s, partial-2=%s, incre=%s, incre-2=%s, circuit=%s, pure=%s\n",
       pParams->fBdd ? "bdd" : "cachet", pParams->fGreedy ? "yes" : "no",
       pParams->fSub ? "yes" : "no", pParams->fPart ? "yes" : "no",
       pParams->fDynamic ? "yes" : "no", pParams->fPart2 ? "yes" : "no",
       pParams->fIncre ? "yes" : "no", pParams->fIncre2 ? "yes" : "no",
-      pParams->fCkt ? "yes" : "no", pParams->fPure ? "yes" : "no");
+      pParams->fCkt ? "yes" : "no", pParams->fPure ? "yes" : "no");*/
 }
 
 /**Function*************************************************************

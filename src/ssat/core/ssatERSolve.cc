@@ -40,7 +40,7 @@ using namespace std;
 // global variables
 extern Ssat_Timer_t timer;
 // functions
-extern void printParams(Ssat_Params_t*);
+extern void printERParams(Ssat_Params_t*);
 static void setDropVec(vec<bool>&, const int&);
 static void convertClaCube(const vec<Lit>&, vec<Lit>&);
 
@@ -61,7 +61,10 @@ static void convertClaCube(const vec<Lit>&, vec<Lit>&);
 ***********************************************************************/
 
 void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
-  if (_fVerbose) printParams(pParams);
+  if (_fVerbose) {
+    printf("[INFO] Invoking erSSAT solver with the following configuration:\n");
+    printERParams(pParams);
+  }
   _s1->simplify();
   _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
   _selClaId.capacity(_s1->nClauses());

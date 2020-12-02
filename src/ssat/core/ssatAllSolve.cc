@@ -36,6 +36,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////
 
 extern Ssat_Timer_t timer;
+extern void printREParams(Ssat_Params_t*);
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -110,6 +111,10 @@ void SsatSolver::aSolve2QBF() {
 ***********************************************************************/
 
 void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
+  if (_fVerbose) {
+    printf("[INFO] Invoking reSSAT solver with the following configuration:\n");
+    printREParams(pParams);
+  }
   vec<Lit> rLits(_rootVars[0].size()), sBkCla;
   abctime clk = 0;
   if (pParams->upper > 0 && pParams->lower > 0) _fVerbose = true;
