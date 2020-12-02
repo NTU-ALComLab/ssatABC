@@ -116,8 +116,8 @@ void initParams(Ssat_Params_t* pParams) {
   pParams->fPure = true;
   pParams->fAll = true;
   pParams->fMini = true;
-  pParams->fTimer = true;
-  pParams->fVerbose = true;
+  pParams->fTimer = false;
+  pParams->fVerbose = false;
 }
 
 void printParams(Ssat_Params_t* pParams) {
@@ -404,7 +404,9 @@ usage:
       pParams->fAll ? "yes" : "no");
   Abc_Print(-2, "\t-m        : toggles using minimal UNSAT core, default=%s\n",
             pParams->fMini ? "yes" : "no");
-  Abc_Print(-2, "\t-t        : toggles runtime information, default=%s\n",
+  Abc_Print(-2,
+            "\t-t        : toggles profiling of runtime and solving "
+            "statistics, default=%s\n",
             pParams->fTimer ? "yes" : "no");
   Abc_Print(-2, "\t-v        : toggles verbose information, default=%s\n",
             pParams->fVerbose ? "yes" : "no");
