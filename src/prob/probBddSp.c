@@ -21,12 +21,9 @@
 #include "aig/saig/saig.h"
 #include "base/abc/abc.h"
 #include "base/main/mainInt.h"
+#include "bdd/extrab/extraBdd.h"
 #include "proof/abs/abs.h"
 #include "sat/bmc/bmc.h"
-
-#ifdef ABC_USE_CUDD
-#include "bdd/extrab/extraBdd.h"
-#endif
 
 ABC_NAMESPACE_IMPL_START
 
