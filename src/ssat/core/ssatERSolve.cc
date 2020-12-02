@@ -79,7 +79,6 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
   }
   if (pParams->fPure) assertPureLit();
 
-  cout << "--------------------------------------\n";
   // declare and initialize temp variables
   vec<Lit> eLits(_rootVars[0].size()), sBkCla;
   vec<bool> dropVec(_rootVars[0].size(), false);
@@ -89,6 +88,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
   abctime clk = 0, clk1 = Abc_Clock();
   _erModel.capacity(_rootVars[0].size());
   _erModel.clear();
+  printf("[INFO] Starting analysis ...\n");
   // main loop, pseudo code line04-14
   while (true) {
     if (_fTimer) clk = Abc_Clock();
@@ -98,8 +98,13 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
       ++timer.nS2solve;
     }
     if (!sat) {  // _s2 UNSAT --> main loop terminate
-      printf("\n  > optimizing assignment to exist vars:\n\t");
-      dumpCla(_erModel);
+      printf("[INFO] Stopping analysis ...\n");
+      _fExactlySolved = true;
+      _exactProb = _satPb;
+      if (_fVerbose) {
+        printf("  > Found an optimizing assignment to exist vars:\n\t");
+        dumpCla(_erModel);
+      }
       break;
     }
     getExistAssignment(eLits);                      // line05
@@ -135,8 +140,13 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
       if (subvalue == 1) {  // early termination
         _satPb = subvalue;
         eLits.copyTo(_erModel);
-        printf("\n  > optimizing assignment to exist vars:\n\t");
-        dumpCla(_erModel);
+        printf("[INFO] Stopping analysis ...\n");
+        _fExactlySolved = true;
+        _exactProb = _satPb;
+        if (_fVerbose) {
+          printf("  > Found an optimizing assignment to exist vars:\n\t");
+          dumpCla(_erModel);
+        }
         break;
       }
       if (subvalue >= _satPb) {  // update current solution
