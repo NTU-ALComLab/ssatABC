@@ -117,24 +117,22 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
   }
   vec<Lit> rLits(_rootVars[0].size()), sBkCla;
   abctime clk = 0;
-  if (pParams->upper > 0 && pParams->lower > 0) _fVerbose = true;
-  if (_fVerbose)
-    printf("\n  > Setting (_upperLimit,_lowerLimit) to (%d,%d)\n",
-           pParams->upper, pParams->lower);
+  if (pParams->upper > 0 && pParams->lower > 0) {
+    _fVerbose = true;
+  }
   _upperLimit = pParams->upper;
   _lowerLimit = pParams->lower;
   (_upperLimit > 0) ? _unsatClause.capacity(_upperLimit)
                     : _unsatClause.capacity(1000000);
   (_lowerLimit > 0) ? _satClause.capacity(_lowerLimit)
                     : _satClause.capacity(1000000);
-  if (_fVerbose)
-    printf("  > Use %s as model counting engine\n",
-           pParams->fBdd ? "bdd" : "cachet");
-  if (pParams->fBdd) initCubeNetwork(true);
+  if (pParams->fBdd) {
+    initCubeNetwork(true);
+  }
   sBkCla.capacity(_rootVars[0].size());
   if (_fVerbose) printf("  > Start sat/unsat cube collection\n\n");
 
-  // Learn the unit clause of randomized varaible first
+  // Learn the unit clause of randomized variable first
   for (int i = 0; i < _unitClause.size(); i++) {
     Lit p = _unitClause[i][0];
     if (isRVar(var(p))) {
@@ -181,10 +179,11 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
       timer.timeS2 += Abc_Clock() - clk;
       ++timer.nS2solve;
     }
-    for (int i = 0; i < _rootVars[0].size(); ++i)
+    for (int i = 0; i < _rootVars[0].size(); ++i) {
       rLits[i] = (_s2->modelValue(_rootVars[0][i]) == l_True)
                      ? mkLit(_rootVars[0][i])
                      : ~mkLit(_rootVars[0][i]);
+    }
     if (_fTimer) clk = Abc_Clock();
     if (!_s1->solve(rLits)) {  // UNSAT case
       if (_fTimer) {
