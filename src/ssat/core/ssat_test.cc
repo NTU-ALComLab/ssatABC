@@ -27,17 +27,18 @@ static void runTestWithParamsAndVerdict(const char* pTestCase,
                                         Ssat_Params_t* pParams,
                                         const double pVerdict) {
   abctime clk = Abc_Clock();
-  printf("  > Test case: %s\n", pTestCase);
+  Abc_Print(-2, "[INFO] Input sdimacs file: %s\n", pTestCase);
   gzFile in = gzopen(pTestCase, "rb");
   SsatSolver* pSsat = new SsatSolver(pParams->fTimer, pParams->fVerbose);
   pSsat->readSSAT(in);
   gzclose(in);
   pSsat->solveSsat(pParams);
-  double answer = pSsat->exactSatProb();
-  REQUIRE(answer == Approx(pVerdict));
-  delete pSsat;
+  pSsat->reportSolvingResults();
   Abc_PrintTime(1, "  > Time", Abc_Clock() - clk);
+  double answer = pSsat->exactSatProb();
+  delete pSsat;
   printf("-------------------------------------------\n");
+  REQUIRE(answer == Approx(pVerdict));
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -351,6 +351,8 @@ int SsatCommandSSAT(Abc_Frame_t* pAbc, int argc, char** argv) {
     Abc_Print(-1, "Missing ssat file!\n");
     goto usage;
   }
+  gloClk = Abc_Clock();
+  Abc_Print(-2, "[INFO] Input sdimacs file: %s\n", argv[globalUtilOptind]);
   in = gzopen(argv[globalUtilOptind], "rb");
   if (in == Z_NULL) {
     Abc_Print(-1, "There is no ssat file %s\n", argv[globalUtilOptind]);
@@ -360,8 +362,6 @@ int SsatCommandSSAT(Abc_Frame_t* pAbc, int argc, char** argv) {
   initTimer(&timer);
   pSsat->readSSAT(in);
   gzclose(in);
-  Abc_Print(-2, "[INFO] Input sdimacs file: %s\n", argv[globalUtilOptind]);
-  gloClk = Abc_Clock();
   pSsat->solveSsat(pParams);
   pSsat->reportSolvingResults();
   Abc_PrintTime(1, "  > Time", Abc_Clock() - gloClk);
