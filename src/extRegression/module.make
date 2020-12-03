@@ -4,5 +4,5 @@ test: all
 	./$(PROG) -q "utest"
 
 CXXFLAGS += -std=c++11
-SRC +=	src/extUnitTest/main_test.cc
+SRC +=	src/extRegression/main_test.cc
 
