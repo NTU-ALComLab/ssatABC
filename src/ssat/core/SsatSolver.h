@@ -136,6 +136,7 @@ class SsatSolver {
   // Results reporting
   void reportSolvingResults() const;
   // get statistics
+  double exactSatProb() const { return _exactSatProb; }
   double upperBound() const { return 1.0 - _unsatPb; }
   double lowerBound() const { return _satPb; }
   int nSatCube() const { return _nSatCube; }
