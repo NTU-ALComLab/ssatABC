@@ -497,7 +497,7 @@ void SsatSolver::dumpCla(const Clause& c) const {
 void SsatSolver::reportSolvingResults() const {
   Abc_Print(-2, "\n==== Solving results ====\n\n");
   if (_fExactlySolved) {
-    Abc_Print(-2, "  > Satisfying probability: %e\n", _exactProb);
+    Abc_Print(-2, "  > Satisfying probability: %e\n", _exactSatProb);
   } else {
     Abc_Print(-2, "  > Best upper bound: %e\n", upperBound());
     Abc_Print(-2, "  > Best lower bound: %e\n", lowerBound());

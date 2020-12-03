@@ -161,7 +161,7 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
       printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
       if (pParams->range == 0.0) {
         _fExactlySolved = true;
-        _exactProb = upperBound();
+        _exactSatProb = upperBound();
       }
       return;
     }
@@ -177,10 +177,11 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
       printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
       // if ( _unsatClause.size() < _satClause.size() )
       _fExactlySolved = true;
-      _exactProb =
+      _exactSatProb =
           pParams->fBdd ? 1.0 - cubeToNetwork(false) : 1.0 - cachetCount(false);
       // else
-      //_exactProb = pParams->fBdd ? cubeToNetwork(true)  : cachetCount(true);
+      //_exactSatProb = pParams->fBdd ? cubeToNetwork(true)  :
+      // cachetCount(true);
       if (_fTimer) {
         timer.timeCt += Abc_Clock() - clk;
         ++timer.nCount;

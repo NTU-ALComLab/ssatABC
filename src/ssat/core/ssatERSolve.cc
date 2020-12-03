@@ -100,7 +100,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
     if (!sat) {  // _s2 UNSAT --> main loop terminate
       printf("[INFO] Stopping analysis ...\n");
       _fExactlySolved = true;
-      _exactProb = _satPb;
+      _exactSatProb = _satPb;
       if (_fVerbose) {
         printf("  > Found an optimizing assignment to exist vars:\n\t");
         dumpCla(_erModel);
@@ -142,7 +142,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
         eLits.copyTo(_erModel);
         printf("[INFO] Stopping analysis ...\n");
         _fExactlySolved = true;
-        _exactProb = _satPb;
+        _exactSatProb = _satPb;
         if (_fVerbose) {
           printf("  > Found an optimizing assignment to exist vars:\n\t");
           dumpCla(_erModel);

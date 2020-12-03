@@ -110,20 +110,20 @@ typedef struct Ssat_ParamsStruct_t_ {
 class SsatSolver {
  public:
   // Constructor/Destructor:
-  SsatSolver(bool fTimer = false, bool fVerbose = false)
-      : _s1(NULL),
-        _s2(NULL),
-        _pNtkCube(NULL),
-        _vMapVars(NULL),
-        _fExactlySolved(false),
-        _exactProb(0.0),
-        _unsatPb(0.0),
-        _satPb(0.0),
-        _unitClauseMultiplier(1.0) {
-    _fTimer = fTimer;
+  SsatSolver(bool fTimer = false, bool fVerbose = false) {
     _fVerbose = fVerbose;
+    _fTimer = fTimer;
+    _s1 = NULL;
+    _s2 = NULL;
+    _pNtkCube = NULL;
+    _vMapVars = NULL;
+    _fExactlySolved = false;
+    _exactSatProb = 0.0;
+    _unsatPb = 0.0;
+    _satPb = 0.0;
     _pNtkCnf = NULL;
     _dd = NULL;
+    _unitClauseMultiplier = 1.0;
   }
   ~SsatSolver();
   // Problem specification:
@@ -259,7 +259,6 @@ class SsatSolver {
   int _numLv;
   Solver* _s1;           // sat solver holding the original matrix
   Solver* _s2;           // sat solver holding the selection formula
-  double _satProb;       // 2SSAT sat prob
   int _selLitGlobalId;   // global mark for selection lits
   vec<int> _markSelLit;  // mark selection lits to avoid repeat
   vec<vec<Lit>>
@@ -272,8 +271,9 @@ class SsatSolver {
   Vec_Ptr_t* _vMapVars;  // mapping Var to Abc_Obj_t
   Abc_Obj_t* _pConst0;   // network Const0 node
   Abc_Obj_t* _pConst1;   // network Const1 node
-  double _exactProb;     // satisfying probability when input is exactly solved
   bool _fExactlySolved;  // flag indicating exact solution exists
+  double _exactSatProb;  // satisfying probability when input is exactly
+                         // solved
   double _unsatPb;       // current UNSAT pb, uppper bound
   double _satPb;         // current SAT pb, lower bound
   int _nSatCube;         // number of collected SAT cubes
