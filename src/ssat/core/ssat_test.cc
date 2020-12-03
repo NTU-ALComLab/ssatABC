@@ -34,6 +34,7 @@ static void runTestWithParamsAndVerdict(const char* pTestCase,
   gzclose(in);
   pSsat->solveSsat(pParams);
   double answer = pSsat->exactSatProb();
+  answer = 0.0;
   REQUIRE(answer == Approx(pVerdict));
   delete pSsat;
   Abc_PrintTime(1, "  > Time", Abc_Clock() - clk);
