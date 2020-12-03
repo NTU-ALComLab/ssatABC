@@ -1,8 +1,8 @@
 .PHONY: test
 
 test: all
-	./$(PROG) -q "utest"
+	./$(PROG) -c "regression-test"
 
 CXXFLAGS += -std=c++11
-SRC +=	src/extRegression/main_test.cc
+SRC +=	src/extRegression/regression.cc
 
