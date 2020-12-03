@@ -13,8 +13,6 @@
 ///                          INCLUDES                                ///
 ////////////////////////////////////////////////////////////////////////
 
-#include <unistd.h>
-
 #include "SsatSolver.h"
 #include "extUnitTest/catch.hpp"
 using namespace Minisat;
@@ -24,22 +22,18 @@ using namespace Minisat;
 ////////////////////////////////////////////////////////////////////////
 
 extern void initParams(Ssat_Params_t*);
-extern void printParams(Ssat_Params_t*);
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
 
 TEST_CASE("toliet_1", "[planning]") {
-  char cwd[1024], *targetFile;
+  const char* targetFile =
+      "benchmarks/ssatER/planning/ToiletA/sdimacs/toilet_a_08_01.2.sdimacs";
   abctime clk = Abc_Clock();
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
   pParams->fPart = false;
-  getcwd(cwd, sizeof(cwd));
-  printf("  > Current working dir: %s\n", cwd);
-  targetFile =
-      strcat(cwd, "/expSsat/ssatER/planning/ToiletA/toilet_a_08_01.2.qdimacs");
   printf("  > Testing target: %s\n", targetFile);
   gzFile in = gzopen(targetFile, "rb");
   SsatSolver* pSsat = new SsatSolver(pParams->fTimer, pParams->fVerbose);
@@ -54,14 +48,11 @@ TEST_CASE("toliet_1", "[planning]") {
 }
 
 TEST_CASE("toliet_2", "[planning]") {
-  char cwd[1024], *targetFile;
+  const char* targetFile =
+      "benchmarks/ssatER/planning/ToiletA/sdimacs/toilet_a_08_01.4.sdimacs";
   abctime clk = Abc_Clock();
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
-  getcwd(cwd, sizeof(cwd));
-  printf("  > Current working dir: %s\n", cwd);
-  targetFile =
-      strcat(cwd, "/expSsat/ssatER/planning/ToiletA/toilet_a_08_01.4.qdimacs");
   printf("  > Testing target: %s\n", targetFile);
   gzFile in = gzopen(targetFile, "rb");
   SsatSolver* pSsat = new SsatSolver(pParams->fTimer, pParams->fVerbose);
@@ -76,16 +67,13 @@ TEST_CASE("toliet_2", "[planning]") {
 }
 
 TEST_CASE("toliet_3", "[planning]") {
-  char cwd[1024], *targetFile;
+  const char* targetFile =
+      "benchmarks/ssatER/planning/ToiletA/sdimacs/toilet_a_10_01.2.sdimacs";
   abctime clk = Abc_Clock();
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
   pParams->fPart = false;
   pParams->fCkt = false;
-  getcwd(cwd, sizeof(cwd));
-  printf("  > Current working dir: %s\n", cwd);
-  targetFile =
-      strcat(cwd, "/expSsat/ssatER/planning/ToiletA/toilet_a_10_01.2.qdimacs");
   printf("  > Testing target: %s\n", targetFile);
   gzFile in = gzopen(targetFile, "rb");
   SsatSolver* pSsat = new SsatSolver(pParams->fTimer, pParams->fVerbose);
