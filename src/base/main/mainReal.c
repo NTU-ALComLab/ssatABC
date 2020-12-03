@@ -348,7 +348,7 @@ int Abc_RealMain( int argc, char * argv[] )
     {
         Abc_Stop();
     }
-    return 0;
+    return fStatus;
 
 usage:
     Abc_UtilsPrintHello( pAbc );

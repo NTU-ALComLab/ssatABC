@@ -28,8 +28,7 @@
 
 // ABC command to run Catch2
 static int RegressionTest_Command(Abc_Frame_t* pAbc, int argc, char** argv) {
-  Catch::Session().run(argc, argv);
-  return 0;
+  return Catch::Session().run(argc, argv);
 }
 
 static void init(Abc_Frame_t* pAbc) {
