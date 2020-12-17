@@ -558,25 +558,36 @@ void SsatSolver::test() const {
 ***********************************************************************/
 
 void SsatSolver::interrupt() {
-  printf(
-      "\n[WARNING] interruption occurs: report results before termination\n");
-  // abctime clk = 0;
+  printf("\n");
+  Abc_Print(0, "Interruption occurs!\n");
+  Abc_Print(0, "Reporting solving results before termination ...\n");
+  abctime clk = 0;
+  int numCubeLimits = 60000;
   if (_unsatClause.size()) {
     printf("[INFO] # of UNSAT cubes: %d\n", _unsatClause.size());
-    // clk = Abc_Clock();
-    //_unsatPb = _pNtkCube ? cubeToNetwork(false) : cachetCount(false);
-    // Abc_PrintTime( 1 , "Time elapsed for upper bound" , Abc_Clock()-clk );
-    // fflush(stdout);
+    if (_pNtkCube && _unsatClause.size() > numCubeLimits) {
+      Abc_Print(0, "Cube number exceeds the limit (%d)!\n", numCubeLimits);
+      Abc_Print(0, "Do not compute the upper bound because BDD may fail ...\n");
+    } else {
+      clk = Abc_Clock();
+      _unsatPb = _pNtkCube ? cubeToNetwork(false) : cachetCount(false);
+      Abc_PrintTime(1, "Time elapsed for upper bound", Abc_Clock() - clk);
+    }
+    fflush(stdout);
   }
   if (_satClause.size()) {
     printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
-    // clk = Abc_Clock();
-    //_satPb = _pNtkCube ? cubeToNetwork(true) : cachetCount(true);
-    // Abc_PrintTime( 1 , "Time elapsed for lower bound" , Abc_Clock()-clk );
-    // fflush(stdout);
+    if (_pNtkCube && _satClause.size() > numCubeLimits) {
+      Abc_Print(0, "Cube number exceeds the limit (%d)!\n", numCubeLimits);
+      Abc_Print(0, "Do not compute the lower bound because BDD may fail ...\n");
+    } else {
+      clk = Abc_Clock();
+      _satPb = _pNtkCube ? cubeToNetwork(true) : cachetCount(true);
+      Abc_PrintTime(1, "Time elapsed for lower bound", Abc_Clock() - clk);
+    }
+    fflush(stdout);
   }
-  printf("  > Upper bound = %e\n", 1 - _unsatPb);
-  printf("  > Lower bound = %e\n", _satPb);
+  reportSolvingResults();
   if (_fTimer) printTimer(&timer);
   printf("\n");
 }
