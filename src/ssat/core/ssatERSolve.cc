@@ -152,7 +152,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
       if (subvalue >= _satPb) {  // update current solution
         if (_fVerbose) {
           if (subvalue > _satPb) {
-            printf("  > find a better solution , value = %f\n", subvalue);
+            printf("  > Found a better solution , value = %f\n\t", subvalue);
             dumpCla(eLits);
             Abc_PrintTime(1, "  > Time consumed", Abc_Clock() - clk1);
             fflush(stdout);
@@ -209,6 +209,7 @@ void SsatSolver::assertPureLit() {
     }
   }
   for (int i = 0; i < _rootVars[0].size(); ++i) {
+    if (_s1->assigns[_rootVars[0][i]] != l_Undef) continue;
     if (phase[_rootVars[0][i]] == 0 || phase[_rootVars[0][i]] == 1)
       _s2->addClause(mkLit(_rootVars[0][i], (bool)phase[_rootVars[0][i]]));
   }
