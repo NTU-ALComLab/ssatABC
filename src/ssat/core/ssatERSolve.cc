@@ -153,6 +153,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
         if (_fVerbose) {
           if (subvalue > _satPb) {
             printf("  > find a better solution , value = %f\n", subvalue);
+            dumpCla(eLits);
             Abc_PrintTime(1, "  > Time consumed", Abc_Clock() - clk1);
             fflush(stdout);
           }
@@ -473,19 +474,9 @@ void SsatSolver::removeDupLit(vec<Lit>& c) const {
 
 double SsatSolver::erSolveWMC(Ssat_Params_t* pParams, const vec<Lit>& eLits,
                               const vec<bool>& dropVec) {
-  if (_s1->nClauses() == 0) {
-    double satisfyProb = 1;
-    for (int i = 0; i < _rootVars[1].size(); ++i) {
-      satisfyProb = (_s1->modelValue(_rootVars[1][i]) == l_True)
-                        ? satisfyProb * _quan[_rootVars[1][i]]
-                        : satisfyProb * (1 - _quan[_rootVars[1][i]]);
-    }
-    return satisfyProb;
-  } else {
-    double satisfyProb = pParams->fBdd ? bddCountWeight(pParams, eLits, dropVec)
-                                       : countModels(eLits, eLits.size());
-    return satisfyProb * _unitClauseMultiplier;
-  }
+  double satisfyProb = pParams->fBdd ? bddCountWeight(pParams, eLits, dropVec)
+                                     : countModels(eLits, eLits.size());
+  return _unitClauseMultiplier * satisfyProb;
 }
 
 double SsatSolver::countModels(const vec<Lit>& sBkCla, int dropIndex) {
