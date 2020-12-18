@@ -47,7 +47,8 @@ static void runTestWithParamsAndVerdict(const char* pTestCase,
 
 TEST_CASE("toilet_1", "[planning]") {
   const char* testCase =
-      "benchmarks/ssatER/planning/ToiletA/sdimacs/toilet_a_08_01.2.sdimacs";
+      "test/test-cases/ssatER/planning/ToiletA/sdimacs/"
+      "toilet_a_08_01.2.sdimacs";
   double verdict = 7.812500e-03;
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
@@ -57,7 +58,8 @@ TEST_CASE("toilet_1", "[planning]") {
 
 TEST_CASE("toilet_2", "[planning]") {
   const char* testCase =
-      "benchmarks/ssatER/planning/ToiletA/sdimacs/toilet_a_08_01.4.sdimacs";
+      "test/test-cases/ssatER/planning/ToiletA/sdimacs/"
+      "toilet_a_08_01.4.sdimacs";
   double verdict = 1.562500e-02;
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
@@ -66,7 +68,8 @@ TEST_CASE("toilet_2", "[planning]") {
 
 TEST_CASE("toilet_3", "[planning]") {
   const char* testCase =
-      "benchmarks/ssatER/planning/ToiletA/sdimacs/toilet_a_10_01.2.sdimacs";
+      "test/test-cases/ssatER/planning/ToiletA/sdimacs/"
+      "toilet_a_10_01.2.sdimacs";
   double verdict = 1.953125e-03;
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
@@ -77,7 +80,7 @@ TEST_CASE("toilet_3", "[planning]") {
 
 TEST_CASE("sand-castle-10", "[planning]") {
   const char* testCase =
-      "benchmarks/ssatER/planning/sand-castle/sdimacs/SC-10.sdimacs";
+      "test/test-cases/ssatER/planning/sand-castle/sdimacs/SC-10.sdimacs";
   double verdict = 9.668871e-01;
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
@@ -86,7 +89,7 @@ TEST_CASE("sand-castle-10", "[planning]") {
 
 TEST_CASE("sand-castle-10-gsp", "[planning]") {
   const char* testCase =
-      "benchmarks/ssatER/planning/sand-castle/sdimacs/SC-10.sdimacs";
+      "test/test-cases/ssatER/planning/sand-castle/sdimacs/SC-10.sdimacs";
   double verdict = 9.668871e-01;
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
@@ -98,7 +101,7 @@ TEST_CASE("sand-castle-10-gsp", "[planning]") {
 
 TEST_CASE("random-RE", "[planning]") {
   const char* testCase =
-      "benchmarks/ssatRE/random/3CNF/sdimacs/rand-3-40-120-20.165.sdimacs";
+      "test/test-cases/ssatRE/random/3CNF/sdimacs/rand-3-40-120-20.165.sdimacs";
   double verdict = 1.207352e-03;
   Ssat_Params_t Params, *pParams = &Params;
   initParams(pParams);
