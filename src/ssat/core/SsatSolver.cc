@@ -561,33 +561,39 @@ void SsatSolver::interrupt() {
   printf("\n");
   Abc_Print(0, "Interruption occurs!\n");
   Abc_Print(0, "Reporting solving results before termination ...\n");
-  abctime clk = 0;
-  int numCubeLimits = 60000;
-  if (_unsatClause.size()) {
-    printf("[INFO] # of UNSAT cubes: %d\n", _unsatClause.size());
-    if (_pNtkCube && _unsatClause.size() > numCubeLimits) {
-      Abc_Print(0, "Cube number exceeds the limit (%d)!\n", numCubeLimits);
-      Abc_Print(0, "Do not compute the upper bound because BDD may fail ...\n");
-    } else {
-      clk = Abc_Clock();
-      _unsatPb = _pNtkCube ? cubeToNetwork(false) : cachetCount(false);
-      Abc_Print(-2, "  > Best upper bound: %e\n", upperBound());
-      Abc_PrintTime(1, "Time elapsed for upper bound", Abc_Clock() - clk);
+  if (_unsatClause.size() == 0 && _satClause.size() == 0) {
+    reportSolvingResults();
+  } else {
+    abctime clk = 0;
+    int numCubeLimits = 60000;
+    if (_unsatClause.size()) {
+      printf("[INFO] # of UNSAT cubes: %d\n", _unsatClause.size());
+      if (_pNtkCube && _unsatClause.size() > numCubeLimits) {
+        Abc_Print(0, "Cube number exceeds the limit (%d)!\n", numCubeLimits);
+        Abc_Print(0,
+                  "Do not compute the upper bound because BDD may fail ...\n");
+      } else {
+        clk = Abc_Clock();
+        _unsatPb = _pNtkCube ? cubeToNetwork(false) : cachetCount(false);
+        Abc_Print(-2, "  > Best upper bound: %e\n", upperBound());
+        Abc_PrintTime(1, "Time elapsed for upper bound", Abc_Clock() - clk);
+      }
+      fflush(stdout);
     }
-    fflush(stdout);
-  }
-  if (_satClause.size()) {
-    printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
-    if (_pNtkCube && _satClause.size() > numCubeLimits) {
-      Abc_Print(0, "Cube number exceeds the limit (%d)!\n", numCubeLimits);
-      Abc_Print(0, "Do not compute the lower bound because BDD may fail ...\n");
-    } else {
-      clk = Abc_Clock();
-      _satPb = _pNtkCube ? cubeToNetwork(true) : cachetCount(true);
-      Abc_Print(-2, "  > Best lower bound: %e\n", lowerBound());
-      Abc_PrintTime(1, "Time elapsed for lower bound", Abc_Clock() - clk);
+    if (_satClause.size()) {
+      printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
+      if (_pNtkCube && _satClause.size() > numCubeLimits) {
+        Abc_Print(0, "Cube number exceeds the limit (%d)!\n", numCubeLimits);
+        Abc_Print(0,
+                  "Do not compute the lower bound because BDD may fail ...\n");
+      } else {
+        clk = Abc_Clock();
+        _satPb = _pNtkCube ? cubeToNetwork(true) : cachetCount(true);
+        Abc_Print(-2, "  > Best lower bound: %e\n", lowerBound());
+        Abc_PrintTime(1, "Time elapsed for lower bound", Abc_Clock() - clk);
+      }
+      fflush(stdout);
     }
-    fflush(stdout);
   }
   if (_fTimer) printTimer(&timer);
 }
