@@ -83,3 +83,7 @@ testbench/*
 # *.sh
 *.tgz
 .__afs*
+
+# BenchExec files
+results/*
+test/results/*

@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<!DOCTYPE table PUBLIC "+//IDN sosy-lab.org//DTD BenchExec table 1.10//EN" "http://www.sosy-lab.org/benchexec/table-1.10.dtd">
+<table>
+  <column title="status"/>
+  <column title="cputime"/>
+  <column title="memory" sourceUnit="B" displayUnit="MB"/>
+  <column title="sat. prob.">> Satisfying probability:</column>
+  <column title="upper bound">> Best upper bound:</column>
+  <column title="lower bound">> Best lower bound:</column>
+</table>
