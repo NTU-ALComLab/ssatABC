@@ -217,6 +217,7 @@ void printTimer(Ssat_Timer_t* pTimer) {
             pTimer->lenPartial / pTimer->nS1_sat);
   Abc_Print(-2, "  > Average number of dropped literals  = %10f\n",
             pTimer->lenDrop / pTimer->nS1_sat);
+  printf("\n");
 }
 
 /**Function*************************************************************
@@ -367,10 +368,7 @@ int SsatCommandSSAT(Abc_Frame_t* pAbc, int argc, char** argv) {
   Abc_PrintTime(1, "  > Time", Abc_Clock() - gloClk);
   delete pSsat;
   gloSsat = NULL;
-  if (pParams->fTimer) {
-    printTimer(&timer);
-    printf("\n");
-  }
+  if (pParams->fTimer) printTimer(&timer);
   return 0;
 
 usage:

@@ -571,6 +571,7 @@ void SsatSolver::interrupt() {
     } else {
       clk = Abc_Clock();
       _unsatPb = _pNtkCube ? cubeToNetwork(false) : cachetCount(false);
+      Abc_Print(-2, "  > Best upper bound: %e\n", upperBound());
       Abc_PrintTime(1, "Time elapsed for upper bound", Abc_Clock() - clk);
     }
     fflush(stdout);
@@ -583,13 +584,12 @@ void SsatSolver::interrupt() {
     } else {
       clk = Abc_Clock();
       _satPb = _pNtkCube ? cubeToNetwork(true) : cachetCount(true);
+      Abc_Print(-2, "  > Best lower bound: %e\n", lowerBound());
       Abc_PrintTime(1, "Time elapsed for lower bound", Abc_Clock() - clk);
     }
     fflush(stdout);
   }
-  reportSolvingResults();
   if (_fTimer) printTimer(&timer);
-  printf("\n");
 }
 
 ////////////////////////////////////////////////////////////////////////
