@@ -67,6 +67,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
   }
   _s1->simplify();
   _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
+  assertUnitClause();
   _selClaId.capacity(_s1->nClauses());
   if (pParams->fBdd) initERBddCount(pParams);
   if (pParams->fSub) {
@@ -178,6 +179,33 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
           }
         }
       }
+    }
+  }
+}
+
+/**Function*************************************************************
+
+  Synopsis    [Assert unit clauses in the matrix.]
+
+  Description [For an existential var, assert it in the selector;
+               for a random var, record its weight in the multiplier]
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void SsatSolver::assertUnitClause() {
+  for (Var v = 0; v < _s1->assigns.size(); ++v) {
+    if (_s1->assigns[v] == l_Undef) continue;
+    Lit p = mkLit(v, _s1->assigns[v] == l_False);
+    if (_level[v] == 0 && isEVar(v)) {
+      _s2->addClause(p);
+    }
+    if (isRVar(v)) {
+      _unitClauseMultiplier = !sign(p) ? _unitClauseMultiplier * _quan[v]
+                                       : _unitClauseMultiplier * (1 - _quan[v]);
     }
   }
 }

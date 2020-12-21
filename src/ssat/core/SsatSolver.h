@@ -156,6 +156,7 @@ class SsatSolver {
   void aSolve(Ssat_Params_t*);        // All-SAT enumeration solve
   void erSolve2SSAT(Ssat_Params_t*);  // Solve ER/ERE-2SSAT
   // erSolve helpers
+  void assertUnitClause();
   void assertPureLit();
   void selectMinClauses(vec<Lit>&);
   void collectBkClaERSub(vec<Lit>&, bool);

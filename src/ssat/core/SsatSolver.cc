@@ -273,17 +273,6 @@ Solver* SsatSolver::buildQestoSelector() {
     } else if (sLits.size() == 1)  // reuse the lv.0 var as selection var
       _claLits[i] = ~sLits[0];
   }
-  for (Var v = 0; v < _s1->assigns.size(); ++v) {
-    if (_s1->assigns[v] == l_Undef) continue;
-    Lit p = mkLit(v, _s1->assigns[v] == l_False);
-    if (_level[v] == 0 && isEVar(v)) {
-      S->addClause(p);
-    }
-    if (isRVar(v)) {
-      _unitClauseMultiplier = !sign(p) ? _unitClauseMultiplier * _quan[v]
-                                       : _unitClauseMultiplier * (1 - _quan[v]);
-    }
-  }
   return S;
 }
 
