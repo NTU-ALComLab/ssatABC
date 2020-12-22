@@ -270,7 +270,7 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
 double SsatSolver::cachetCount(bool sat) {
   FILE* file;
   int length = 256;
-  char prob_str[length], cmdModelCount[length];
+  char prob_str[length], cmdModelCount[length], cmdCleanTempFiles[length];
 
   vec<vec<Lit> >& learntClause = sat ? _satClause : _unsatClause;
   if (!learntClause.size()) return (sat ? _satPb : _unsatPb);
@@ -279,7 +279,7 @@ double SsatSolver::cachetCount(bool sat) {
   sprintf(cmdModelCount, "bin/cachet temp.wcnf > tmp.log");
   if (system(cmdModelCount)) {
     fprintf(stderr, "Error! Problems with cachet execution...\n");
-    exit(1);
+    goto clean;
   }
 
   sprintf(cmdModelCount,
@@ -290,11 +290,17 @@ double SsatSolver::cachetCount(bool sat) {
   if (file == NULL) {
     fprintf(stderr,
             "Error! Problems with reading probability from \"satProb.log\"\n");
-    exit(1);
+    goto clean;
   }
   fgets(prob_str, length, file);
   fclose(file);
+  sprintf(cmdCleanTempFiles, "rm -f temp.wcnf tmp.log satProb.log");
+  system(cmdCleanTempFiles);
   return 1 - atof(prob_str);  // Since it is the weight of cube list.
+clean:
+  sprintf(cmdCleanTempFiles, "rm -f temp.wcnf tmp.log satProb.log");
+  system(cmdCleanTempFiles);
+  exit(1);
 }
 
 static Var mapVar(Var x, vec<Var>& map, Var& max) {

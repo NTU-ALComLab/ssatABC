@@ -512,7 +512,7 @@ double SsatSolver::countModels(const vec<Lit>& sBkCla, int dropIndex) {
   // return _satPb;
   FILE* file;
   int length = 1024;
-  char prob_str[length], cmdModelCount[length];
+  char prob_str[length], cmdModelCount[length], cmdCleanTempFiles[length];
 
   // vec<Lit> assump( sBkCla.size() );
   // for ( int i = 0 ; i < sBkCla.size() ; ++i ) assump[i] = ~sBkCla[i];
@@ -525,7 +525,7 @@ double SsatSolver::countModels(const vec<Lit>& sBkCla, int dropIndex) {
   sprintf(cmdModelCount, "bin/cachet temp.wcnf > tmp.log");
   if (system(cmdModelCount)) {
     fprintf(stderr, "Error! Problems with cachet execution...\n");
-    exit(1);
+    goto clean;
   }
 
   sprintf(cmdModelCount,
@@ -536,11 +536,17 @@ double SsatSolver::countModels(const vec<Lit>& sBkCla, int dropIndex) {
   if (file == NULL) {
     fprintf(stderr,
             "Error! Problems with reading probability from \"satProb.log\"\n");
-    exit(1);
+    goto clean;
   }
   fgets(prob_str, length, file);
   fclose(file);
+  sprintf(cmdCleanTempFiles, "rm -f temp.wcnf tmp.log satProb.log");
+  system(cmdCleanTempFiles);
   return atof(prob_str);
+clean:
+  sprintf(cmdCleanTempFiles, "rm -f temp.wcnf tmp.log satProb.log");
+  system(cmdCleanTempFiles);
+  exit(1);
 }
 
 /**Function*************************************************************
