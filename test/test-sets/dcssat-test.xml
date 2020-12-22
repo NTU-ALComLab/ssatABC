@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="dcssat" timelimit="60 s" hardtimelimit="90 s" memlimit="2 GB" cpuCores="1">
+  <rundefinition name="default">
+  </rundefinition>
+
+  <tasks name="Sand-Castle">
+      <include>../test-cases/ssatER/planning/sand-castle/sdimacs/*.sdimacs</include>
+  </tasks>
+
+  <tasks name="PEC">
+      <include>../test-cases/ssatRE/PEC/sdimacs/*.sdimacs</include>
+  </tasks>
+
+</benchmark>
