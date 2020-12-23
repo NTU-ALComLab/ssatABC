@@ -87,3 +87,4 @@ testbench/*
 # BenchExec files
 results/*
 test/results/*
+test/test-cases/benchmarks
