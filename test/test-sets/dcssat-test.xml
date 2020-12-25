@@ -12,5 +12,4 @@
   <tasks name="PEC">
       <include>../test-cases/ssatRE/PEC/sdimacs/*.sdimacs</include>
   </tasks>
-
 </benchmark>

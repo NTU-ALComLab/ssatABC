@@ -6,31 +6,15 @@
       <option name="-c">ssat -vt</option>
   </rundefinition>
 
-  <tasks name="Toilet-A">
-      <include>../test-cases/benchmarks/ere-ToiletA/*.sdimacs</include>
+  <rundefinition name="no-enhancement">
+      <option name="-c">ssat -gspvt</option>
+  </rundefinition>
+
+  <tasks name="ExistRandomExist">
+      <includesfile>../test-cases/benchmarks/ExistRandomExist.set</includesfile>
   </tasks>
 
-  <tasks name="Conformant">
-      <include>../test-cases/benchmarks/ere-conformant/*.sdimacs</include>
-  </tasks>
-
-  <tasks name="Sand-Castle">
-      <include>../test-cases/benchmarks/ere-sand-castle/*.sdimacs</include>
-  </tasks>
-
-  <tasks name="Max-Count">
-      <include>../test-cases/benchmarks/ere-MaxCount/*.sdimacs</include>
-  </tasks>
-
-  <tasks name="MPEC">
-      <include>../test-cases/benchmarks/ere-MPEC/*.sdimacs</include>
-  </tasks>
-
-  <tasks name="Strategic-Company">
-      <include>../test-cases/benchmarks/re-strategic-company/*.sdimacs</include>
-  </tasks>
-
-  <tasks name="PEC">
-      <include>../test-cases/benchmarks/re-PEC/*.sdimacs</include>
+  <tasks name="RandomExist">
+      <includesfile>../test-cases/benchmarks/RandomExist.set</includesfile>
   </tasks>
 </benchmark>
