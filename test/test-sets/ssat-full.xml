@@ -2,6 +2,7 @@
 
 <!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
 <benchmark tool="abc" timelimit="900 s" hardtimelimit="1000 s" memlimit="8 GB" cpuCores="1">
+  <resultfiles></resultfiles>
   <rundefinition name="default">
       <option name="-c">ssat -vt</option>
   </rundefinition>
