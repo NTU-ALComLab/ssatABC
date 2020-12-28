@@ -10,15 +10,13 @@
       <option name="-c">ssat -gspvt</option>
   </rundefinition>
 
-  <!--
   <rundefinition name="default-Cachet">
       <option name="-c">ssat -bvt</option>
-  </rundefinition>-->
+  </rundefinition>
 
-  <!--
   <rundefinition name="no-enhancement-Cachet">
       <option name="-c">ssat -gspbvt</option>
-  </rundefinition>-->
+  </rundefinition>
 
   <tasks name="Sand-Castle">
       <include>../test-cases/ssatER/planning/sand-castle/sdimacs/*.sdimacs</include>
