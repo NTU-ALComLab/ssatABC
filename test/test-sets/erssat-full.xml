@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="abc" timelimit="900 s" hardtimelimit="1000 s" memlimit="8 GB" cpuCores="1">
+  <resultfiles></resultfiles>
+  <rundefinition name="default-BDD">
+      <option name="-c">ssat -vt</option>
+  </rundefinition>
+
+  <rundefinition name="bare-BDD">
+      <option name="-c">ssat -gspvt</option>
+  </rundefinition>
+
+  <rundefinition name="greedy-BDD">
+      <option name="-c">ssat -spvt</option>
+  </rundefinition>
+
+  <rundefinition name="subsume-BDD">
+      <option name="-c">ssat -gpvt</option>
+  </rundefinition>
+
+  <rundefinition name="partial-BDD">
+      <option name="-c">ssat -gsvt</option>
+  </rundefinition>
+
+  <rundefinition name="default-Cachet">
+      <option name="-c">ssat -bvt</option>
+  </rundefinition>
+
+  <rundefinition name="bare-Cachet">
+      <option name="-c">ssat -bgspvt</option>
+  </rundefinition>
+
+  <rundefinition name="greedy-Cachet">
+      <option name="-c">ssat -bspvt</option>
+  </rundefinition>
+
+  <rundefinition name="subsume-Cachet">
+      <option name="-c">ssat -bgpvt</option>
+  </rundefinition>
+
+  <rundefinition name="partial-Cachet">
+      <option name="-c">ssat -bgsvt</option>
+  </rundefinition>
+
+  <tasks name="ExistRandomExist">
+      <includesfile>../test-cases/benchmarks/ExistRandomExist.set</includesfile>
+  </tasks>
+</benchmark>

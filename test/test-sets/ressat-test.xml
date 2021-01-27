@@ -3,25 +3,21 @@
 <!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
 <benchmark tool="abc" timelimit="60 s" hardtimelimit="90 s" memlimit="2 GB" cpuCores="1">
   <resultfiles></resultfiles>
-  <rundefinition name="default-BDD">
+  <rundefinition name="minimize-BDD">
       <option name="-c">ssat -vt</option>
   </rundefinition>
 
-  <rundefinition name="no-enhancement-BDD">
-      <option name="-c">ssat -gspvt</option>
+  <rundefinition name="bare-BDD">
+      <option name="-c">ssat -mvt</option>
   </rundefinition>
 
-  <rundefinition name="default-Cachet">
+  <rundefinition name="minimize-Cachet">
       <option name="-c">ssat -bvt</option>
   </rundefinition>
 
-  <rundefinition name="no-enhancement-Cachet">
-      <option name="-c">ssat -gspbvt</option>
+  <rundefinition name="bare-Cachet">
+      <option name="-c">ssat -bmvt</option>
   </rundefinition>
-
-  <tasks name="Sand-Castle">
-      <include>../test-cases/ssatER/planning/sand-castle/sdimacs/*.sdimacs</include>
-  </tasks>
 
   <tasks name="PEC">
       <include>../test-cases/ssatRE/PEC/sdimacs/*.sdimacs</include>

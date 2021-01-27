@@ -3,17 +3,21 @@
 <!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
 <benchmark tool="abc" timelimit="900 s" hardtimelimit="1000 s" memlimit="8 GB" cpuCores="1">
   <resultfiles></resultfiles>
-  <rundefinition name="default">
+  <rundefinition name="minimize-BDD">
       <option name="-c">ssat -vt</option>
   </rundefinition>
 
-  <rundefinition name="no-enhancement">
-      <option name="-c">ssat -gspvt</option>
+  <rundefinition name="bare-BDD">
+      <option name="-c">ssat -mvt</option>
   </rundefinition>
 
-  <tasks name="ExistRandomExist">
-      <includesfile>../test-cases/benchmarks/ExistRandomExist.set</includesfile>
-  </tasks>
+  <rundefinition name="minimize-Cachet">
+      <option name="-c">ssat -bvt</option>
+  </rundefinition>
+
+  <rundefinition name="bare-Cachet">
+      <option name="-c">ssat -bmvt</option>
+  </rundefinition>
 
   <tasks name="RandomExist">
       <includesfile>../test-cases/benchmarks/RandomExist.set</includesfile>
