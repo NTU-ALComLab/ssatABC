@@ -66,18 +66,12 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
     printERParams(pParams);
   }
   _s1->simplify();
+  checkERParams(pParams);
   _s2 = pParams->fGreedy ? buildQestoSelector() : buildERSelector();
   assertUnitClause();
   _selClaId.capacity(_s1->nClauses());
   if (pParams->fBdd) initERBddCount(pParams);
-  if (pParams->fSub) {
-    if (_s1->nClauses() < 2) {
-      Abc_Print(0, "Disable subsumption, as there are less than 2 clauses\n");
-      pParams->fSub = false;
-    } else {
-      buildSubsumeTable(*_s1);
-    }
-  }
+  if (pParams->fSub) buildSubsumeTable(*_s1);
   if (pParams->fPure) assertPureLit();
 
   // declare and initialize temp variables
@@ -180,6 +174,23 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
         }
       }
     }
+  }
+}
+
+void SsatSolver::checkERParams(Ssat_Params_t* pParams) {
+  if (pParams->fSub && _s1->nClauses() < 2) {
+    Abc_Print(0, "Disable subsumption as there are less than 2 clauses\n");
+    pParams->fSub = false;
+  }
+  if (pParams->fPart && pParams->fPart2) {
+    Abc_Print(0, "Partial assignment pruning ver.1 and ver.2 both enabled\n");
+    Abc_Print(0, "Ver.2 will be used\n");
+    pParams->fPart = false;
+  }
+  if (pParams->fPart2 && !pParams->fBdd) {
+    Abc_Print(0, "Partial assignment pruning ver.2 only works with BDD\n");
+    Abc_Print(0, "Switch the counting engine from Cachet to BDD\n");
+    pParams->fBdd = true;
   }
 }
 

@@ -134,6 +134,8 @@ void printREParams(Ssat_Params_t* pParams) {
          pParams->upper);
   printf("  > Number of SAT cubes to update lower bounds: %d\n",
          pParams->lower);
+  printf("  > SAT/UNSAT minterm generalization (minimal): %s\n",
+         pParams->fMini ? "yes" : "no");
 }
 
 void printERParams(Ssat_Params_t* pParams) {
