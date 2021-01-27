@@ -162,7 +162,7 @@ class SsatSolver {
   void collectBkClaERSub(vec<Lit>&, bool);
   void discardLit(Ssat_Params_t*, vec<Lit>&);
   void discardAllLit(Ssat_Params_t*, vec<Lit>&);
-  double erSolveWMC(Ssat_Params_t*, const vec<Lit>&, const vec<bool>&);
+  double erSolveWMC(Ssat_Params_t*, const vec<Lit>&, const vec<bool>&, int);
   // branch and bound helpers
   void ntkBuildPrefix(Abc_Ntk_t*);
   Solver* ntkBuildSolver(Abc_Ntk_t*, bool);

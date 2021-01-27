@@ -133,7 +133,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
         if (pParams->fDynamic) lenBeforeDrop = sBkCla.size();
       }
       if (_fTimer) clk = Abc_Clock();
-      subvalue = erSolveWMC(pParams, eLits, dropVec);
+      subvalue = erSolveWMC(pParams, eLits, dropVec, eLits.size());
       if (_fTimer) {
         timer.timeCt += Abc_Clock() - clk;
         ++timer.nCount;
@@ -383,7 +383,7 @@ void SsatSolver::discardLit(Ssat_Params_t* pParams, vec<Lit>& sBkCla) {
     dropIndex -= 1;
   setDropVec(dropVec, dropIndex);
   if (_fTimer) clk = Abc_Clock();
-  subvalue = erSolveWMC(pParams, eLits, dropVec);
+  subvalue = erSolveWMC(pParams, eLits, dropVec, dropIndex);
   if (_fTimer) {
     timer.timeCt += Abc_Clock() - clk;
     ++timer.nCount;
@@ -393,7 +393,7 @@ void SsatSolver::discardLit(Ssat_Params_t* pParams, vec<Lit>& sBkCla) {
       --dropIndex;
       setDropVec(dropVec, dropIndex);
       if (_fTimer) clk = Abc_Clock();
-      subvalue = erSolveWMC(pParams, eLits, dropVec);
+      subvalue = erSolveWMC(pParams, eLits, dropVec, dropIndex);
       if (_fTimer) {
         timer.timeCt += Abc_Clock() - clk;
         ++timer.nCount;
@@ -411,7 +411,7 @@ void SsatSolver::discardLit(Ssat_Params_t* pParams, vec<Lit>& sBkCla) {
         ++dropIndex;
         setDropVec(dropVec, dropIndex);
         if (_fTimer) clk = Abc_Clock();
-        subvalue = erSolveWMC(pParams, eLits, dropVec);
+        subvalue = erSolveWMC(pParams, eLits, dropVec, dropIndex);
         if (_fTimer) {
           timer.timeCt += Abc_Clock() - clk;
           ++timer.nCount;
@@ -445,7 +445,7 @@ void SsatSolver::discardAllLit(Ssat_Params_t* pParams, vec<Lit>& sBkCla) {
   for (int i = 0; i < eLits.size(); ++i) {
     dropVec[i] = true;
     if (_fTimer) clk = Abc_Clock();
-    subvalue = erSolveWMC(pParams, eLits, dropVec);
+    subvalue = erSolveWMC(pParams, eLits, dropVec, eLits.size());
     if (_fTimer) {
       timer.timeCt += Abc_Clock() - clk;
       ++timer.nCount;
@@ -502,9 +502,9 @@ void SsatSolver::removeDupLit(vec<Lit>& c) const {
 ***********************************************************************/
 
 double SsatSolver::erSolveWMC(Ssat_Params_t* pParams, const vec<Lit>& eLits,
-                              const vec<bool>& dropVec) {
+                              const vec<bool>& dropVec, int dropIndex) {
   double satisfyProb = pParams->fBdd ? bddCountWeight(pParams, eLits, dropVec)
-                                     : countModels(eLits, eLits.size());
+                                     : countModels(eLits, dropIndex);
   return _unitClauseMultiplier * satisfyProb;
 }
 
