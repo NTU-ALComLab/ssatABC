@@ -51,7 +51,7 @@ struct Dsc_node_t_
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
 
-inline void xorInPlace( word * pOut, word * pIn2, int nWords)
+static inline void xorInPlace( word * pOut, word * pIn2, int nWords)
 {
     int w;
 	for ( w = 0; w < nWords; w++ )
@@ -75,7 +75,7 @@ void dsc_debug_node(Dsc_node_t * pNode, int nVars, const int TRUTH_WORDS) {
 	printf("\n");
 }
 
-inline int dsc_and_test(Dsc_node_t *ni, Dsc_node_t *nj, const int TRUTH_WORDS, int* ci, int* cj) {
+static inline int dsc_and_test(Dsc_node_t *ni, Dsc_node_t *nj, const int TRUTH_WORDS, int* ci, int* cj) {
 			if (Abc_TtEqual(ni->pNegCof, nj->pNegCof, TRUTH_WORDS)) {*ci=1; *cj=1; return 1;}
 	else 	if (Abc_TtEqual(ni->pNegCof, nj->pPosCof, TRUTH_WORDS)) {*ci=1; *cj=0; return 1;}
 	else 	if (Abc_TtEqual(ni->pPosCof, nj->pNegCof, TRUTH_WORDS)) {*ci=0; *cj=1; return 1;}
@@ -83,7 +83,7 @@ inline int dsc_and_test(Dsc_node_t *ni, Dsc_node_t *nj, const int TRUTH_WORDS, i
 	return 0;
 }
 
-inline int dsc_xor_test(Dsc_node_t *ni, Dsc_node_t *nj, const int TRUTH_WORDS) {
+static inline int dsc_xor_test(Dsc_node_t *ni, Dsc_node_t *nj, const int TRUTH_WORDS) {
 	return Abc_TtEqual(ni->pBoolDiff, nj->pBoolDiff, TRUTH_WORDS);
 }
 
