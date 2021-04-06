@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="dcssat" timelimit="900 s" hardtimelimit="1000 s" memlimit="8 GB" cpuCores="1">
+  <rundefinition name="default">
+  </rundefinition>
+
+  <tasks name="Random">
+      <include>../test-cases/benchmarks/re-random/*.sdimacs</include>
+  </tasks>
+
+  <tasks name="Strategic">
+      <include>../test-cases/benchmarks/re-strategic-company/*.sdimacs</include>
+  </tasks>
+
+  <tasks name="PEC">
+      <include>../test-cases/benchmarks/re-PEC/*.sdimacs</include>
+  </tasks>
+</benchmark>
