@@ -12,14 +12,14 @@
   </rundefinition>
 
   <tasks name="Random">
-      <include>../test-cases/benchmarks/re-random/*.sdimacs</include>
+      <include>../../test-cases/benchmarks/re-random-k-CNF/*.sdimacs</include>
   </tasks>
 
   <tasks name="Strategic">
-      <include>../test-cases/benchmarks/re-strategic-company/*.sdimacs</include>
+      <include>../../test-cases/benchmarks/re-strategic-company/*.sdimacs</include>
   </tasks>
 
   <tasks name="PEC">
-      <include>../test-cases/benchmarks/re-PEC/*.sdimacs</include>
+      <include>../../test-cases/benchmarks/re-PEC/*.sdimacs</include>
   </tasks>
 </benchmark>

@@ -6,14 +6,10 @@
   </rundefinition>
 
   <tasks name="Random">
-      <include>../test-cases/benchmarks/re-random/*.sdimacs</include>
+      <include>../../test-cases/benchmarks/er-random-k-CNF/*.sdimacs</include>
   </tasks>
 
-  <tasks name="Strategic">
-      <include>../test-cases/benchmarks/re-strategic-company/*.sdimacs</include>
-  </tasks>
-
-  <tasks name="PEC">
-      <include>../test-cases/benchmarks/re-PEC/*.sdimacs</include>
+  <tasks name="Application">
+      <includesfile>../../test-cases/benchmarks/ExistRandomExist.set</includesfile>
   </tasks>
 </benchmark>

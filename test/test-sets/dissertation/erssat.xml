@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="abc" timelimit="900 s" hardtimelimit="1000 s" memlimit="8 GB" cpuCores="1">
+  <resultfiles></resultfiles>
+  <rundefinition name="default-BDD">
+      <option name="-c">ssat -vt</option>
+  </rundefinition>
+
+  <rundefinition name="bare-BDD">
+      <option name="-c">ssat -gspvt</option>
+  </rundefinition>
+
+  <tasks name="Random">
+      <include>../../test-cases/benchmarks/er-random-k-CNF/*.sdimacs</include>
+  </tasks>
+
+  <tasks name="Application">
+      <includesfile>../../test-cases/benchmarks/ExistRandomExist.set</includesfile>
+  </tasks>
+</benchmark>
