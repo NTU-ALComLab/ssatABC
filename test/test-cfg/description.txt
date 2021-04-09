@@ -1,1 +1,2 @@
-Commit <SHA-1 value>
+Code commit: <SHA-1 value> (ssatABC repository)
+Data commit: <SHA-1 value> (ssat-benchmarks repository)
