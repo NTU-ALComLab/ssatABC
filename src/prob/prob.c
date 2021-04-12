@@ -36,6 +36,7 @@ static int Pb_CommandGenProb(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandDistill(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandWritePBN(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandWriteWMC(Abc_Frame_t* pAbc, int argc, char** argv);
+static int Pb_CommandWritePMC(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandWriteSSAT(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandBddSp(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandProbMiter(Abc_Frame_t* pAbc, int argc, char** argv);
@@ -63,6 +64,7 @@ void Pb_Init(Abc_Frame_t* pAbc) {
   Cmd_CommandAdd(pAbc, "z prob", "distill", Pb_CommandDistill, 1);
   Cmd_CommandAdd(pAbc, "z prob", "write_pbn", Pb_CommandWritePBN, 0);
   Cmd_CommandAdd(pAbc, "z prob", "write_wmc", Pb_CommandWriteWMC, 0);
+  Cmd_CommandAdd(pAbc, "z prob", "write_pmc", Pb_CommandWritePMC, 0);
   Cmd_CommandAdd(pAbc, "z prob", "write_ssat", Pb_CommandWriteSSAT, 0);
   Cmd_CommandAdd(pAbc, "z prob", "bddsp", Pb_CommandBddSp, 1);
   Cmd_CommandAdd(pAbc, "z prob", "probmiter", Pb_CommandProbMiter, 1);
@@ -399,6 +401,86 @@ usage:
       -2,
       "\t-m     : toggles Pi assumptions if the model exists [default = %d]\n",
       0);
+  Abc_Print(-2, "\t-h     : print the command usage\n");
+  Abc_Print(-2, "\tfile   : the name of output file\n");
+  return 1;
+}
+
+/**Function*************************************************************
+
+  Synopsis    [write out cnf files for projected model counting]
+
+  Description []
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+int Pb_CommandWritePMC(Abc_Frame_t* pAbc, int argc, char** argv) {
+  Abc_Ntk_t* pNtk;
+  char** pArgvNew;
+  char* FileName;
+  int nArgcNew, numPo, c;
+
+  pNtk = Abc_FrameReadNtk(pAbc);
+  numPo = 0;
+
+  Extra_UtilGetoptReset();
+  while ((c = Extra_UtilGetopt(argc, argv, "Oh")) != EOF) {
+    switch (c) {
+      case 'O':
+        if (globalUtilOptind >= argc) {
+          Abc_Print(
+              -1,
+              "Command line switch \"-O\" should be followed by an integer.\n");
+          goto usage;
+        }
+        numPo = atoi(argv[globalUtilOptind]);
+        globalUtilOptind++;
+        if (numPo < 0) goto usage;
+        break;
+      case 'h':
+        goto usage;
+      default:
+        goto usage;
+    }
+  }
+
+  pArgvNew = argv + globalUtilOptind;
+  nArgcNew = argc - globalUtilOptind;
+  if (nArgcNew != 1) {
+    Abc_Print(-1, "There is no file name.\n");
+    return 1;
+  }
+  FileName = pArgvNew[0];
+
+  if (!pNtk) {
+    Abc_Print(-1, "Empty network.\n");
+    return 1;
+  }
+  if (numPo > Abc_NtkPoNum(pNtk) - 1) {
+    Abc_Print(-1, "num(%d) should be less than #PO(%d).\n", numPo,
+              Abc_NtkPoNum(pNtk));
+    goto usage;
+  }
+  if (!Abc_NtkIsStrash(pNtk)) {
+    Abc_Print(-1, "Only support strashed networks for now.\n");
+    return 1;
+  }
+
+  Pb_WritePMC(pNtk, FileName, numPo);
+  Abc_Print(-2, "File %s is written.\n", FileName);
+
+  return 0;
+usage:
+  Abc_Print(-2, "usage    : write_pmc [-O <num>] [-h] <file>\n");
+  Abc_Print(-2,
+            "\t         write a projected model counting file for ApproxMC\n");
+  Abc_Print(-2, "\t         works only if weight is of the form k/(2^n)\n");
+  Abc_Print(-2, "\t-O num : specify num-th Po to calculate [default = %d]\n",
+            0);
   Abc_Print(-2, "\t-h     : print the command usage\n");
   Abc_Print(-2, "\tfile   : the name of output file\n");
   return 1;

@@ -53,6 +53,8 @@ extern Abc_Ntk_t* Pb_DistillNtk(Abc_Ntk_t*);
 extern void Pb_PrintDistNtk(Abc_Ntk_t*);
 /*=== probWmc.c ==========================================================*/
 extern void Pb_WriteWMC(Abc_Ntk_t*, char*, int, int);
+/*=== probPmc.c ==========================================================*/
+extern void Pb_WritePMC(Abc_Ntk_t*, char*, int);
 /*=== probSsat.c ==========================================================*/
 extern void Pb_WriteSSAT(Abc_Ntk_t*, char*, int, int, int);
 /*=== probBddSp.c ==========================================================*/
