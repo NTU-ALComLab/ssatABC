@@ -102,6 +102,63 @@ float randProb() { return ((float)rand() / (float)RAND_MAX); }
 
 /**Function*************************************************************
 
+  Synopsis    [read probabilities from the network file]
+
+  Description []
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+static int readProbabilites(Abc_Ntk_t* pNtk) {
+  FILE* pFile;
+  char line[1024];
+  pFile = fopen(pNtk->fileName, "r");
+  if (!pFile) {
+    Abc_Print(-1, "Cannot open input file \"%s\".\n", pNtk->fileName);
+    return 1;
+  }
+  char* token;
+  while (fgets(line, sizeof(line), pFile)) {
+    token = strtok(line, " ");
+    if (strcmp(token, "#")) continue;
+    token = strtok(NULL, " ");
+    if (strcmp(token, ".prob")) continue;
+    token = strtok(NULL, " ");
+    char* prob = strtok(NULL, " ");
+    Abc_Obj_t* pPi = Abc_NtkFindCi(pNtk, token);
+    if (!pPi) {
+      Abc_Print(-1, "Cannot find PI %s\n", token);
+      return 1;
+    }
+    pPi->dTemp = (float)atof(prob);
+  }
+  fclose(pFile);
+  return 0;
+}
+
+static int readNumPIs(Abc_Ntk_t* pNtk) {
+  FILE* pFile;
+  char line[1024];
+  pFile = fopen(pNtk->fileName, "r");
+  char* token;
+  while (fgets(line, sizeof(line), pFile)) {
+    token = strtok(line, " ");
+    if (strcmp(token, "#")) continue;
+    token = strtok(NULL, " ");
+    if (strcmp(token, ".numpi")) continue;
+    token = strtok(NULL, " ");
+    fclose(pFile);
+    return atoi(token);
+  }
+  fclose(pFile);
+  return 0;
+}
+
+/**Function*************************************************************
+
   Synopsis    [test interface]
 
   Description []
@@ -120,7 +177,7 @@ int Pb_CommandTest(Abc_Frame_t* pAbc, int argc, char** argv) {
 
   pNtk = Abc_FrameReadNtk(pAbc);
   Abc_NtkForEachPi(pNtk, pObj, i) {
-    printf("HIHI Obj name = %s , float = %f\n", Abc_ObjName(pObj), pObj->dTemp);
+    printf("PI name = %s, prob = %f\n", Abc_ObjName(pObj), pObj->dTemp);
   }
   return 0;
 }
@@ -523,18 +580,20 @@ usage:
 
 int Pb_CommandBddSp(Abc_Frame_t* pAbc, int argc, char** argv) {
   Abc_Ntk_t* pNtk;
-  int fAll, fGrp, fUniform, fVerbose, numPo, numExist, c;
+  int fAll, fGrp, fRead, fUniform, fVerbose, fWorst, numPo, numExist, c;
 
   pNtk = Abc_FrameReadNtk(pAbc);
   numPo = 0;
   numExist = 0;
   fAll = 0;
   fGrp = 1;
+  fRead = 0;
   fUniform = 0;
   fVerbose = 1;
+  fWorst = 0;
 
   Extra_UtilGetoptReset();
-  while ((c = Extra_UtilGetopt(argc, argv, "OEaguvh")) != EOF) {
+  while ((c = Extra_UtilGetopt(argc, argv, "OEagruvwh")) != EOF) {
     switch (c) {
       case 'O':
         if (globalUtilOptind >= argc) {
@@ -564,11 +623,17 @@ int Pb_CommandBddSp(Abc_Frame_t* pAbc, int argc, char** argv) {
       case 'g':
         fGrp ^= 1;
         break;
+      case 'r':
+        fRead ^= 1;
+        break;
       case 'u':
         fUniform ^= 1;
         break;
       case 'v':
         fVerbose ^= 1;
+        break;
+      case 'w':
+        fWorst ^= 1;
         break;
       case 'h':
         goto usage;
@@ -600,6 +665,13 @@ int Pb_CommandBddSp(Abc_Frame_t* pAbc, int argc, char** argv) {
     int i;
     Abc_NtkForEachPi(pNtk, pObj, i) pObj->dTemp = 0.5;
   }
+  if (fRead) {
+    if (readProbabilites(pNtk)) {
+      Abc_Print(-1, "Reading PI probabilities failed.\n");
+      return 1;
+    }
+    if (numExist == 0 && fWorst) numExist = readNumPIs(pNtk);
+  }
   if (fAll)
     Pb_BddComputeAllSp(pNtk, numExist, fGrp, fVerbose);
   else
@@ -607,7 +679,7 @@ int Pb_CommandBddSp(Abc_Frame_t* pAbc, int argc, char** argv) {
 
   return 0;
 usage:
-  Abc_Print(-2, "usage    : bddsp [-O <num>] [-E <num>] [-aguvh]\n");
+  Abc_Print(-2, "usage    : bddsp [-O <num>] [-E <num>] [-agruvwh]\n");
   Abc_Print(-2, "\t         compute signal probability by bdd\n");
   Abc_Print(-2, "\t-O num : specify num-th Po to calculate [default = %d]\n",
             0);
@@ -619,12 +691,18 @@ usage:
             "\t-g     : toggles grouping PI and AI variables [default = %s]\n",
             "yes");
   Abc_Print(-2,
+            "\t-r     : toggles reading PI probabilites from file [default "
+            "= %s]\n",
+            "no");
+  Abc_Print(-2,
             "\t-u     : toggles uniform distribution of PI variables [default "
             "= %s]\n",
             "no");
   Abc_Print(-2,
             "\t-v     : toggles printing verbose information [default = %s]\n",
             "yes");
+  Abc_Print(-2, "\t-w     : toggles the worst-case analysis [default = %s]\n",
+            "no");
   Abc_Print(-2, "\t-h     : print the command usage\n");
   return 1;
 }
