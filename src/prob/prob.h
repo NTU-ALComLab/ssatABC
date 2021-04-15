@@ -47,7 +47,7 @@ ABC_NAMESPACE_HEADER_START
 
 /*=== probIo.c ==========================================================*/
 extern void Pb_GenProbNtk(Abc_Ntk_t*, float, float);
-extern void Pb_WritePBN(Abc_Ntk_t*, char*);
+extern void Pb_WritePBN(Abc_Ntk_t*, char*, int, int);
 /*=== probDistill.c ==========================================================*/
 extern Abc_Ntk_t* Pb_DistillNtk(Abc_Ntk_t*);
 extern void Pb_PrintDistNtk(Abc_Ntk_t*);

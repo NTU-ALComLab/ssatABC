@@ -33,11 +33,11 @@ ABC_NAMESPACE_IMPL_START
 extern float randProb();
 // main methods
 void Pb_GenProbNtk(Abc_Ntk_t*, float, float);
-void Pb_WritePBN(Abc_Ntk_t*, char*);
+void Pb_WritePBN(Abc_Ntk_t*, char*, int, int);
 // helpers
 static void Pb_CountErrorGates(Abc_Ntk_t*);
-static void Pb_WritePBNPio(FILE*, Abc_Ntk_t*);
-static void Pb_WritePBNGate(FILE*, Abc_Ntk_t*);
+static void Pb_WritePBNPio(FILE*, Abc_Ntk_t*, int);
+static void Pb_WritePBNGate(FILE*, Abc_Ntk_t*, int);
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -99,31 +99,39 @@ void Pb_CountErrorGates(Abc_Ntk_t* pNtk) {
 
 ***********************************************************************/
 
-void Pb_WritePBN(Abc_Ntk_t* pNtk, char* name) {
+void Pb_WritePBN(Abc_Ntk_t* pNtk, char* name, int numPIs, int fStandard) {
   FILE* out;
 
   out = fopen(name, "w");
   fprintf(out, "# PBN %s written by probABC\n", Abc_NtkName(pNtk));
   fprintf(out, ".model %s\n", Abc_NtkName(pNtk));
 
-  Pb_WritePBNPio(out, pNtk);
-  Pb_WritePBNGate(out, pNtk);
+  fprintf(out, "# .numpi %d\n", numPIs);
+  Pb_WritePBNPio(out, pNtk, fStandard);
+  Pb_WritePBNGate(out, pNtk, fStandard);
 
   fprintf(out, ".end\n");
   fclose(out);
 }
 
-void Pb_WritePBNPio(FILE* out, Abc_Ntk_t* pNtk) {
+void Pb_WritePBNPio(FILE* out, Abc_Ntk_t* pNtk, int fStandard) {
   Abc_Obj_t* pObj;
   int i;
 
-  Abc_NtkForEachPi(pNtk, pObj, i)
-      fprintf(out, ".inputs %s %f\n", Abc_ObjName(pObj), pObj->dTemp);
+  if (fStandard) {
+    Abc_NtkForEachPi(pNtk, pObj, i)
+        fprintf(out, "# .prob %s %f\n", Abc_ObjName(pObj), pObj->dTemp);
+    Abc_NtkForEachPi(pNtk, pObj, i)
+        fprintf(out, ".inputs %s\n", Abc_ObjName(pObj));
+  } else {
+    Abc_NtkForEachPi(pNtk, pObj, i)
+        fprintf(out, ".inputs %s %f\n", Abc_ObjName(pObj), pObj->dTemp);
+  }
   Abc_NtkForEachPo(pNtk, pObj, i)
       fprintf(out, ".outputs %s\n", Abc_ObjName(pObj));
 }
 
-void Pb_WritePBNGate(FILE* out, Abc_Ntk_t* pNtk) {
+void Pb_WritePBNGate(FILE* out, Abc_Ntk_t* pNtk, int fStandard) {
   Abc_Obj_t* pObj;
   int i;
 
@@ -144,7 +152,11 @@ void Pb_WritePBNGate(FILE* out, Abc_Ntk_t* pNtk) {
       fprintf(out, ".names %d %s", Abc_ObjId(Abc_ObjFanin0(pObj)),
               Abc_ObjName(Abc_ObjFanin1(pObj)));
     }
-    fprintf(out, " %d %f\n", Abc_ObjId(pObj), pObj->dTemp);
+    if (fStandard) {
+      fprintf(out, " %d\n", Abc_ObjId(pObj));
+    } else {
+      fprintf(out, " %d %f\n", Abc_ObjId(pObj), pObj->dTemp);
+    }
     if (!Abc_ObjFaninC0(pObj) && !Abc_ObjFaninC1(pObj)) fprintf(out, "11 1\n");
     if (Abc_ObjFaninC0(pObj) && !Abc_ObjFaninC1(pObj)) fprintf(out, "01 1\n");
     if (!Abc_ObjFaninC0(pObj) && Abc_ObjFaninC1(pObj)) fprintf(out, "10 1\n");

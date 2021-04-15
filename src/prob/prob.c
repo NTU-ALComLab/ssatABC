@@ -276,13 +276,30 @@ int Pb_CommandWritePBN(Abc_Frame_t* pAbc, int argc, char** argv) {
   Abc_Ntk_t* pNtk;
   char** pArgvNew;
   char* FileName;
-  int nArgcNew, c;
+  int nArgcNew, numPIs, fStandard, c;
+
+  numPIs = 0;
+  fStandard = 1;
 
   pNtk = Abc_FrameReadNtk(pAbc);
 
   Extra_UtilGetoptReset();
-  while ((c = Extra_UtilGetopt(argc, argv, "h")) != EOF) {
+  while ((c = Extra_UtilGetopt(argc, argv, "Ish")) != EOF) {
     switch (c) {
+      case 'I':
+        if (globalUtilOptind >= argc) {
+          Abc_Print(
+              -1,
+              "Command line switch \"-I\" should be followed by an integer.\n");
+          goto usage;
+        }
+        numPIs = atoi(argv[globalUtilOptind]);
+        globalUtilOptind++;
+        if (numPIs < 0) goto usage;
+        break;
+      case 's':
+        fStandard ^= 1;
+        break;
       case 'h':
         goto usage;
       default:
@@ -306,14 +323,20 @@ int Pb_CommandWritePBN(Abc_Frame_t* pAbc, int argc, char** argv) {
     Abc_Print(-1, "Only support strashed networks for now.\n");
     return 1;
   }
+  if (numPIs == 0) numPIs = Abc_NtkPiNum(pNtk);
 
-  Pb_WritePBN(pNtk, FileName);
+  Pb_WritePBN(pNtk, FileName, numPIs, fStandard);
   Abc_Print(-2, "File %s is written.\n", FileName);
 
   return 0;
 usage:
-  Abc_Print(-2, "usage   : write_pbn [-h] <file>\n");
+  Abc_Print(-2, "usage   : write_pbn [-Ish] <file>\n");
   Abc_Print(-2, "\t        write out probabilistic design as a PBN file\n");
+  Abc_Print(-2,
+            "\t-I num : specify the number of primary inputs [default = "
+            "Abc_NtkPiNum()]\n");
+  Abc_Print(-2,
+            "\t-s    : write out a standardized PBN (can be read by ABC)\n");
   Abc_Print(-2, "\t-h    : print the command usage\n");
   Abc_Print(-2, "\tfile  : the name of output file\n");
   return 1;
