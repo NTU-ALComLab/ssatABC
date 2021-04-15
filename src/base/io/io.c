@@ -261,6 +261,7 @@ int IoCommandRead( Abc_Frame_t * pAbc, int argc, char ** argv )
     }
     // read the file using the corresponding file reader
     pNtk = Io_Read( pFileName, Io_ReadFileType(pFileName), fCheck, fBarBufs );
+    strcpy(pNtk->fileName, pFileName);
     if ( pNtk == NULL )
         return 0;
     if ( Abc_NtkPiNum(pNtk) == 0 )

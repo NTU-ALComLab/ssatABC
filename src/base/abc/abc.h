@@ -155,6 +155,7 @@ struct Abc_Ntk_t_
     // general information 
     Abc_NtkType_t     ntkType;       // type of the network
     Abc_NtkFunc_t     ntkFunc;       // functionality of the network
+    char              fileName[256]; // the name of the file that is read for the network
     char *            pName;         // the network name
     char *            pSpec;         // the name of the spec file if present
     Nm_Man_t *        pManName;      // name manager (stores names of objects)

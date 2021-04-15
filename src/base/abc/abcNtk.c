@@ -122,6 +122,7 @@ Abc_Ntk_t * Abc_NtkStartFrom( Abc_Ntk_t * pNtk, Abc_NtkType_t Type, Abc_NtkFunc_
     pNtkNew->nConstrs   = pNtk->nConstrs;
     pNtkNew->nBarBufs   = pNtk->nBarBufs;
     // duplicate the name and the spec
+    strcpy(pNtkNew->fileName, pNtk->fileName);
     pNtkNew->pName = Extra_UtilStrsav(pNtk->pName);
     pNtkNew->pSpec = Extra_UtilStrsav(pNtk->pSpec);
     // clean the node copy fields
