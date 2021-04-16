@@ -40,6 +40,7 @@ static int Pb_CommandWritePMC(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandWriteSSAT(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandBddSp(Abc_Frame_t* pAbc, int argc, char** argv);
 static int Pb_CommandProbMiter(Abc_Frame_t* pAbc, int argc, char** argv);
+static int Pb_CommandGenFiles(Abc_Frame_t* pAbc, int argc, char** argv);
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -68,6 +69,7 @@ void Pb_Init(Abc_Frame_t* pAbc) {
   Cmd_CommandAdd(pAbc, "z prob", "write_ssat", Pb_CommandWriteSSAT, 0);
   Cmd_CommandAdd(pAbc, "z prob", "bddsp", Pb_CommandBddSp, 1);
   Cmd_CommandAdd(pAbc, "z prob", "probmiter", Pb_CommandProbMiter, 1);
+  Cmd_CommandAdd(pAbc, "z prob", "pb_gen_files", Pb_CommandGenFiles, 1);
   // initialize random seed
   srand(time(0));
 }
@@ -877,9 +879,116 @@ usage:
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////////
-///                       END OF FILE                                ///
-////////////////////////////////////////////////////////////////////////
+/**Function*************************************************************
+
+  Synopsis    [generate files for SPBN, SSAT, WMC, and PMC]
+
+  Description []
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+
+int Pb_CommandGenFiles(Abc_Frame_t* pAbc, int argc, char** argv) {
+  Abc_Ntk_t* pNtk;
+  float Error, Defect;
+  char outDir[256], fileName[256], baseName[256], command[1024];
+  int numPIs, c;
+
+  Error = 0.5;
+  Defect = 0.5;
+  sprintf(outDir, "%s", "./");
+
+  pNtk = Abc_FrameReadNtk(pAbc);
+
+  Extra_UtilGetoptReset();
+  while ((c = Extra_UtilGetopt(argc, argv, "EDOh")) != EOF) {
+    switch (c) {
+      case 'E':
+        if (globalUtilOptind >= argc) {
+          Abc_Print(
+              -1,
+              "Command line switch \"-E\" should be followed by a float.\n");
+          goto usage;
+        }
+        Error = (float)atof(argv[globalUtilOptind]);
+        globalUtilOptind++;
+        if (Error < 0.0 || Error > 1.0) goto usage;
+        break;
+      case 'D':
+        if (globalUtilOptind >= argc) {
+          Abc_Print(
+              -1,
+              "Command line switch \"-D\" should be followed by a float.\n");
+          goto usage;
+        }
+        Defect = (float)atof(argv[globalUtilOptind]);
+        globalUtilOptind++;
+        if (Defect < 0.0 || Defect > 1.0) goto usage;
+        break;
+      case 'O':
+        if (globalUtilOptind >= argc) {
+          Abc_Print(-1,
+                    "Command line switch \"-O\" should be followed by the path "
+                    "to an output directory.\n");
+          goto usage;
+        }
+        sprintf(outDir, "%s", argv[globalUtilOptind]);
+        globalUtilOptind++;
+        break;
+      case 'h':
+        goto usage;
+      default:
+        goto usage;
+    }
+  }
+  if (!pNtk) {
+    Abc_Print(-1, "Empty network.\n");
+    return 1;
+  }
+  if (!Abc_NtkIsStrash(pNtk)) {
+    Abc_Print(-1, "Only support strashed networks for now.\n");
+    return 1;
+  }
+  sprintf(fileName, "%s", pNtk->fileName);
+  char designName[128];
+  strncpy(designName, strrchr(fileName, '/') + 1,
+          strrchr(fileName, '.') - strrchr(fileName, '/') - 1);
+  designName[strrchr(fileName, '.') - strrchr(fileName, '/') - 1] = '\0';
+  sprintf(baseName, "%s-%.3f-%.2f", designName, Error, Defect);
+  numPIs = Abc_NtkPiNum(pNtk);
+  sprintf(command, "genprob -E %f -D %f", Error, Defect);
+  Cmd_CommandExecute(pAbc, command);
+  sprintf(command, "distill");
+  Cmd_CommandExecute(pAbc, command);
+  sprintf(command, "probmiter %s", fileName);
+  Cmd_CommandExecute(pAbc, command);
+  sprintf(command, "write_pbn -I %d %s%s-spbn.blif", numPIs, outDir, baseName);
+  Cmd_CommandExecute(pAbc, command);
+  sprintf(command, "write_ssat %sre-%s.sdimacs", outDir, baseName);
+  Cmd_CommandExecute(pAbc, command);
+  sprintf(command, "write_ssat -E %d %sere-%s.sdimacs", numPIs, outDir,
+          baseName);
+  Cmd_CommandExecute(pAbc, command);
+  sprintf(command, "write_wmc %s%s-wmc.wcnf", outDir, baseName);
+  Cmd_CommandExecute(pAbc, command);
+  sprintf(command, "write_pmc %s%s-pmc.dimacs", outDir, baseName);
+  Cmd_CommandExecute(pAbc, command);
+  return 0;
+
+usage:
+  Abc_Print(-2, "usage    : pb_gen_files [-E <num>] [-D <num>] [-O <dir>]\n");
+  Abc_Print(-2, "\t         generate SPBN, SSAT, WMC, and PMC files\n");
+  Abc_Print(-2, "\t-E error  : the error rate of a gate [default = %f]\n",
+            Error);
+  Abc_Print(-2, "\t-D defect : the defect rate of a design [default = %f]\n",
+            Defect);
+  Abc_Print(-2, "\t-O outdir : the output directory [default = %s]\n", outDir);
+  Abc_Print(-2, "\t-h     : print the command usage\n");
+  return 1;
+}
 
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
