@@ -1,0 +1,149 @@
+# PBN EPFL/random_control/ctrl_distill_EPFL/random_control/ctrl_miter written by probABC
+.model EPFL/random_control/ctrl_distill_EPFL/random_control/ctrl_miter
+# .numpi 7
+# .prob pi0 0.500000
+# .prob pi1 0.500000
+# .prob pi2 0.500000
+# .prob pi3 0.500000
+# .prob pi4 0.500000
+# .prob pi5 0.500000
+# .prob pi6 0.500000
+# .prob pi7 0.125000
+# .prob pi8 0.125000
+# .prob pi9 0.125000
+.inputs pi0
+.inputs pi1
+.inputs pi2
+.inputs pi3
+.inputs pi4
+.inputs pi5
+.inputs pi6
+.inputs pi7
+.inputs pi8
+.inputs pi9
+.outputs miter
+.names pi3 pi4 13
+11 1
+.names pi3 pi4 21
+00 1
+.names pi3 21 30
+00 1
+.names pi3 pi4 34
+01 1
+.names pi3 34 35
+00 1
+.names pi3 13 41
+10 1
+.names pi0 41 42
+10 1
+.names pi0 pi3 57
+01 1
+.names pi4 pi5 58
+11 1
+.names 57 58 59
+11 1
+.names pi3 pi6 60
+10 1
+.names 13 60 61
+01 1
+.names pi3 pi5 62
+10 1
+.names 13 62 63
+01 1
+.names pi3 pi5 64
+11 1
+.names 63 64 65
+00 1
+.names pi6 65 66
+10 1
+.names 61 66 67
+00 1
+.names pi0 67 68
+10 1
+.names 59 68 69
+00 1
+.names pi1 69 70
+10 1
+.names pi2 70 71
+00 1
+.names pi0 30 72
+10 1
+.names pi0 72 73
+10 1
+.names pi2 73 74
+10 1
+.names pi7 74 75
+10 1
+.names pi7 74 76
+01 1
+.names 75 76 77
+00 1
+.names 71 77 78
+01 1
+.names pi0 35 119
+00 1
+.names pi0 119 120
+00 1
+.names pi1 120 121
+00 1
+.names pi1 121 122
+00 1
+.names pi8 122 123
+10 1
+.names pi8 122 124
+01 1
+.names 123 124 125
+00 1
+.names pi2 125 126
+01 1
+.names pi2 126 127
+00 1
+.names pi0 42 147
+10 1
+.names pi1 147 152
+10 1
+.names pi1 152 153
+10 1
+.names pi2 153 154
+10 1
+.names pi9 154 155
+10 1
+.names pi9 154 156
+01 1
+.names 155 156 157
+00 1
+.names pi2 157 158
+11 1
+.names 71 74 195
+00 1
+.names pi2 122 196
+00 1
+.names pi2 196 197
+00 1
+.names pi2 154 198
+10 1
+.names 78 195 199
+01 1
+.names 78 195 200
+10 1
+.names 199 200 201
+00 1
+.names 127 197 202
+01 1
+.names 127 197 203
+10 1
+.names 202 203 204
+00 1
+.names 158 198 205
+01 1
+.names 158 198 206
+10 1
+.names 205 206 207
+00 1
+.names 201 204 208
+11 1
+.names 207 208 209
+11 1
+.names 209 miter
+0 1
+.end

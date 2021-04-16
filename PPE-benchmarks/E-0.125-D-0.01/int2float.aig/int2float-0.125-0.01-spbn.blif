@@ -1,0 +1,193 @@
+# PBN EPFL/random_control/int2float_distill_EPFL/random_control/int2float_miter written by probABC
+.model EPFL/random_control/int2float_distill_EPFL/random_control/int2float_miter
+# .numpi 11
+# .prob pi00 0.500000
+# .prob pi01 0.500000
+# .prob pi02 0.500000
+# .prob pi03 0.500000
+# .prob pi04 0.500000
+# .prob pi05 0.500000
+# .prob pi06 0.500000
+# .prob pi07 0.500000
+# .prob pi08 0.500000
+# .prob pi09 0.500000
+# .prob pi10 0.500000
+# .prob pi11 0.125000
+.inputs pi00
+.inputs pi01
+.inputs pi02
+.inputs pi03
+.inputs pi04
+.inputs pi05
+.inputs pi06
+.inputs pi07
+.inputs pi08
+.inputs pi09
+.inputs pi10
+.inputs pi11
+.outputs miter
+.names pi05 pi07 28
+10 1
+.names pi03 pi04 88
+11 1
+.names pi05 pi06 121
+10 1
+.names pi01 121 125
+01 1
+.names pi04 pi06 142
+10 1
+.names pi00 pi03 143
+10 1
+.names 142 143 144
+11 1
+.names pi04 pi05 145
+01 1
+.names pi03 145 146
+11 1
+.names 144 146 147
+00 1
+.names pi01 147 148
+10 1
+.names pi04 pi06 149
+00 1
+.names pi00 pi01 150
+11 1
+.names pi04 150 151
+10 1
+.names pi03 151 152
+11 1
+.names 149 152 153
+00 1
+.names pi05 153 154
+00 1
+.names 148 154 155
+00 1
+.names pi02 155 156
+10 1
+.names pi03 pi06 157
+10 1
+.names pi02 157 158
+01 1
+.names pi03 pi05 159
+01 1
+.names 158 159 160
+00 1
+.names pi04 160 161
+10 1
+.names 156 161 162
+00 1
+.names pi07 162 163
+00 1
+.names pi05 pi06 164
+01 1
+.names pi02 164 165
+11 1
+.names 125 165 166
+00 1
+.names pi04 166 167
+10 1
+.names pi03 167 168
+11 1
+.names pi11 168 169
+10 1
+.names pi11 168 170
+01 1
+.names 169 170 171
+00 1
+.names pi05 88 172
+10 1
+.names pi06 172 173
+11 1
+.names 171 173 174
+10 1
+.names 163 174 175
+01 1
+.names pi08 175 176
+00 1
+.names pi06 pi07 177
+01 1
+.names pi03 177 178
+11 1
+.names pi06 pi07 179
+10 1
+.names pi02 179 180
+01 1
+.names 178 180 181
+00 1
+.names pi05 181 182
+10 1
+.names pi04 182 183
+11 1
+.names pi04 pi05 184
+11 1
+.names pi07 184 185
+10 1
+.names pi06 185 186
+11 1
+.names 183 186 187
+00 1
+.names 176 187 188
+01 1
+.names pi09 188 189
+00 1
+.names pi04 pi06 190
+11 1
+.names 28 190 191
+11 1
+.names 177 191 192
+00 1
+.names pi08 192 193
+10 1
+.names 189 193 194
+00 1
+.names pi10 194 195
+00 1
+.names pi08 pi10 196
+11 1
+.names pi08 pi09 197
+01 1
+.names pi05 197 198
+11 1
+.names 196 198 199
+00 1
+.names pi07 199 200
+10 1
+.names pi06 200 201
+11 1
+.names pi05 pi07 202
+11 1
+.names pi08 202 203
+10 1
+.names pi10 203 204
+00 1
+.names pi09 204 205
+10 1
+.names 201 205 206
+00 1
+.names 195 206 207
+01 1
+.names 168 173 277
+00 1
+.names 163 277 278
+01 1
+.names pi08 278 279
+00 1
+.names 187 279 280
+10 1
+.names pi09 280 281
+00 1
+.names 193 281 282
+00 1
+.names pi10 282 283
+00 1
+.names 206 283 284
+10 1
+.names 207 284 285
+10 1
+.names 207 284 286
+01 1
+.names 285 286 287
+00 1
+.names 287 miter
+0 1
+.end
