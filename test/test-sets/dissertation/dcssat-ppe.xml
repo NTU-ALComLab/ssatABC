@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="dcssat" timelimit="900 s" hardtimelimit="1000 s" memlimit="15 GB" cpuCores="1">
+  <rundefinition name="default">
+  </rundefinition>
+
+  <tasks name="average-D-0.1">
+      <include>../../../PPE-benchmarks/E-0.125-D-0.1/*/re-*.sdimacs</include>
+  </tasks>
+  
+  <tasks name="worst-D-0.1">
+      <include>../../../PPE-benchmarks/E-0.125-D-0.1/*/ere-*.sdimacs</include>
+  </tasks>
+  
+  <tasks name="average-D-0.01">
+      <include>../../../PPE-benchmarks/E-0.125-D-0.01/*/re-*.sdimacs</include>
+  </tasks>
+  
+  <tasks name="worst-D-0.01">
+      <include>../../../PPE-benchmarks/E-0.125-D-0.01/*/ere-*.sdimacs</include>
+  </tasks>
+</benchmark>

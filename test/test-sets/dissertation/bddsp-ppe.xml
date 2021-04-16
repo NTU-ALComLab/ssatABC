@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="abc" timelimit="900 s" hardtimelimit="1000 s" memlimit="15 GB" cpuCores="1">
+  <rundefinition name="average-case">
+      <option name="-c">st; bddsp -r</option>
+  </rundefinition>
+  
+  <rundefinition name="worst-case">
+      <option name="-c">st; bddsp -rw</option>
+  </rundefinition>
+
+  <tasks name="D-0.1">
+      <include>../../../PPE-benchmarks/E-0.125-D-0.1/*/*-spbn.blif</include>
+  </tasks>
+
+  <tasks name="D-0.01">
+      <include>../../../PPE-benchmarks/E-0.125-D-0.01/*/*-spbn.blif</include>
+  </tasks>
+</benchmark>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="abc" timelimit="900 s" hardtimelimit="1000 s" memlimit="8 GB" cpuCores="1">
+  <rundefinition name="E-0.125-D-0.1">
+      <option name="-c">st; pb_gen_files -E 0.125 -D 0.1</option>
+  </rundefinition>
+  
+  <rundefinition name="E-0.125-D-0.01">
+      <option name="-c">st; pb_gen_files -E 0.125 -D 0.01</option>
+  </rundefinition>
+
+  <tasks name="ISCAS">
+      <include>../../../ISCAS/*.bench</include>
+  </tasks>
+  
+  <tasks name="EPFL">
+      <include>../../../EPFL/random_control/*.aig</include>
+      <include>../../../EPFL/arithmetic/*.aig</include>
+  </tasks>
+</benchmark>
