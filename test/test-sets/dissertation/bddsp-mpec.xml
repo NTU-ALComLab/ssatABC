@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE benchmark PUBLIC "+//IDN sosy-lab.org//DTD BenchExec benchmark 1.18//EN" "https://www.sosy-lab.org/benchexec/benchmark-1.18.dtd">
+<benchmark tool="abc" timelimit="900 s" hardtimelimit="1000 s" memlimit="15 GB" cpuCores="1">
+  <rundefinition name="default">
+      <option name="-c">st; bddsp -rw</option>
+  </rundefinition>
+
+  <tasks name="D-0.10">
+      <includesfile>../../../PPE-benchmarks/MPEC-D-0.10.set</includesfile>
+  </tasks>
+
+  <tasks name="D-0.01">
+      <includesfile>../../../PPE-benchmarks/MPEC-D-0.01.set</includesfile>
+  </tasks>
+</benchmark>
