@@ -17,6 +17,13 @@
 # .prob pi13 0.125000
 # .prob pi14 0.125000
 # .prob pi15 0.125000
+# .prob pi16 0.125000
+# .prob pi17 0.125000
+# .prob pi18 0.125000
+# .prob pi19 0.125000
+# .prob pi20 0.125000
+# .prob pi21 0.125000
+# .prob pi22 0.125000
 .inputs pi00
 .inputs pi01
 .inputs pi02
@@ -33,975 +40,1596 @@
 .inputs pi13
 .inputs pi14
 .inputs pi15
+.inputs pi16
+.inputs pi17
+.inputs pi18
+.inputs pi19
+.inputs pi20
+.inputs pi21
+.inputs pi22
 .outputs miter
-.names pi03 pi05 18
+.names pi00 pi02 25
 00 1
-.names pi01 pi09 19
+.names pi01 pi03 26
+00 1
+.names pi06 pi08 27
 01 1
-.names pi00 pi09 20
-01 1
-.names pi01 20 21
+.names pi05 27 28
 10 1
-.names 19 21 22
+.names pi06 pi09 29
 00 1
-.names 18 22 23
+.names pi04 pi08 30
 11 1
-.names pi00 pi09 24
+.names 29 30 31
+00 1
+.names 28 31 32
 10 1
-.names pi01 24 25
-00 1
-.names pi01 pi09 26
-10 1
-.names pi07 26 27
-00 1
-.names 25 27 28
-01 1
-.names 23 28 29
-00 1
-.names pi02 29 30
-00 1
-.names pi02 pi05 31
-00 1
-.names pi00 31 32
-00 1
-.names pi01 pi02 33
+.names pi04 pi09 33
 11 1
-.names 32 33 34
-00 1
-.names pi09 34 35
-00 1
-.names pi02 pi03 36
-00 1
-.names pi09 36 37
+.names pi06 pi09 34
 10 1
-.names pi00 pi03 38
+.names 33 34 35
+00 1
+.names pi05 pi06 36
 11 1
-.names 37 38 39
+.names pi08 36 37
 00 1
-.names pi01 39 40
-00 1
-.names pi01 pi03 41
-10 1
-.names 40 41 42
-00 1
-.names 35 42 43
+.names 35 37 38
 01 1
-.names pi07 43 44
+.names 32 38 39
 00 1
-.names 30 44 45
-00 1
-.names pi08 45 46
-00 1
-.names pi07 pi08 47
+.names pi07 25 40
+01 1
+.names 26 40 41
 11 1
-.names pi05 47 48
+.names 39 41 42
 01 1
+.names pi07 pi08 43
+11 1
+.names pi05 43 44
+01 1
+.names pi00 pi09 45
+00 1
+.names pi01 pi02 46
+01 1
+.names 45 46 47
+11 1
+.names 44 47 48
+11 1
 .names pi07 pi09 49
 01 1
-.names 48 49 50
+.names 44 49 50
 00 1
 .names pi01 50 51
 10 1
-.names pi01 pi07 52
-10 1
-.names pi05 pi09 53
+.names pi05 pi09 52
 00 1
+.names pi01 pi07 53
+10 1
 .names 52 53 54
-01 1
+10 1
 .names 51 54 55
 00 1
 .names pi00 pi02 56
 10 1
-.names 55 56 57
-01 1
-.names pi02 pi09 58
-10 1
-.names pi00 pi01 59
+.names pi10 56 57
 00 1
-.names 58 59 60
+.names pi10 56 58
 11 1
+.names 57 58 59
+00 1
+.names 55 59 60
+01 1
 .names 48 60 61
-11 1
-.names 57 61 62
 00 1
-.names pi03 62 63
+.names pi03 61 62
 00 1
-.names 46 63 64
+.names pi03 pi05 63
 00 1
-.names pi06 64 65
-00 1
-.names pi00 pi02 66
-00 1
-.names 19 66 67
-11 1
-.names pi05 67 68
-00 1
-.names pi06 68 69
-10 1
-.names pi00 pi09 70
-00 1
-.names pi00 pi09 71
-11 1
-.names 70 71 72
-00 1
-.names pi01 72 73
-10 1
-.names pi02 73 74
-11 1
-.names pi05 74 75
-11 1
-.names 69 75 76
-00 1
-.names pi08 76 77
-10 1
-.names pi01 20 78
-00 1
-.names pi08 78 79
-00 1
-.names pi01 pi02 80
+.names pi00 pi09 64
 01 1
-.names pi10 80 81
+.names pi01 64 65
 10 1
-.names pi10 80 82
+.names pi01 pi09 66
 01 1
-.names 81 82 83
-00 1
-.names 24 83 84
+.names 63 66 67
 10 1
-.names 79 84 85
-00 1
-.names pi05 85 86
-00 1
-.names 77 86 87
-00 1
-.names pi03 87 88
-10 1
-.names pi02 24 89
-00 1
-.names pi06 89 90
-10 1
-.names 36 73 91
-11 1
-.names 90 91 92
-00 1
-.names pi05 92 93
-10 1
-.names pi02 pi09 94
-11 1
-.names pi02 26 95
+.names 65 67 68
 01 1
-.names 94 95 96
+.names pi00 pi09 69
+10 1
+.names pi01 69 70
 00 1
-.names pi00 pi03 97
+.names pi01 pi09 71
+10 1
+.names pi07 71 72
 00 1
-.names 96 97 98
+.names 70 72 73
 01 1
-.names pi06 98 99
-11 1
-.names 93 99 100
+.names 68 73 74
 00 1
-.names pi08 100 101
+.names pi02 74 75
+00 1
+.names pi01 pi03 76
 10 1
-.names pi02 pi03 102
+.names pi00 pi05 77
+01 1
+.names pi00 pi01 78
 10 1
-.names 19 102 103
+.names pi02 78 79
+10 1
+.names 77 79 80
+00 1
+.names pi09 80 81
+00 1
+.names pi02 pi03 82
+00 1
+.names pi09 82 83
+10 1
+.names pi00 pi03 84
 11 1
-.names pi01 pi08 104
+.names 83 84 85
+00 1
+.names pi01 85 86
+00 1
+.names 76 81 87
+00 1
+.names 86 87 88
+01 1
+.names pi07 88 89
+00 1
+.names 75 89 90
+00 1
+.names pi08 90 91
+00 1
+.names 62 91 92
+00 1
+.names pi06 92 93
+00 1
+.names pi00 pi03 94
+00 1
+.names pi02 pi09 95
+11 1
+.names pi02 71 96
+01 1
+.names 95 96 97
+00 1
+.names pi06 94 98
+11 1
+.names 97 98 99
+01 1
+.names pi02 69 100
+00 1
+.names pi06 100 101
 10 1
+.names pi00 pi09 102
+11 1
+.names pi11 102 103
+00 1
+.names pi11 102 104
+11 1
 .names 103 104 105
 00 1
-.names pi00 105 106
+.names 45 105 106
 00 1
-.names pi01 pi09 107
-00 1
-.names pi02 pi06 108
-01 1
-.names pi03 108 109
+.names pi01 106 107
 10 1
-.names 107 109 110
+.names 82 107 108
+11 1
+.names pi12 108 109
+01 1
+.names pi12 108 110
 10 1
-.names 94 110 111
+.names 101 109 111
 00 1
-.names pi08 111 112
-00 1
-.names 106 112 113
-00 1
-.names pi05 113 114
-00 1
-.names pi00 36 115
+.names 110 111 112
 01 1
-.names pi08 107 116
-01 1
-.names 115 116 117
-11 1
-.names 114 117 118
-00 1
-.names 101 118 119
-01 1
-.names 88 119 120
-01 1
-.names pi07 120 121
-00 1
-.names 65 121 122
-00 1
-.names pi04 122 123
-00 1
-.names pi08 pi09 124
-00 1
-.names pi06 124 125
-01 1
-.names pi04 pi08 126
-11 1
-.names pi06 126 127
-11 1
-.names 125 127 128
-00 1
-.names pi11 128 129
+.names pi05 112 113
 10 1
-.names pi11 128 130
+.names 99 113 114
+00 1
+.names pi08 114 115
+10 1
+.names pi01 pi08 116
+10 1
+.names pi02 pi03 117
+10 1
+.names 66 117 118
+11 1
+.names 116 118 119
+00 1
+.names pi00 119 120
+00 1
+.names pi01 pi09 121
+00 1
+.names pi02 pi06 122
+01 1
+.names pi03 122 123
+10 1
+.names 121 123 124
+10 1
+.names 95 124 125
+00 1
+.names pi08 125 126
+00 1
+.names 120 126 127
+00 1
+.names pi05 127 128
+00 1
+.names pi08 121 129
+01 1
+.names pi00 82 130
 01 1
 .names 129 130 131
-00 1
-.names pi05 131 132
 11 1
-.names pi06 pi09 133
+.names 128 131 132
+00 1
+.names pi01 64 133
+00 1
+.names pi08 133 134
+00 1
+.names 46 69 135
+11 1
+.names 134 135 136
+00 1
+.names pi05 136 137
+00 1
+.names 25 66 138
+11 1
+.names pi05 138 139
+00 1
+.names pi06 139 140
 10 1
-.names pi04 pi09 134
+.names pi02 pi05 141
 11 1
-.names 133 134 135
-00 1
-.names pi05 pi06 136
+.names 107 141 142
 11 1
-.names 135 136 137
-00 1
-.names pi08 137 138
-01 1
-.names 132 138 139
-00 1
-.names pi07 139 140
-00 1
-.names pi01 pi03 141
-00 1
-.names pi02 141 142
-01 1
 .names 140 142 143
-11 1
-.names pi00 143 144
-01 1
-.names 123 144 145
 00 1
-.names pi00 pi08 146
-11 1
-.names 94 146 147
-11 1
-.names pi02 pi08 148
-00 1
-.names 70 148 149
-11 1
-.names 147 149 150
-00 1
-.names pi05 150 151
+.names pi08 143 144
 10 1
-.names pi05 pi08 152
-01 1
-.names pi06 pi09 153
-11 1
-.names 152 153 154
+.names 137 144 145
 00 1
-.names pi00 154 155
-00 1
-.names pi08 153 156
-11 1
-.names pi08 53 157
-01 1
-.names 156 157 158
-00 1
-.names 155 158 159
-01 1
-.names pi02 159 160
+.names pi03 145 146
 10 1
-.names pi12 160 161
+.names 132 146 147
 10 1
-.names pi12 160 162
+.names 115 147 148
 01 1
-.names 161 162 163
+.names pi07 148 149
 00 1
-.names 151 163 164
-01 1
-.names pi04 164 165
+.names 93 149 150
 00 1
-.names pi06 pi09 166
+.names 55 56 151
 01 1
-.names pi05 pi08 167
+.names 48 151 152
+00 1
+.names pi03 152 153
+00 1
+.names 91 153 154
+00 1
+.names pi06 154 155
+00 1
+.names 45 102 156
+00 1
+.names pi01 156 157
 10 1
-.names 126 167 168
-00 1
-.names pi06 168 169
-00 1
-.names 134 169 170
-00 1
-.names 166 170 171
-00 1
-.names 66 171 172
+.names 141 157 158
 11 1
-.names 165 172 173
+.names 140 158 159
 00 1
-.names pi01 173 174
-00 1
-.names pi06 pi08 175
-11 1
-.names 154 175 176
-00 1
-.names pi00 176 177
-11 1
-.names pi00 pi05 178
-01 1
-.names pi08 pi09 179
-01 1
-.names 178 179 180
-11 1
-.names 177 180 181
-00 1
-.names pi02 181 182
-00 1
-.names pi06 pi08 183
-00 1
-.names pi00 pi06 184
-01 1
-.names pi02 184 185
-00 1
-.names 152 185 186
+.names pi08 159 160
 10 1
-.names 183 186 187
+.names 137 160 161
 00 1
-.names pi09 187 188
-00 1
-.names 182 188 189
-00 1
-.names pi01 189 190
+.names pi03 161 162
 10 1
-.names pi06 pi08 191
+.names 82 157 163
+11 1
+.names 101 163 164
+00 1
+.names pi05 164 165
+10 1
+.names 99 165 166
+00 1
+.names pi08 166 167
+10 1
+.names 132 162 168
+10 1
+.names 167 168 169
 01 1
-.names 58 191 192
+.names pi07 169 170
+00 1
+.names 155 170 171
+00 1
+.names 42 171 172
+00 1
+.names 150 172 173
 11 1
-.names 190 192 193
-00 1
-.names pi04 193 194
-00 1
-.names 174 194 195
-00 1
-.names pi03 195 196
-00 1
-.names pi05 148 197
-11 1
-.names pi03 pi08 198
-00 1
-.names 152 198 199
-00 1
-.names pi00 199 200
-11 1
-.names 197 200 201
-00 1
-.names pi01 201 202
-00 1
-.names pi03 pi08 203
-11 1
-.names pi02 203 204
-00 1
-.names pi00 204 205
-00 1
-.names pi02 pi08 206
+.names pi02 pi04 174
 01 1
-.names pi00 206 207
+.names 94 174 175
 11 1
-.names pi00 pi05 208
-10 1
-.names 178 208 209
-00 1
-.names 207 209 210
+.names pi01 175 176
 01 1
-.names pi01 210 211
+.names 36 176 177
+00 1
+.names pi07 177 178
+00 1
+.names pi01 pi05 179
+00 1
+.names pi02 179 180
 10 1
-.names 205 211 212
-00 1
-.names 202 212 213
-01 1
-.names pi06 213 214
-00 1
-.names pi01 pi06 215
-01 1
-.names pi02 215 216
+.names 29 180 181
 10 1
-.names pi01 pi08 217
-00 1
-.names 216 217 218
-00 1
-.names pi03 218 219
+.names pi01 pi09 182
 11 1
-.names pi00 pi08 220
+.names pi17 182 183
+00 1
+.names pi17 182 184
+11 1
+.names 183 184 185
+00 1
+.names pi05 185 186
+11 1
+.names 181 186 187
+00 1
+.names pi00 187 188
+10 1
+.names pi00 pi02 189
 01 1
-.names pi01 pi06 221
-00 1
-.names pi00 pi01 222
-11 1
-.names 221 222 223
-00 1
-.names 220 223 224
+.names 52 189 190
 01 1
-.names pi02 224 225
+.names 188 190 191
+00 1
+.names pi08 191 192
+10 1
+.names pi09 189 193
+11 1
+.names 129 193 194
+00 1
+.names pi05 194 195
+10 1
+.names pi08 pi09 196
+00 1
+.names pi08 pi09 197
+11 1
+.names 196 197 198
+00 1
+.names pi02 pi08 199
+00 1
+.names pi02 pi08 200
+11 1
+.names 199 200 201
+00 1
+.names pi06 198 202
+10 1
+.names 201 202 203
 01 1
-.names 219 225 226
+.names 195 203 204
 00 1
-.names pi05 226 227
-00 1
-.names 214 227 228
-00 1
-.names pi09 228 229
-00 1
-.names pi01 pi05 230
-11 1
-.names pi03 pi08 231
-10 1
-.names pi01 pi02 232
-00 1
-.names 231 232 233
-11 1
-.names 230 233 234
-00 1
-.names pi00 234 235
-10 1
-.names pi05 36 236
-10 1
-.names pi03 33 237
-11 1
-.names 236 237 238
-00 1
-.names 235 238 239
+.names 192 204 205
 01 1
-.names pi06 239 240
+.names pi07 205 206
+00 1
+.names pi05 pi06 207
+00 1
+.names pi07 pi09 208
 10 1
-.names 167 237 241
+.names pi08 208 209
+10 1
+.names 46 209 210
+10 1
+.names 96 210 211
+00 1
+.names pi00 211 212
+00 1
+.names pi00 pi08 213
 11 1
-.names 240 241 242
+.names 185 213 214
+11 1
+.names 196 214 215
 00 1
-.names pi09 242 243
-10 1
-.names 229 243 244
-00 1
-.names pi04 244 245
-00 1
-.names 196 245 246
-00 1
-.names pi07 246 247
-00 1
-.names pi02 59 248
-10 1
-.names 89 222 249
-10 1
-.names 248 249 250
-00 1
-.names pi08 250 251
+.names pi02 pi07 216
 01 1
-.names 26 206 252
-11 1
-.names 251 252 253
+.names 215 216 217
+01 1
+.names 212 217 218
 00 1
-.names pi07 253 254
+.names 207 218 219
 10 1
-.names 60 254 255
+.names 206 219 220
 00 1
-.names pi04 255 256
+.names pi03 220 221
+00 1
+.names pi02 pi09 222
+10 1
+.names pi01 222 223
+11 1
+.names 129 185 224
+00 1
+.names pi00 224 225
+10 1
+.names 121 185 226
+00 1
+.names pi01 pi08 227
+00 1
+.names pi00 pi06 228
+00 1
+.names 227 228 229
+01 1
+.names 226 229 230
+11 1
+.names 223 225 231
+00 1
+.names 230 231 232
+01 1
+.names pi05 232 233
+00 1
+.names 116 189 234
+10 1
+.names pi06 pi08 235
+11 1
+.names pi00 235 236
+11 1
+.names pi02 236 237
+01 1
+.names 234 237 238
+00 1
+.names pi09 238 239
+10 1
+.names pi00 pi08 240
+00 1
+.names pi00 pi05 241
+10 1
+.names 71 240 242
+10 1
+.names 241 242 243
+01 1
+.names 239 243 244
+00 1
+.names 233 244 245
+01 1
+.names pi03 245 246
+10 1
+.names pi02 pi05 247
+01 1
+.names 106 247 248
+01 1
+.names pi02 pi05 249
+10 1
+.names pi06 249 250
+00 1
+.names 64 250 251
+10 1
+.names 248 251 252
+00 1
+.names pi08 252 253
+00 1
+.names pi08 105 254
+11 1
+.names pi02 196 255
+10 1
+.names 254 255 256
 00 1
 .names pi06 256 257
+10 1
+.names 253 257 258
+00 1
+.names pi01 258 259
+10 1
+.names 64 200 260
+11 1
+.names pi02 pi09 261
+00 1
+.names pi05 pi08 262
+11 1
+.names pi06 pi08 263
+10 1
+.names pi00 263 264
+00 1
+.names 261 262 265
+10 1
+.names 264 265 266
 01 1
-.names 18 257 258
-11 1
-.names 247 258 259
+.names 260 266 267
 00 1
-.names pi03 pi09 260
+.names pi01 267 268
+00 1
+.names 259 268 269
+00 1
+.names 246 269 270
 01 1
-.names pi03 206 264
-10 1
-.names pi02 pi05 266
-10 1
-.names pi01 260 288
+.names pi07 270 271
+00 1
+.names 221 271 272
+00 1
+.names pi05 182 273
 11 1
-.names pi08 71 304
+.names 181 273 274
+00 1
+.names pi00 274 275
+10 1
+.names 190 275 276
+00 1
+.names pi08 276 277
+10 1
+.names 204 277 278
+10 1
+.names pi07 278 279
+00 1
+.names pi00 pi01 280
 11 1
-.names pi01 pi03 315
+.names pi08 280 281
+10 1
+.names 198 216 282
 01 1
-.names pi01 pi09 325
-11 1
-.names pi06 19 334
-10 1
-.names 107 325 337
-00 1
-.names pi05 pi06 347
-00 1
-.names pi08 pi09 361
-11 1
-.names pi03 pi05 391
-10 1
-.names pi00 232 430
+.names 281 282 283
 01 1
-.names pi01 pi05 440
+.names 212 283 284
 00 1
-.names pi02 440 441
+.names 207 284 285
 10 1
-.names pi09 441 442
+.names 279 285 286
 00 1
-.names pi13 442 443
-10 1
-.names pi13 442 444
+.names pi03 286 287
+00 1
+.names 156 247 288
 01 1
-.names 443 444 445
+.names 251 288 289
 00 1
-.names pi06 445 446
+.names pi08 289 290
 00 1
-.names pi05 325 447
+.names pi08 102 291
 11 1
-.names 446 447 448
+.names 255 291 292
 00 1
-.names pi00 448 449
+.names pi06 292 293
 10 1
-.names pi00 53 450
+.names 290 293 294
 00 1
-.names pi02 450 451
-11 1
-.names 449 451 452
-00 1
-.names pi08 452 453
+.names pi01 294 295
 10 1
-.names pi02 20 454
-11 1
-.names 116 454 455
+.names 129 182 296
 00 1
-.names pi05 455 456
+.names pi00 296 297
 10 1
-.names 453 456 457
+.names 121 182 298
 00 1
-.names 124 361 458
+.names 222 229 299
 00 1
-.names pi06 458 459
+.names 298 299 300
 10 1
-.names pi02 pi09 460
+.names 297 300 301
+00 1
+.names pi05 301 302
+00 1
+.names 244 302 303
+10 1
+.names pi03 303 304
+10 1
+.names 268 295 305
+00 1
+.names 304 305 306
 01 1
-.names 58 460 461
+.names pi07 306 307
 00 1
-.names 459 461 462
+.names 287 307 308
+00 1
+.names 272 308 309
+00 1
+.names 272 308 310
 11 1
-.names 457 462 463
-10 1
-.names pi07 463 464
+.names 178 309 311
 00 1
-.names pi07 pi09 465
-10 1
-.names pi08 465 466
-10 1
-.names 83 466 467
-00 1
-.names 95 467 468
-00 1
-.names pi00 468 469
-00 1
-.names 146 325 470
-11 1
-.names 124 470 471
-00 1
-.names pi07 471 472
-10 1
-.names pi14 472 473
-10 1
-.names pi14 472 474
+.names 310 311 312
 01 1
-.names 473 474 475
-00 1
-.names pi02 475 476
-00 1
-.names 469 476 477
-00 1
-.names 347 477 478
+.names pi06 63 313
+01 1
+.names pi04 47 314
+01 1
+.names 313 314 315
+11 1
+.names pi03 227 316
 10 1
-.names 464 478 479
-00 1
-.names pi03 479 480
-00 1
-.names 116 325 481
-00 1
-.names pi00 481 482
+.names pi01 pi06 317
+01 1
+.names pi02 317 318
 10 1
-.names pi02 26 483
+.names 316 318 319
+10 1
+.names pi14 319 320
+00 1
+.names pi14 319 321
+11 1
+.names 320 321 322
+00 1
+.names pi13 317 323
+01 1
+.names pi13 317 324
+10 1
+.names pi02 323 325
+10 1
+.names 324 325 326
+01 1
+.names 316 326 327
+10 1
+.names 322 327 328
+00 1
+.names pi00 pi08 329
+01 1
+.names pi01 pi06 330
+00 1
+.names pi02 280 331
+00 1
+.names 329 330 332
+00 1
+.names 331 332 333
+11 1
+.names 322 327 334
+11 1
+.names pi03 pi08 335
+11 1
+.names pi02 335 336
+00 1
+.names pi00 336 337
+00 1
+.names pi05 199 338
+11 1
+.names pi03 pi08 339
+00 1
+.names pi05 pi08 340
+01 1
+.names 339 340 341
+00 1
+.names pi00 341 342
+11 1
+.names 338 342 343
+00 1
+.names pi01 343 344
+00 1
+.names pi02 pi08 345
+01 1
+.names pi00 345 346
+11 1
+.names 77 241 347
+00 1
+.names 346 347 348
+01 1
+.names pi01 348 349
+10 1
+.names 337 349 350
+00 1
+.names 344 350 351
+01 1
+.names pi06 351 352
+00 1
+.names pi05 pi08 353
+10 1
+.names 30 353 354
+00 1
+.names pi06 354 355
+00 1
+.names 33 355 356
+00 1
+.names pi06 pi09 357
+01 1
+.names 25 357 358
+10 1
+.names 356 358 359
+01 1
+.names 45 199 360
+11 1
+.names pi02 291 361
+11 1
+.names 360 361 362
+00 1
+.names pi05 362 363
+10 1
+.names pi09 235 364
+11 1
+.names pi06 pi09 365
+11 1
+.names 340 365 366
+00 1
+.names pi00 366 367
+00 1
+.names pi08 52 368
+01 1
+.names 364 368 369
+00 1
+.names 367 369 370
+01 1
+.names pi02 370 371
+10 1
+.names 363 371 372
+00 1
+.names pi04 372 373
+00 1
+.names pi01 359 374
+00 1
+.names 373 374 375
+01 1
+.names pi06 pi08 376
+00 1
+.names pi00 pi06 377
+01 1
+.names pi02 377 378
+00 1
+.names 340 378 379
+10 1
+.names 376 379 380
+00 1
+.names pi09 380 381
+00 1
+.names pi08 pi09 382
+01 1
+.names 77 382 383
+11 1
+.names pi00 235 384
+10 1
+.names 366 384 385
+01 1
+.names 383 385 386
+00 1
+.names pi02 386 387
+00 1
+.names pi01 381 388
+10 1
+.names 387 388 389
+01 1
+.names 375 389 390
+00 1
+.names 27 222 391
+11 1
+.names 390 391 392
+00 1
+.names pi03 392 393
+00 1
+.names pi07 52 394
+01 1
+.names 333 394 395
+01 1
+.names 315 395 396
+01 1
+.names 328 396 397
+01 1
+.names 334 397 398
+01 1
+.names 352 398 399
+01 1
+.names 393 399 400
+01 1
+.names pi03 197 401
+10 1
+.names 213 401 402
+00 1
+.names pi06 402 403
+00 1
+.names pi03 pi09 404
+01 1
+.names pi08 404 405
+11 1
+.names 403 405 406
+00 1
+.names pi02 406 407
+10 1
+.names 29 339 408
+11 1
+.names 407 408 409
+00 1
+.names 228 335 410
+11 1
+.names 263 410 411
+00 1
+.names pi09 411 412
+10 1
+.names pi09 235 413
+01 1
+.names pi20 413 414
+10 1
+.names pi03 pi08 415
+01 1
+.names 365 415 416
+00 1
+.names pi00 416 417
+10 1
+.names pi20 413 418
+01 1
+.names 414 417 419
+00 1
+.names 418 419 420
+01 1
+.names 412 420 421
+01 1
+.names pi02 421 422
+00 1
+.names 409 422 423
+10 1
+.names pi01 423 424
+10 1
+.names 198 377 425
+01 1
+.names pi06 197 426
+00 1
+.names 100 426 427
+11 1
+.names 425 427 428
+00 1
+.names pi03 428 429
+10 1
+.names pi00 199 430
+01 1
+.names 236 430 431
+00 1
+.names pi09 431 432
+00 1
+.names pi06 339 433
+00 1
+.names 255 433 434
+10 1
+.names 432 434 435
+00 1
+.names 429 435 436
+01 1
+.names pi01 436 437
+00 1
+.names pi02 pi03 438
+01 1
+.names pi08 34 439
+01 1
+.names 438 439 440
+11 1
+.names 437 440 441
+00 1
+.names 424 441 442
+01 1
+.names pi05 442 443
+00 1
+.names pi03 247 444
+11 1
+.names pi09 444 445
+01 1
+.names pi00 95 446
+10 1
+.names 261 446 447
+01 1
+.names pi09 77 448
+01 1
+.names 447 448 449
+00 1
+.names pi08 449 450
+10 1
+.names 95 353 451
+11 1
+.names 450 451 452
+00 1
+.names pi03 452 453
+00 1
+.names pi03 pi05 454
+11 1
+.names 222 454 455
+00 1
+.names pi00 455 456
+00 1
+.names 444 456 457
+00 1
+.names pi08 457 458
+00 1
+.names 445 458 459
+00 1
+.names 453 459 460
+01 1
+.names pi01 460 461
+10 1
+.names pi02 196 462
+11 1
+.names 84 462 463
+11 1
+.names pi03 198 464
+01 1
+.names pi02 464 465
+10 1
+.names 84 198 466
+10 1
+.names 465 466 467
+00 1
+.names pi05 467 468
+10 1
+.names 463 468 469
+00 1
+.names pi01 469 470
+00 1
+.names pi05 pi09 471
+11 1
+.names pi02 335 472
+11 1
+.names 471 472 473
+11 1
+.names 470 473 474
+00 1
+.names 461 474 475
+01 1
+.names pi06 475 476
+00 1
+.names 443 476 477
+00 1
+.names pi07 477 478
+00 1
+.names 189 198 479
+11 1
+.names pi09 43 480
+01 1
+.names 59 480 481
+11 1
+.names 479 481 482
+00 1
+.names 63 330 483
 11 1
 .names 482 483 484
-00 1
-.names pi00 pi06 485
-00 1
-.names 217 337 486
 01 1
-.names 485 486 487
+.names 478 484 485
+00 1
+.names 413 417 486
+00 1
+.names 412 486 487
+01 1
+.names pi02 487 488
+00 1
+.names 409 488 489
+10 1
+.names pi01 489 490
+10 1
+.names 441 490 491
+10 1
+.names pi05 491 492
+00 1
+.names 476 492 493
+00 1
+.names pi07 493 494
+00 1
+.names 56 480 495
 11 1
-.names 484 487 488
-10 1
-.names pi05 488 489
+.names 479 495 496
 00 1
-.names pi08 222 490
-01 1
-.names pi00 175 491
+.names 483 496 497
+10 1
+.names 494 497 498
+00 1
+.names 485 498 499
+00 1
+.names 485 498 500
 11 1
-.names 104 491 492
+.names 499 500 501
 00 1
-.names pi02 492 493
+.names 173 400 502
 00 1
-.names 490 493 494
+.names 312 501 503
 00 1
-.names pi09 494 495
-10 1
-.names pi00 pi08 496
-00 1
-.names 208 496 497
-00 1
-.names 26 497 498
+.names 502 503 504
 11 1
-.names 495 498 499
+.names pi04 504 505
 00 1
-.names 489 499 500
+.names pi01 404 506
+11 1
+.names 263 506 507
+11 1
+.names 76 382 508
+00 1
+.names pi06 404 509
+00 1
+.names 508 509 510
 01 1
-.names pi03 500 501
+.names pi02 27 511
 10 1
-.names pi02 pi05 502
-01 1
-.names 72 502 503
-01 1
-.names pi06 266 504
-00 1
-.names 20 504 505
-10 1
-.names 503 505 506
-00 1
-.names pi08 506 507
-00 1
-.names pi02 124 508
-10 1
-.names 304 508 509
-00 1
-.names pi06 509 510
-10 1
-.names 507 510 511
-00 1
 .names pi01 511 512
 10 1
-.names pi08 485 513
-00 1
-.names 208 513 514
-00 1
-.names pi09 514 515
-00 1
-.names pi02 515 516
-01 1
-.names pi02 pi08 517
-11 1
-.names 20 517 518
-11 1
-.names 516 518 519
-00 1
-.names pi01 519 520
-00 1
-.names 512 520 521
-00 1
-.names 501 521 522
-01 1
-.names pi07 522 523
-00 1
-.names 480 523 524
-00 1
-.names pi04 524 525
-00 1
-.names pi01 pi04 526
-01 1
-.names 115 526 527
-11 1
-.names 136 527 528
-00 1
-.names pi07 528 529
-00 1
-.names 525 529 530
-00 1
-.names pi00 148 557
-01 1
-.names pi05 pi09 572
+.names pi05 336 513
 10 1
-.names pi03 pi05 579
+.names 512 513 514
+01 1
+.names 507 510 515
+00 1
+.names 514 515 516
+01 1
+.names pi03 345 517
+10 1
+.names pi05 517 518
+10 1
+.names pi03 249 519
+10 1
+.names pi08 519 520
+10 1
+.names 518 520 521
+00 1
+.names pi01 521 522
+10 1
+.names pi05 pi06 523
+01 1
+.names pi03 523 524
+01 1
+.names 227 524 525
 11 1
-.names pi04 pi07 614
+.names 522 525 526
+00 1
+.names pi09 526 527
+00 1
+.names pi01 382 528
+01 1
+.names pi15 528 529
 10 1
-.names 232 572 618
+.names pi01 pi08 530
 11 1
-.names 288 618 619
-00 1
-.names pi00 619 620
-00 1
-.names pi01 pi05 621
-01 1
-.names 18 621 622
-00 1
-.names 107 260 623
-00 1
-.names 622 623 624
-01 1
-.names pi02 624 625
-01 1
-.names 337 440 626
+.names pi06 530 531
 10 1
-.names 102 626 627
+.names pi09 531 532
+00 1
+.names pi02 532 533
+00 1
+.names pi15 528 534
+01 1
+.names 529 534 535
+00 1
+.names 533 535 536
+01 1
+.names pi03 536 537
 10 1
-.names 625 627 628
-00 1
-.names 620 628 629
+.names 516 537 538
+10 1
+.names 527 538 539
 01 1
-.names pi08 629 630
+.names pi04 539 540
 00 1
-.names 97 622 631
+.names 197 263 541
 00 1
-.names pi02 631 632
-01 1
-.names 141 208 633
+.names pi05 541 542
+00 1
+.names 26 174 543
 11 1
-.names 632 633 634
-00 1
-.names pi08 634 635
-10 1
-.names pi05 220 636
-00 1
-.names 579 636 637
-00 1
-.names 33 637 638
-11 1
-.names 635 638 639
-00 1
-.names pi09 639 640
-00 1
-.names 266 579 641
-00 1
-.names 264 641 642
-00 1
-.names pi01 642 643
-11 1
-.names 178 315 644
+.names 542 543 544
 01 1
-.names pi15 644 645
-10 1
-.names pi15 644 646
-01 1
-.names 645 646 647
+.names 540 544 545
 00 1
-.names 206 647 648
+.names pi00 545 546
+00 1
+.names 196 254 547
+00 1
+.names pi05 547 548
 10 1
-.names 643 648 649
+.names pi05 95 549
+01 1
+.names 548 549 550
+00 1
+.names pi01 550 551
+10 1
+.names 121 198 552
+00 1
+.names pi02 552 553
+10 1
+.names 551 553 554
+00 1
+.names pi03 554 555
+00 1
+.names pi01 pi03 556
+01 1
+.names pi05 556 557
+10 1
+.names pi02 196 558
+01 1
+.names 557 558 559
+01 1
+.names pi01 pi08 560
+01 1
+.names 83 560 561
+11 1
+.names pi16 561 562
+01 1
+.names pi16 561 563
+10 1
+.names 559 562 564
+00 1
+.names 563 564 565
+01 1
+.names pi00 565 566
+10 1
+.names 555 566 567
+00 1
+.names pi06 567 568
+00 1
+.names pi02 185 569
+11 1
+.names 560 569 570
+00 1
+.names pi06 570 571
+10 1
+.names pi08 222 572
+10 1
+.names 462 572 573
+00 1
+.names 571 573 574
+01 1
+.names pi03 574 575
+10 1
+.names pi06 66 576
+10 1
+.names 71 576 577
+00 1
+.names pi08 577 578
+10 1
+.names 226 339 579
+01 1
+.names 578 579 580
+00 1
+.names pi02 580 581
+00 1
+.names 575 581 582
+00 1
+.names 241 582 583
+10 1
+.names 568 583 584
+00 1
+.names pi04 584 585
+00 1
+.names 546 585 586
+00 1
+.names pi07 586 587
+00 1
+.names 43 105 588
+11 1
+.names 45 588 589
+00 1
+.names pi01 589 590
+10 1
+.names 69 227 591
+11 1
+.names 590 591 592
+00 1
+.names pi04 82 593
+01 1
+.names 207 593 594
+11 1
+.names 592 594 595
+01 1
+.names 587 595 596
+00 1
+.names 528 533 597
+00 1
+.names pi03 597 598
+10 1
+.names 516 598 599
+10 1
+.names 527 599 600
+01 1
+.names pi04 600 601
+00 1
+.names 544 601 602
+00 1
+.names pi00 602 603
+00 1
+.names 196 291 604
+00 1
+.names pi05 604 605
+10 1
+.names 549 605 606
+00 1
+.names pi01 606 607
+10 1
+.names 553 607 608
+00 1
+.names pi03 608 609
+00 1
+.names 559 561 610
+00 1
+.names pi00 610 611
+10 1
+.names 609 611 612
+00 1
+.names pi06 612 613
+00 1
+.names pi02 182 614
+11 1
+.names 560 614 615
+00 1
+.names pi06 615 616
+10 1
+.names 573 616 617
+10 1
+.names pi03 617 618
+10 1
+.names 298 339 619
+01 1
+.names 578 619 620
+00 1
+.names pi02 620 621
+00 1
+.names 618 621 622
+00 1
+.names 241 622 623
+10 1
+.names 613 623 624
+00 1
+.names pi04 624 625
+00 1
+.names 603 625 626
+00 1
+.names pi07 626 627
+00 1
+.names pi07 197 628
+11 1
+.names pi00 628 629
+10 1
+.names 65 629 630
+10 1
+.names 591 630 631
+00 1
+.names 594 631 632
+10 1
+.names 627 632 633
+00 1
+.names 596 633 634
+00 1
+.names 596 633 635
+11 1
+.names 634 635 636
+00 1
+.names 63 78 637
+11 1
+.names pi01 pi05 638
+11 1
+.names pi03 pi05 639
+10 1
+.names 638 639 640
+00 1
+.names pi02 94 641
+00 1
+.names 640 641 642
+11 1
+.names 637 642 643
+00 1
+.names pi08 643 644
+10 1
+.names pi05 329 645
+00 1
+.names pi01 pi02 646
+11 1
+.names 454 646 647
+01 1
+.names 645 647 648
+01 1
+.names 644 648 649
 00 1
 .names pi09 649 650
-10 1
-.names 640 650 651
 00 1
-.names 630 651 652
+.names 249 454 651
+00 1
+.names pi01 517 652
+10 1
+.names 651 652 653
 01 1
-.names pi06 652 653
-00 1
-.names pi01 124 654
-00 1
-.names pi02 654 655
-10 1
-.names 334 655 656
-00 1
-.names pi00 656 657
-10 1
-.names pi06 104 658
-00 1
-.names pi02 658 659
-10 1
-.names pi08 26 660
-10 1
-.names 334 660 661
-10 1
-.names 659 661 662
-00 1
-.names 657 662 663
+.names 77 438 654
 01 1
-.names 391 663 664
-10 1
-.names 653 664 665
-00 1
-.names pi07 665 666
-00 1
-.names 148 517 667
-00 1
-.names pi00 667 668
-00 1
-.names 207 668 669
-00 1
-.names pi09 669 670
-00 1
-.names 94 496 671
+.names 560 654 655
 11 1
-.names 670 671 672
+.names 653 655 656
 00 1
-.names pi01 672 673
-00 1
-.names 325 557 674
-11 1
-.names 673 674 675
-00 1
-.names 18 675 676
+.names pi09 656 657
 10 1
-.names pi06 676 677
+.names 650 657 658
+00 1
+.names 179 226 659
 01 1
-.names 666 677 678
-00 1
-.names pi04 678 679
-00 1
-.names 18 614 680
-11 1
-.names 430 680 681
-11 1
-.names 679 681 682
-00 1
-.names 24 80 729
-11 1
-.names 79 729 730
-00 1
-.names pi05 730 731
-00 1
-.names 77 731 732
-00 1
-.names pi03 732 733
+.names 117 659 660
 10 1
-.names 119 733 734
-10 1
-.names pi07 734 735
-00 1
-.names 65 735 736
-00 1
-.names pi04 736 737
-00 1
-.names pi05 128 738
-10 1
-.names 138 738 739
-00 1
-.names pi07 739 740
-00 1
-.names 142 740 741
+.names 121 247 661
 11 1
+.names 506 661 662
+00 1
+.names pi00 662 663
+00 1
+.names pi02 121 664
+00 1
+.names 404 664 665
+01 1
+.names 640 665 666
+11 1
+.names 663 666 667
+00 1
+.names 660 667 668
+01 1
+.names pi08 668 669
+00 1
+.names pi21 669 670
+01 1
+.names pi21 669 671
+10 1
+.names 658 670 672
+10 1
+.names 671 672 673
+01 1
+.names pi06 673 674
+00 1
+.names 71 329 675
+01 1
+.names 576 675 676
+10 1
+.names pi02 676 677
+00 1
+.names 70 281 678
+00 1
+.names pi06 678 679
+00 1
+.names 639 677 680
+10 1
+.names 679 680 681
+01 1
+.names 674 681 682
+00 1
+.names pi07 682 683
+00 1
+.names 185 430 684
+11 1
+.names pi00 201 685
+00 1
+.names 346 685 686
+00 1
+.names pi09 686 687
+00 1
+.names pi22 687 688
+01 1
+.names pi22 687 689
+10 1
+.names 95 240 690
+11 1
+.names 688 690 691
+00 1
+.names 689 691 692
+01 1
+.names pi01 692 693
+00 1
+.names 684 693 694
+00 1
+.names 313 694 695
+10 1
+.names 683 695 696
+00 1
+.names pi04 696 697
+00 1
+.names 179 298 698
+01 1
+.names 117 698 699
+10 1
+.names 667 699 700
+10 1
+.names pi08 700 701
+00 1
+.names 658 701 702
+10 1
+.names pi06 702 703
+00 1
+.names 681 703 704
+00 1
+.names pi07 704 705
+00 1
+.names 687 690 706
+00 1
+.names pi01 706 707
+00 1
+.names 182 430 708
+11 1
+.names 707 708 709
+00 1
+.names 313 709 710
+10 1
+.names 705 710 711
+00 1
+.names pi07 179 712
+01 1
+.names 175 712 713
+11 1
+.names 711 713 714
+10 1
+.names 697 714 715
+11 1
+.names pi04 42 716
+00 1
+.names 171 716 717
+11 1
+.names 150 717 718
+01 1
+.names pi03 pi09 719
+10 1
+.names pi06 82 720
+10 1
+.names pi04 719 721
+00 1
+.names 720 721 722
+01 1
+.names 197 207 723
+11 1
+.names 36 723 724
+00 1
+.names 82 724 725
+10 1
+.names pi04 725 726
+10 1
+.names pi01 722 727
+00 1
+.names 726 727 728
+01 1
+.names 196 471 729
+00 1
+.names pi02 729 730
+10 1
+.names pi03 263 731
+00 1
+.names 730 731 732
+01 1
+.names pi01 28 733
+10 1
+.names 732 733 734
+01 1
+.names pi18 734 735
+01 1
+.names pi02 523 736
+11 1
+.names pi18 734 737
+10 1
+.names 735 736 738
+00 1
+.names 737 738 739
+01 1
+.names pi04 739 740
+00 1
+.names 728 740 741
+00 1
 .names pi00 741 742
-01 1
-.names 737 742 743
 00 1
-.names 151 160 744
+.names pi02 pi06 743
 00 1
-.names pi04 744 745
-00 1
-.names 172 745 746
-00 1
-.names pi01 746 747
-00 1
-.names 194 747 748
-00 1
-.names pi03 748 749
-00 1
-.names 245 749 750
-00 1
-.names pi07 750 751
-00 1
-.names 258 751 752
-00 1
-.names pi06 442 753
-01 1
-.names 447 753 754
-00 1
-.names pi00 754 755
+.names pi09 743 744
 10 1
-.names 451 755 756
-00 1
-.names pi08 756 757
+.names pi08 744 745
 10 1
-.names 456 757 758
-00 1
-.names 462 758 759
+.names pi02 pi09 746
 01 1
-.names pi07 759 760
-00 1
-.names 80 466 761
+.names pi06 746 747
 10 1
-.names 95 761 762
+.names pi03 747 748
 00 1
-.names pi00 762 763
+.names pi01 36 749
 00 1
-.names pi02 472 764
+.names 745 749 750
 01 1
-.names 763 764 765
-00 1
-.names 347 765 766
-10 1
-.names 760 766 767
-00 1
-.names pi03 767 768
-00 1
-.names 523 768 769
-00 1
-.names pi04 769 770
-00 1
-.names 529 770 771
-00 1
-.names 206 644 772
+.names 748 750 751
+01 1
+.names pi09 523 752
+01 1
+.names 530 752 753
 11 1
-.names 643 772 773
+.names 751 753 754
 00 1
-.names pi09 773 774
-10 1
-.names 640 774 775
-00 1
-.names 630 775 776
-01 1
-.names pi06 776 777
-00 1
-.names 664 777 778
-00 1
-.names pi07 778 779
-00 1
-.names 677 779 780
-00 1
-.names pi04 780 781
-00 1
-.names 681 781 782
-00 1
-.names 145 743 783
-10 1
-.names 145 743 784
-01 1
-.names 783 784 785
-00 1
-.names 259 752 786
-10 1
-.names 259 752 787
-01 1
-.names 786 787 788
-00 1
-.names 530 771 789
-01 1
-.names 530 771 790
-10 1
-.names 789 790 791
-00 1
-.names 682 782 792
-01 1
-.names 682 782 793
-10 1
-.names 792 793 794
-00 1
-.names 785 788 795
+.names pi05 382 755
 11 1
-.names 791 794 796
+.names pi03 755 756
+00 1
+.names pi02 756 757
+00 1
+.names pi03 pi08 758
+10 1
+.names pi06 758 759
+00 1
+.names 639 759 760
+00 1
+.names pi02 262 761
+00 1
+.names pi02 341 762
 11 1
-.names 795 796 797
+.names pi09 761 763
+00 1
+.names 762 763 764
+01 1
+.names 757 760 765
+00 1
+.names 764 765 766
+01 1
+.names pi01 766 767
+10 1
+.names pi19 524 768
+01 1
+.names 330 338 769
 11 1
-.names 797 miter
+.names pi19 524 770
+10 1
+.names 768 769 771
+00 1
+.names 770 771 772
+01 1
+.names pi09 772 773
+00 1
+.names 767 773 774
+00 1
+.names pi00 774 775
+10 1
+.names 52 376 776
+00 1
+.names pi02 776 777
+00 1
+.names pi06 471 778
+00 1
+.names 185 262 779
+00 1
+.names 778 779 780
+10 1
+.names 777 780 781
+00 1
+.names pi03 781 782
+10 1
+.names 754 782 783
+10 1
+.names 775 783 784
+01 1
+.names pi04 784 785
+00 1
+.names 742 785 786
+00 1
+.names pi07 786 787
+00 1
+.names 734 736 788
+00 1
+.names pi04 788 789
+00 1
+.names 728 789 790
+00 1
+.names pi00 790 791
+00 1
+.names 524 769 792
+00 1
+.names pi09 792 793
+00 1
+.names 767 793 794
+00 1
+.names pi00 794 795
+10 1
+.names 182 262 796
+00 1
+.names 778 796 797
+10 1
+.names 777 797 798
+00 1
+.names pi03 798 799
+10 1
+.names 754 799 800
+10 1
+.names 795 800 801
+01 1
+.names pi04 801 802
+00 1
+.names 791 802 803
+00 1
+.names pi07 803 804
+00 1
+.names 787 804 805
+00 1
+.names 787 804 806
+11 1
+.names 805 806 807
+00 1
+.names pi04 713 808
+00 1
+.names 711 808 809
+01 1
+.names 697 809 810
+01 1
+.names 718 807 811
+00 1
+.names 715 811 812
+01 1
+.names 810 812 813
+01 1
+.names 505 813 814
+01 1
+.names 636 814 815
+01 1
+.names 815 miter
 0 1
 .end

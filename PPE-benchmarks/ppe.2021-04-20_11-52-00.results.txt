@@ -1,0 +1,116 @@
+   BENCHMARK INFORMATION
+benchmark definition:    test/test-sets/dissertation/ppe.xml
+name:                    ppe
+run sets:                E-0.125-D-0.1, E-0.125-D-0.01
+date:                    Tue, 2021-04-20 11:52:00 CST
+tool:                    ABC
+tool executable:         bin/abc
+options:                 
+resource limits:
+- memory:                8000.0 MB
+- time:                  900 s
+- cpu cores:             1
+hardware requirements:
+- cpu cores:             1
+- memory:                8000.0 MB
+------------------------------------------------------------
+
+   SYSTEM INFORMATION
+host:                    nianzelee-XPS-13-9370
+os:                      Linux-5.4.0-72-generic-x86_64-with-glibc2.29
+cpu:                     Intel Core i7-8550U CPU @ 1.80GHz
+- cores:                 8
+- max frequency:         4000.0 MHz
+- turbo boost enabled:   True
+ram:                     16476.01664 MB
+------------------------------------------------------------
+
+
+
+E-0.125-D-0.1
+Run set 1 of 2 with options '-c st; pb_gen_files -E 0.125 -D 0.1' and propertyfile 'None'
+
+inputfile                            status                       cpu time   wall time        host
+--------------------------------------------------------------------------------------------------
+ISCAS/c1355.bench                    done                             0.10        0.10        None
+ISCAS/c17.bench                      done                             0.06        0.06        None
+ISCAS/c1908.bench                    done                             0.12        0.12        None
+ISCAS/c2670.bench                    done                             0.14        0.14        None
+ISCAS/c3540.bench                    done                             0.14        0.15        None
+ISCAS/c432.bench                     done                             0.09        0.09        None
+ISCAS/c499.bench                     done                             0.09        0.10        None
+ISCAS/c5315.bench                    done                             0.21        0.21        None
+ISCAS/c6288.bench                    done                             0.76        0.76        None
+ISCAS/c7552.bench                    done                             0.27        0.27        None
+ISCAS/c880.bench                     done                             0.10        0.11        None
+EPFL/random_control/arbiter.aig      done                             1.30        1.31        None
+EPFL/random_control/cavlc.aig        done                             0.12        0.12        None
+EPFL/random_control/ctrl.aig         done                             0.08        0.08        None
+EPFL/random_control/dec.aig          done                             0.09        0.09        None
+EPFL/random_control/i2c.aig          done                             0.14        0.14        None
+EPFL/random_control/int2float.aig    done                             0.08        0.09        None
+EPFL/random_control/mem_ctrl.aig     done                             5.94        5.94        None
+EPFL/random_control/priority.aig     done                             0.16        0.16        None
+EPFL/random_control/router.aig       done                             0.08        0.08        None
+EPFL/random_control/voter.aig        done                             1.88        1.89        None
+EPFL/arithmetic/adder.aig            done                             0.14        0.14        None
+EPFL/arithmetic/bar.aig              done                             0.29        0.29        None
+EPFL/arithmetic/div.aig              done                             8.69        8.69        None
+EPFL/arithmetic/hyp.aig              done                           133.67      133.70        None
+EPFL/arithmetic/log2.aig             done                             8.23        8.23        None
+EPFL/arithmetic/max.aig              done                             0.37        0.38        None
+EPFL/arithmetic/multiplier.aig       done                             5.54        5.55        None
+EPFL/arithmetic/sin.aig              done                             0.87        0.87        None
+EPFL/arithmetic/sqrt.aig             done                            19.02       19.02        None
+EPFL/arithmetic/square.aig           done                             3.08        3.08        None
+--------------------------------------------------------------------------------------------------
+Run set 1                            done                           192.71      199.66           -
+
+
+E-0.125-D-0.01
+Run set 2 of 2 with options '-c st; pb_gen_files -E 0.125 -D 0.01' and propertyfile 'None'
+
+inputfile                            status                       cpu time   wall time        host
+--------------------------------------------------------------------------------------------------
+ISCAS/c1355.bench                    done                             0.08        0.08        None
+ISCAS/c17.bench                      done                             0.06        0.06        None
+ISCAS/c1908.bench                    done                             0.09        0.09        None
+ISCAS/c2670.bench                    done                             0.09        0.09        None
+ISCAS/c3540.bench                    done                             0.12        0.12        None
+ISCAS/c432.bench                     done                             0.07        0.07        None
+ISCAS/c499.bench                     done                             0.09        0.09        None
+ISCAS/c5315.bench                    done                             0.15        0.16        None
+ISCAS/c6288.bench                    done                             0.61        0.61        None
+ISCAS/c7552.bench                    done                             0.19        0.19        None
+ISCAS/c880.bench                     done                             0.07        0.07        None
+EPFL/random_control/arbiter.aig      done                             0.95        0.95        None
+EPFL/random_control/cavlc.aig        done                             0.08        0.09        None
+EPFL/random_control/ctrl.aig         done                             0.06        0.06        None
+EPFL/random_control/dec.aig          done                             0.08        0.08        None
+EPFL/random_control/i2c.aig          done                             0.09        0.09        None
+EPFL/random_control/int2float.aig    done                             0.07        0.07        None
+EPFL/random_control/mem_ctrl.aig     done                             3.32        3.32        None
+EPFL/random_control/priority.aig     done                             0.10        0.10        None
+EPFL/random_control/router.aig       done                             0.09        0.09        None
+EPFL/random_control/voter.aig        done                             1.55        1.55        None
+EPFL/arithmetic/adder.aig            done                             0.11        0.11        None
+EPFL/arithmetic/bar.aig              done                             0.20        0.20        None
+EPFL/arithmetic/div.aig              done                             6.67        6.67        None
+EPFL/arithmetic/hyp.aig              done                            94.06       94.07        None
+EPFL/arithmetic/log2.aig             done                             6.12        6.13        None
+EPFL/arithmetic/max.aig              done                             0.27        0.27        None
+EPFL/arithmetic/multiplier.aig       done                             3.63        3.64        None
+EPFL/arithmetic/sin.aig              done                             0.73        0.73        None
+EPFL/arithmetic/sqrt.aig             done                             4.76        4.76        None
+EPFL/arithmetic/square.aig           done                             2.26        2.26        None
+--------------------------------------------------------------------------------------------------
+Run set 2                            done                           127.77      134.66           -
+
+Statistics:             62 Files
+  correct:               0
+    correct true:        0
+    correct false:       0
+  incorrect:             0
+    incorrect true:      0
+    incorrect false:     0
+  unknown:               0
