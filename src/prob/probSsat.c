@@ -59,6 +59,10 @@ void Pb_WriteSSAT(Abc_Ntk_t* pNtk, char* name, int numPo, int numExist,
   int numVar, numCla;
 
   out = fopen(name, "w");
+  if (!out) {
+    Abc_Print(-1, "Cannot open file %s\n", name);
+    return;
+  }
   numVar = Abc_NtkObjNum(pNtk) - 1;  // substract constant node
   numCla = 3 * Abc_NtkNodeNum(pNtk) + 2 +
            1;  // 2 for Po connection , 1 for Po assertion
@@ -74,6 +78,7 @@ void Pb_WriteSSAT(Abc_Ntk_t* pNtk, char* name, int numPo, int numExist,
   }
   Pb_WriteWMCCla(out, pNtk, numPo);
   fclose(out);
+  Abc_Print(-2, "File %s is written.\n", name);
 }
 
 void Pb_WriteQdimacsPrefix(FILE* out, Abc_Ntk_t* pNtk, int numPo,

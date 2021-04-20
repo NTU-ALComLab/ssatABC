@@ -57,6 +57,10 @@ void Pb_WriteWMC(Abc_Ntk_t* pNtk, char* name, int numPo, int fModel) {
   int numVar, numCla;
 
   out = fopen(name, "w");
+  if (!out) {
+    Abc_Print(-1, "Cannot open file %s\n", name);
+    return;
+  }
   numVar = Abc_NtkObjNumMax(pNtk);
   numCla = 3 * Abc_NtkNodeNum(pNtk) + 2 +
            1;  // 2 for Po connection , 1 for Po assertion
@@ -66,6 +70,7 @@ void Pb_WriteWMC(Abc_Ntk_t* pNtk, char* name, int numPo, int fModel) {
   Pb_WriteWMCCla(out, pNtk, numPo);
   Pb_WriteWMCWeight(out, pNtk, numPo, fModel);
   fclose(out);
+  Abc_Print(-2, "File %s is written.\n", name);
 }
 
 void Pb_WriteWMCCla(FILE* out, Abc_Ntk_t* pNtk, int numPo) {

@@ -103,6 +103,10 @@ void Pb_WritePBN(Abc_Ntk_t* pNtk, char* name, int numPIs, int fStandard) {
   FILE* out;
 
   out = fopen(name, "w");
+  if (!out) {
+    Abc_Print(-1, "Cannot open file %s\n", name);
+    return;
+  }
   fprintf(out, "# PBN %s written by probABC\n", Abc_NtkName(pNtk));
   fprintf(out, ".model %s\n", Abc_NtkName(pNtk));
 
@@ -112,6 +116,7 @@ void Pb_WritePBN(Abc_Ntk_t* pNtk, char* name, int numPIs, int fStandard) {
 
   fprintf(out, ".end\n");
   fclose(out);
+  Abc_Print(-2, "File %s is written.\n", name);
 }
 
 void Pb_WritePBNPio(FILE* out, Abc_Ntk_t* pNtk, int fStandard) {

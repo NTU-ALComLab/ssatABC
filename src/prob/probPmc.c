@@ -54,6 +54,10 @@ void Pb_RewriteOneAndGate(FILE*, int, int, int, int);
 
 void Pb_WritePMC(Abc_Ntk_t* pNtk, char* name, int numPo) {
   FILE* out = fopen(name, "w");
+  if (!out) {
+    Abc_Print(-1, "Cannot open file %s\n", name);
+    return;
+  }
   int numCktVar, numRewriteVar, numCktCla, numRewriteCla;
 
   Vec_Int_t* vIndVar = Vec_IntAlloc(Abc_NtkPiNum(pNtk));
@@ -73,6 +77,7 @@ void Pb_WritePMC(Abc_Ntk_t* pNtk, char* name, int numPo) {
   Pb_RewritePMC(out, pNtk, vIndVar);
   Vec_IntFree(vIndVar);
   fclose(out);
+  Abc_Print(-2, "File %s is written.\n", name);
 }
 
 void Pb_CollectIndVar(Abc_Ntk_t* pNtk, Vec_Int_t* vIndVar) {

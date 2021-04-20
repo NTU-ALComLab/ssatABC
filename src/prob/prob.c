@@ -385,7 +385,6 @@ int Pb_CommandWritePBN(Abc_Frame_t* pAbc, int argc, char** argv) {
   if (numPIs == 0) numPIs = Abc_NtkPiNum(pNtk);
 
   Pb_WritePBN(pNtk, FileName, numPIs, fStandard);
-  Abc_Print(-2, "File %s is written.\n", FileName);
 
   return 0;
 usage:
@@ -470,7 +469,6 @@ int Pb_CommandWriteWMC(Abc_Frame_t* pAbc, int argc, char** argv) {
   }
 
   Pb_WriteWMC(pNtk, FileName, numPo, fModel);
-  Abc_Print(-2, "File %s is written.\n", FileName);
 
   return 0;
 usage:
@@ -553,7 +551,6 @@ int Pb_CommandWritePMC(Abc_Frame_t* pAbc, int argc, char** argv) {
   }
 
   Pb_WritePMC(pNtk, FileName, numPo);
-  Abc_Print(-2, "File %s is written.\n", FileName);
 
   return 0;
 usage:
@@ -795,7 +792,6 @@ int Pb_CommandWriteSSAT(Abc_Frame_t* pAbc, int argc, char** argv) {
   }
 
   Pb_WriteSSAT(pNtk, FileName, numPo, numExist, fQdimacs);
-  Abc_Print(-2, "File %s is written.\n", FileName);
 
   return 0;
 usage:

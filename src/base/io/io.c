@@ -261,9 +261,9 @@ int IoCommandRead( Abc_Frame_t * pAbc, int argc, char ** argv )
     }
     // read the file using the corresponding file reader
     pNtk = Io_Read( pFileName, Io_ReadFileType(pFileName), fCheck, fBarBufs );
-    strcpy(pNtk->fileName, pFileName);
     if ( pNtk == NULL )
         return 0;
+    strcpy(pNtk->fileName, pFileName);
     if ( Abc_NtkPiNum(pNtk) == 0 )
     {
         Abc_Print( 0, "The new network has no primary inputs. It is recommended\n" );
