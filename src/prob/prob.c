@@ -961,6 +961,16 @@ int Pb_CommandGenFiles(Abc_Frame_t* pAbc, int argc, char** argv) {
   Cmd_CommandExecute(pAbc, command);
   sprintf(command, "probmiter %s", fileName);
   Cmd_CommandExecute(pAbc, command);
+  pNtk = Abc_FrameReadNtk(pAbc);
+  float* prob = ABC_ALLOC(float, Abc_NtkPiNum(pNtk));
+  Abc_Obj_t* pObj;
+  int i;
+  Abc_NtkForEachPi(pNtk, pObj, i) prob[i] = pObj->dTemp;
+  sprintf(command, "resyn2");
+  Cmd_CommandExecute(pAbc, command);
+  pNtk = Abc_FrameReadNtk(pAbc);
+  Abc_NtkForEachPi(pNtk, pObj, i) pObj->dTemp = prob[i];
+  ABC_FREE(prob);
   sprintf(command, "write_pbn -I %d %s%s-spbn.blif", numPIs, outDir, baseName);
   Cmd_CommandExecute(pAbc, command);
   sprintf(command, "write_ssat %sre-%s.sdimacs", outDir, baseName);
