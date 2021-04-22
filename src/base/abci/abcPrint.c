@@ -274,7 +274,9 @@ void Abc_NtkPrintStats( Abc_Ntk_t * pNtk, int fFactored, int fSaveBest, int fDum
 #else
     Abc_Print( 1,"%s%-30s:%s", "\033[1;37m", pNtk->pName, "\033[0m" );  // bright
 #endif
-    Abc_Print( 1," i/o =%5d/%5d", Abc_NtkPiNum(pNtk), Abc_NtkPoNum(pNtk) );
+    //Abc_Print( 1," i/o =%5d/%5d", Abc_NtkPiNum(pNtk), Abc_NtkPoNum(pNtk) );
+    Abc_Print( 1,"  i =%5d", Abc_NtkPiNum(pNtk));
+    Abc_Print( 1,"  o =%5d", Abc_NtkPoNum(pNtk));
     if ( Abc_NtkConstrNum(pNtk) )
         Abc_Print( 1,"(c=%d)", Abc_NtkConstrNum(pNtk) );
     Abc_Print( 1,"  lat =%5d", Abc_NtkLatchNum(pNtk) );
