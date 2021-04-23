@@ -6,6 +6,10 @@
       <option name="-c">st; bddsp -rw</option>
   </rundefinition>
 
+  <rundefinition name="no-reorder">
+      <option name="-c">st; bddsp -rwg</option>
+  </rundefinition>
+
   <tasks name="D-0.10">
       <includesfile>../../../PPE-benchmarks/MPEC-D-0.10.set</includesfile>
   </tasks>
