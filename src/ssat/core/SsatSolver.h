@@ -56,13 +56,14 @@ typedef vec<std::set<int>> SubTbl;
 // runtime profilier
 typedef struct Ssat_Timer_t_ {
   // timing info
-  abctime timeS1;  // s1 solving
-  abctime timeS2;  // s2 solving
-  abctime timeGd;  // s2 greedy
-  abctime timeCt;  // Counting
-  abctime timeCk;  // Cnf to sop ckt
-  abctime timeSt;  // Sop ckt strash to aig
-  abctime timeBd;  // Bdd construction
+  abctime timeS1;    // s1 solving
+  abctime timeS2;    // s2 solving
+  abctime timeGd;    // s2 greedy
+  abctime timeCt;    // Counting
+  abctime timeCk;    // Cnf to sop ckt
+  abctime timeSt;    // Sop ckt strash to aig
+  abctime timeBd;    // Bdd construction
+  abctime timeBest;  // Time until the current best solution is found
   // timeCt ~ timeCk + timeSt + timeBd
   // iteration info
   int nS1_sat;    // # of s1 solving

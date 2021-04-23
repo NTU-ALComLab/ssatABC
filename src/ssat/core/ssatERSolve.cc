@@ -39,6 +39,7 @@ using namespace std;
 
 // global variables
 extern Ssat_Timer_t timer;
+extern abctime gloClk;
 // functions
 extern void printERParams(Ssat_Params_t*);
 static void setDropVec(vec<bool>&, const int&);
@@ -134,6 +135,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
       }
       if (subvalue == 1) {  // early termination
         _satPb = subvalue;
+        timer.timeBest = Abc_Clock() - gloClk;
         eLits.copyTo(_erModel);
         printf("[INFO] Stopping analysis ...\n");
         _fExactlySolved = true;
@@ -153,6 +155,7 @@ void SsatSolver::erSolve2SSAT(Ssat_Params_t* pParams) {
             fflush(stdout);
           }
         }
+        if (subvalue > _satPb) timer.timeBest = Abc_Clock() - gloClk;
         _satPb = subvalue;
         eLits.copyTo(_erModel);
       }

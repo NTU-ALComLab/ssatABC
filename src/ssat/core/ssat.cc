@@ -178,6 +178,7 @@ void initTimer(Ssat_Timer_t* pTimer) {
   pTimer->timeCk = 0;
   pTimer->timeSt = 0;
   pTimer->timeBd = 0;
+  pTimer->timeBest = 0;
   pTimer->nS1_sat = 0;
   pTimer->nS1_unsat = 0;
   pTimer->nS2solve = 0;

@@ -490,6 +490,7 @@ void SsatSolver::reportSolvingResults() const {
   } else {
     Abc_Print(-2, "  > Best upper bound: %e\n", upperBound());
     Abc_Print(-2, "  > Best lower bound: %e\n", lowerBound());
+    Abc_PrintTime(1, "  > Time elapsed for best lower bound ", timer.timeBest);
   }
 }
 
