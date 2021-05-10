@@ -54,6 +54,9 @@ ifneq ($(findstring arm,$(shell uname -m)),)
 	CFLAGS += -DABC_MEMALIGN=4
 endif
 
+# statically compile ABC without any dynamic dependencies
+CFLAGS += -static
+
 # compile ABC using the C++ comipler and put everything in the namespace $(ABC_NAMESPACE)
 ifdef ABC_USE_NAMESPACE
   CFLAGS += -DABC_NAMESPACE=$(ABC_USE_NAMESPACE) -fpermissive
@@ -190,7 +193,7 @@ tags:
 
 $(PROG): $(OBJ)
 	@echo "$(MSG_PREFIX)\`\` Building binary:" $(notdir $@)
-	$(VERBOSE)$(LD) -o $@ $^ $(LIBS)
+	$(VERBOSE)$(LD) -static -o $@ $^ $(LIBS)
 
 lib$(PROG).a: $(LIBOBJ)
 	@echo "$(MSG_PREFIX)\`\` Linking:" $(notdir $@)
