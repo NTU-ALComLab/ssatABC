@@ -213,6 +213,13 @@ void SsatSolver::aSolve2SSAT(Ssat_Params_t* pParams) {
         if (!sBkCla.size()) {  // FIXME: temp sol for UNSAT matrix
           _unsatPb = 1.0;
           _satPb = 0.0;
+          printf("[INFO] Stopping analysis ...\n");
+          printf("[INFO] # of UNSAT cubes: %d\n", _unsatClause.size());
+          printf("[INFO] # of   SAT cubes: %d\n", _satClause.size());
+          if (pParams->range == 0.0) {
+            _fExactlySolved = true;
+            _exactSatProb = upperBound();
+          }
           return;
         }
         _s2->addClause(sBkCla);
