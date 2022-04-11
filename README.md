@@ -157,4 +157,4 @@ You are welcome to [create an issue](https://github.com/nianzelee/ssatABC/issues
 
 ## Contact
 
-Nian-Ze Lee: nianzelee@gmail.com
+Nian-Ze Lee: nian-ze.lee@sosy.ifi.lmu.de
