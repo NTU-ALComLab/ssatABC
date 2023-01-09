@@ -4,6 +4,7 @@
 
 This is a C++ implemantation of the algorithms proposed in [Solving Stochastic Boolean Satisfiability under Random-Exist Quantification](https://www.ijcai.org/proceedings/2017/0096.pdf) and [Solving Exist-Random Quantified Stochastic Boolean Satisfiability via Clause Selection](https://www.ijcai.org/proceedings/2018/0186.pdf) to solve random-exist SSAT (RE-SSAT) and exist-random SSAT (ER-SSAT) formulas, respectively.
 
+The implementation is based on the open-source logic-synthesis framework [ABC](https://github.com/berkeley-abc/abc).
 ## Installation
 
 Type `make` to complie and the executable is `bin/abc`
@@ -12,7 +13,15 @@ Type `make` to complie and the executable is `bin/abc`
 make
 ```
 
-It has been tested successfully under Ubuntu 20.04.1 with GCC_VERSION=9.3.0
+It has been tested successfully under Ubuntu 22.04.1 LTS with GCC_VERSION=11.3.0.
+
+If the compilation fails because the `readline` library is missing,
+please install the library from your OS distribution
+(for Ubuntu/Debian users, type `sudo apt install libreadline-dev`),
+or compile with `make ABC_USE_NO_READLINE=1`.
+
+
+For more trouble-shooting tips, please have a look at ABC's [readme](https://github.com/berkeley-abc/abc#troubleshooting).
 
 ## Execution
 
